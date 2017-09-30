@@ -1,0 +1,1 @@
+../sirv-e201-arty/link.lds

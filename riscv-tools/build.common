@@ -1,0 +1,44 @@
+# Script to build RISC-V ISA simulator, proxy kernel, and GNU toolchain.
+# Tools will be installed to $PREFIX.
+
+if [ "x$PREFIX" = "x" ]
+then
+  echo "Please set the PREFIX environment variable to your preferred install path."
+  exit 1
+fi
+
+# Use gmake instead of make if it exists.
+MAKE=`command -v gmake || command -v make`
+
+PATH="$PREFIX/bin:$PATH"
+#GCC_VERSION=`gcc -v 2>&1 | tail -1 | awk '{print $3}'`
+
+set -e
+
+function build_project {
+  PROJECT="$1"
+  shift
+  echo
+  if [ -e "$PROJECT/build" ]
+  then
+    echo "Removing existing $PROJECT/build directory"
+    rm -rf "$PROJECT/build"
+  fi
+  if [ ! -e "$PROJECT/configure" ]
+  then
+    (
+      cd "$PROJECT"
+      find . -iname configure.ac | sed s/configure.ac/m4/ | xargs mkdir -p
+      autoreconf -i
+    )
+  fi
+  mkdir -p "$PROJECT/build"
+  cd "$PROJECT/build"
+  echo "Configuring project $PROJECT"
+  ../configure $* > build.log
+  echo "Building project $PROJECT"
+  $MAKE >> build.log
+  echo "Installing project $PROJECT"
+  $MAKE install >> build.log
+  cd - > /dev/null
+}

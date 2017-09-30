@@ -1,0 +1,11 @@
+riscv-tools/prebuilt_tools/prefix/*
+generate_rtl.sh
+rtl/e201
+rtl/e204
+rtl/e203
+rtl/e205
+rtl/e205f
+rtl/e205fd
+rtl/e225fd
+restore.github
+restore.real

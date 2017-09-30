@@ -1,0 +1,12 @@
+*~
+*.host
+*.o
+*.out
+*.hex
+.*.swp
+*.pyc
+/autom4te.cache
+/Makefile
+/config.log
+/config.status
+build

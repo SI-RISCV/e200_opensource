@@ -1,0 +1,248 @@
+
+rv32mi-p-illegal:     file format elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	a081                	j	80000040 <reset_vector>
+80000002:	0001                	nop
+
+80000004 <trap_vector>:
+80000004:	34202f73          	csrr	t5,mcause
+80000008:	4fa1                	li	t6,8
+8000000a:	03ff0663          	beq	t5,t6,80000036 <write_tohost>
+8000000e:	4fa5                	li	t6,9
+80000010:	03ff0363          	beq	t5,t6,80000036 <write_tohost>
+80000014:	4fad                	li	t6,11
+80000016:	03ff0063          	beq	t5,t6,80000036 <write_tohost>
+8000001a:	00000f17          	auipc	t5,0x0
+8000001e:	1e6f0f13          	addi	t5,t5,486 # 80000200 <mtvec_handler>
+80000022:	000f0363          	beqz	t5,80000028 <trap_vector+0x24>
+80000026:	8f02                	jr	t5
+80000028:	34202f73          	csrr	t5,mcause
+8000002c:	000f5363          	bgez	t5,80000032 <handle_exception>
+80000030:	a009                	j	80000032 <handle_exception>
+
+80000032 <handle_exception>:
+80000032:	5391e193          	ori	gp,gp,1337
+
+80000036 <write_tohost>:
+80000036:	00001f17          	auipc	t5,0x1
+8000003a:	fc3f2523          	sw	gp,-54(t5) # 80001000 <tohost>
+8000003e:	bfe5                	j	80000036 <write_tohost>
+
+80000040 <reset_vector>:
+80000040:	f1402573          	csrr	a0,mhartid
+80000044:	e101                	bnez	a0,80000044 <reset_vector+0x4>
+80000046:	4181                	li	gp,0
+80000048:	00000297          	auipc	t0,0x0
+8000004c:	fbc28293          	addi	t0,t0,-68 # 80000004 <trap_vector>
+80000050:	30529073          	csrw	mtvec,t0
+80000054:	80000297          	auipc	t0,0x80000
+80000058:	fac28293          	addi	t0,t0,-84 # 0 <_start-0x80000000>
+8000005c:	00028e63          	beqz	t0,80000078 <reset_vector+0x38>
+80000060:	10529073          	csrw	stvec,t0
+80000064:	0000b2b7          	lui	t0,0xb
+80000068:	10928293          	addi	t0,t0,265 # b109 <_start-0x7fff4ef7>
+8000006c:	30229073          	csrw	medeleg,t0
+80000070:	30202373          	csrr	t1,medeleg
+80000074:	fa629fe3          	bne	t0,t1,80000032 <handle_exception>
+80000078:	30005073          	csrwi	mstatus,0
+8000007c:	00002537          	lui	a0,0x2
+80000080:	80050513          	addi	a0,a0,-2048 # 1800 <_start-0x7fffe800>
+80000084:	30052073          	csrs	mstatus,a0
+80000088:	00000297          	auipc	t0,0x0
+8000008c:	01428293          	addi	t0,t0,20 # 8000009c <reset_vector+0x5c>
+80000090:	34129073          	csrw	mepc,t0
+80000094:	f1402573          	csrr	a0,mhartid
+80000098:	30200073          	mret
+8000009c:	00200193          	li	gp,2
+
+800000a0 <bad2>:
+800000a0:	0000                	unimp
+800000a2:	0000                	unimp
+800000a4:	0f00006f          	j	80000194 <fail>
+800000a8:	1000006f          	j	800001a8 <pass>
+800000ac:	000022b7          	lui	t0,0x2
+800000b0:	80028293          	addi	t0,t0,-2048 # 1800 <_start-0x7fffe800>
+800000b4:	3002b073          	csrc	mstatus,t0
+800000b8:	00001337          	lui	t1,0x1
+800000bc:	80030313          	addi	t1,t1,-2048 # 800 <_start-0x7ffff800>
+800000c0:	30032073          	csrs	mstatus,t1
+800000c4:	300023f3          	csrr	t2,mstatus
+800000c8:	0053f3b3          	and	t2,t2,t0
+800000cc:	0c731e63          	bne	t1,t2,800001a8 <pass>
+
+800000d0 <test_vectored_interrupts>:
+800000d0:	34415073          	csrwi	mip,2
+800000d4:	30415073          	csrwi	mie,2
+800000d8:	00000297          	auipc	t0,0x0
+800000dc:	12928293          	addi	t0,t0,297 # 80000201 <mtvec_handler+0x1>
+800000e0:	30529473          	csrrw	s0,mtvec,t0
+800000e4:	305022f3          	csrr	t0,mtvec
+800000e8:	0012f293          	andi	t0,t0,1
+800000ec:	00028663          	beqz	t0,800000f8 <msip>
+800000f0:	30046073          	csrsi	mstatus,8
+800000f4:	0000006f          	j	800000f4 <test_vectored_interrupts+0x24>
+
+800000f8 <msip>:
+800000f8:	30541073          	csrw	mtvec,s0
+800000fc:	30315073          	csrwi	mideleg,2
+80000100:	00000297          	auipc	t0,0x0
+80000104:	02828293          	addi	t0,t0,40 # 80000128 <msip+0x30>
+80000108:	34129073          	csrw	mepc,t0
+8000010c:	000022b7          	lui	t0,0x2
+80000110:	80028293          	addi	t0,t0,-2048 # 1800 <_start-0x7fffe800>
+80000114:	3002b073          	csrc	mstatus,t0
+80000118:	00001337          	lui	t1,0x1
+8000011c:	80030313          	addi	t1,t1,-2048 # 800 <_start-0x7ffff800>
+80000120:	30032073          	csrs	mstatus,t1
+80000124:	30200073          	mret
+80000128:	10500073          	wfi
+
+8000012c <bad3>:
+8000012c:	0000                	unimp
+8000012e:	0000                	unimp
+80000130:	0640006f          	j	80000194 <fail>
+
+80000134 <bad4>:
+80000134:	10500073          	wfi
+80000138:	05c0006f          	j	80000194 <fail>
+8000013c:	180022f3          	csrr	t0,sptbr
+
+80000140 <bad5>:
+80000140:	0000                	unimp
+80000142:	0000                	unimp
+80000144:	0500006f          	j	80000194 <fail>
+
+80000148 <bad6>:
+80000148:	04c0006f          	j	80000194 <fail>
+
+8000014c <bad7>:
+8000014c:	180022f3          	csrr	t0,sptbr
+80000150:	0440006f          	j	80000194 <fail>
+80000154:	00000297          	auipc	t0,0x0
+80000158:	02028293          	addi	t0,t0,32 # 80000174 <bad8>
+8000015c:	14129073          	csrw	sepc,t0
+80000160:	10000293          	li	t0,256
+80000164:	1002a073          	csrs	sstatus,t0
+80000168:	02000293          	li	t0,32
+8000016c:	1002b073          	csrc	sstatus,t0
+80000170:	10200073          	sret
+
+80000174 <bad8>:
+80000174:	0000                	unimp
+80000176:	0000                	unimp
+80000178:	01c0006f          	j	80000194 <fail>
+8000017c:	00000297          	auipc	t0,0x0
+80000180:	01028293          	addi	t0,t0,16 # 8000018c <bad9+0x4>
+80000184:	14129073          	csrw	sepc,t0
+
+80000188 <bad9>:
+80000188:	10200073          	sret
+8000018c:	0080006f          	j	80000194 <fail>
+80000190:	00301c63          	bne	zero,gp,800001a8 <pass>
+
+80000194 <fail>:
+80000194:	0ff0000f          	fence
+80000198:	00018063          	beqz	gp,80000198 <fail+0x4>
+8000019c:	00119193          	slli	gp,gp,0x1
+800001a0:	0011e193          	ori	gp,gp,1
+800001a4:	00000073          	ecall
+
+800001a8 <pass>:
+800001a8:	0ff0000f          	fence
+800001ac:	00100193          	li	gp,1
+800001b0:	00000073          	ecall
+800001b4:	00000013          	nop
+800001b8:	00000013          	nop
+800001bc:	00000013          	nop
+800001c0:	00000013          	nop
+800001c4:	00000013          	nop
+800001c8:	00000013          	nop
+800001cc:	00000013          	nop
+800001d0:	00000013          	nop
+800001d4:	00000013          	nop
+800001d8:	00000013          	nop
+800001dc:	00000013          	nop
+800001e0:	00000013          	nop
+800001e4:	00000013          	nop
+800001e8:	00000013          	nop
+800001ec:	00000013          	nop
+800001f0:	00000013          	nop
+800001f4:	00000013          	nop
+800001f8:	00000013          	nop
+800001fc:	00000013          	nop
+
+80000200 <mtvec_handler>:
+80000200:	0400006f          	j	80000240 <synchronous_exception>
+80000204:	ef5ff06f          	j	800000f8 <msip>
+80000208:	f8dff06f          	j	80000194 <fail>
+8000020c:	f89ff06f          	j	80000194 <fail>
+80000210:	f85ff06f          	j	80000194 <fail>
+80000214:	f81ff06f          	j	80000194 <fail>
+80000218:	f7dff06f          	j	80000194 <fail>
+8000021c:	f79ff06f          	j	80000194 <fail>
+80000220:	f75ff06f          	j	80000194 <fail>
+80000224:	f71ff06f          	j	80000194 <fail>
+80000228:	f6dff06f          	j	80000194 <fail>
+8000022c:	f69ff06f          	j	80000194 <fail>
+80000230:	f65ff06f          	j	80000194 <fail>
+80000234:	f61ff06f          	j	80000194 <fail>
+80000238:	f5dff06f          	j	80000194 <fail>
+8000023c:	f59ff06f          	j	80000194 <fail>
+
+80000240 <synchronous_exception>:
+80000240:	00200313          	li	t1,2
+80000244:	342022f3          	csrr	t0,mcause
+80000248:	f46296e3          	bne	t0,t1,80000194 <fail>
+8000024c:	341022f3          	csrr	t0,mepc
+80000250:	00000317          	auipc	t1,0x0
+80000254:	e5030313          	addi	t1,t1,-432 # 800000a0 <bad2>
+80000258:	04628e63          	beq	t0,t1,800002b4 <synchronous_exception+0x74>
+8000025c:	00000317          	auipc	t1,0x0
+80000260:	ed030313          	addi	t1,t1,-304 # 8000012c <bad3>
+80000264:	04628e63          	beq	t0,t1,800002c0 <synchronous_exception+0x80>
+80000268:	00000317          	auipc	t1,0x0
+8000026c:	ecc30313          	addi	t1,t1,-308 # 80000134 <bad4>
+80000270:	04628263          	beq	t0,t1,800002b4 <synchronous_exception+0x74>
+80000274:	00000317          	auipc	t1,0x0
+80000278:	ecc30313          	addi	t1,t1,-308 # 80000140 <bad5>
+8000027c:	04628863          	beq	t0,t1,800002cc <synchronous_exception+0x8c>
+80000280:	00000317          	auipc	t1,0x0
+80000284:	ec830313          	addi	t1,t1,-312 # 80000148 <bad6>
+80000288:	02628663          	beq	t0,t1,800002b4 <synchronous_exception+0x74>
+8000028c:	00000317          	auipc	t1,0x0
+80000290:	ec030313          	addi	t1,t1,-320 # 8000014c <bad7>
+80000294:	02628063          	beq	t0,t1,800002b4 <synchronous_exception+0x74>
+80000298:	00000317          	auipc	t1,0x0
+8000029c:	edc30313          	addi	t1,t1,-292 # 80000174 <bad8>
+800002a0:	02628c63          	beq	t0,t1,800002d8 <synchronous_exception+0x98>
+800002a4:	00000317          	auipc	t1,0x0
+800002a8:	ee430313          	addi	t1,t1,-284 # 80000188 <bad9>
+800002ac:	02628c63          	beq	t0,t1,800002e4 <synchronous_exception+0xa4>
+800002b0:	ee5ff06f          	j	80000194 <fail>
+800002b4:	00828293          	addi	t0,t0,8
+800002b8:	34129073          	csrw	mepc,t0
+800002bc:	30200073          	mret
+800002c0:	00200337          	lui	t1,0x200
+800002c4:	30032073          	csrs	mstatus,t1
+800002c8:	fedff06f          	j	800002b4 <synchronous_exception+0x74>
+800002cc:	00100337          	lui	t1,0x100
+800002d0:	30032073          	csrs	mstatus,t1
+800002d4:	fe1ff06f          	j	800002b4 <synchronous_exception+0x74>
+800002d8:	00400337          	lui	t1,0x400
+800002dc:	30032073          	csrs	mstatus,t1
+800002e0:	fd5ff06f          	j	800002b4 <synchronous_exception+0x74>
+800002e4:	fd1ff06f          	j	800002b4 <synchronous_exception+0x74>
+800002e8:	c0001073          	unimp
+	...
+
+Disassembly of section .tohost:
+
+80001000 <tohost>:
+	...
+
+80001040 <fromhost>:
+	...

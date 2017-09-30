@@ -1,0 +1,36 @@
+prefix          := @prefix@
+abs_top_src_dir := @abs_top_srcdir@
+XLEN            := @XLEN@
+instbasedir     := $(DESTDIR)$(prefix)
+bmarkdir        := $(abs_top_src_dir)/benchmarks
+isa_src_dir     := $(abs_top_src_dir)/isa
+debug_src_dir   := $(abs_top_src_dir)/debug
+
+all: benchmarks isa 
+
+install: all
+	install -d $(instbasedir)/share/riscv-tests/isa
+	install -d $(instbasedir)/share/riscv-tests/benchmarks
+	install -p -m 644 `find isa -maxdepth 1 -type f` $(instbasedir)/share/riscv-tests/isa
+	install -p -m 644 `find benchmarks -maxdepth 1 -type f` $(instbasedir)/share/riscv-tests/benchmarks
+
+benchmarks:
+	mkdir -p benchmarks
+	$(MAKE) -C benchmarks -f $(bmarkdir)/Makefile src_dir=$(bmarkdir) XLEN=$(XLEN)
+
+isa:
+	mkdir -p isa
+	$(MAKE) -C isa -f $(isa_src_dir)/Makefile src_dir=$(isa_src_dir) XLEN=$(XLEN)
+
+debug-check:
+	mkdir -p debug/programs
+	cp -ar $(debug_src_dir)/programs/* debug/programs/
+	$(MAKE) -C debug -f $(debug_src_dir)/Makefile src_dir=$(debug_src_dir) XLEN=$(XLEN)
+
+clean:
+	[ ! -d isa ]        || $(MAKE) -C isa -f $(isa_src_dir)/Makefile src_dir=$(isa_src_dir) clean
+	[ ! -d benchmarks ] || $(MAKE) -C benchmarks -f $(bmarkdir)/Makefile src_dir=$(bmarkdir) clean
+	[ ! -d debug ]      || $(MAKE) -C debug -f $(debug_src_dir)/Makefile src_dir=$(debug_src_dir) clean
+
+.PHONY: benchmarks isa clean
+
