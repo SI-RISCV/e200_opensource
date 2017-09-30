@@ -16,12 +16,16 @@ To boost the RISC-V popularity and to speed up the IoT development in China,
 we are very proud to make it open-source. It is the first open-source processor core from
 China mainland with industry level quality and state-of-art CPU design skills to support RISC-V instruction set.
 
-Our ambition is to make "Hummingbird E200" become next 8051 in China, please join us make it happen.
+Our ambition is to make "Hummingbird E200" become next 8051 in China, please go with us to make it happen.
 
 If there are any questions or problems, you can directly contact bobhu_riscv@163.com
 
 Detailed Introduction
 -----------------------------
 
+We have provided very detailed introduction and quick start-up documents to help you ramping it up. 
 The detailed introduction and the quick start documentation can be seen 
 from e200_opensource/doc directory
+By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
+What are you waiting for? Try it out now!
+
