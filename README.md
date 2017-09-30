@@ -24,8 +24,11 @@ Detailed Introduction
 -----------------------------
 
 We have provided very detailed introduction and quick start-up documents to help you ramping it up. 
+
 The detailed introduction and the quick start documentation can be seen 
-from e200_opensource/doc directory
+from e200_opensource/doc directory.
+
 By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
+
 What are you waiting for? Try it out now!
 
