@@ -32,3 +32,10 @@ By following the guidences from the doc, you can very easily start to use Hummin
 
 What are you waiting for? Try it out now!
 
+Release History
+-----------------------------
+#### Sep 30, 2017
+
+    The earlier-test version uploaded to github to try.
+    NOTE: This is not the official release, please wait the official release which will coming soon and will be recorded at here. You will see the Release History updates.
+    
