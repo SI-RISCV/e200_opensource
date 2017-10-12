@@ -25,9 +25,9 @@ Usages and Applications
 -----------------------------
 
 The open-source Hummingbird E200 core can be a perferct candidate for the following fields:
-*   Replace legacy 8051 core for better performance
-*   Replace Cortex-M core for lower cost
-*   Also, the Hummingbird E200 core as a simple ultra-low power core and SoC, which is "蜂鸟虽小、五脏俱全", and have detailed docs and Software/FPGA Demos. So it will be a perfect example for lab practice in university or entry-level studying. 
+*   Replace legacy 8051 core for better performance.
+*   Replace Cortex-M core for lower cost.
+*   Also, the Hummingbird E200 core as a simple ultra-low power core and SoC, which is "蜂鸟虽小、五脏俱全", with detailed Docs and Software/FPGA Demos, hence, it will be a perfect example for lab practice in university or entry-level studying. 
 
 Detailed Introduction
 -----------------------------
