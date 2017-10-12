@@ -18,7 +18,16 @@ China mainland with industry level quality and state-of-art CPU design skills to
 
 Our ambition is to make "Hummingbird E200" become next 8051 in China, please go with us to make it happen.
 
+
 If there are any questions or problems, you can directly contact bobhu_riscv@163.com
+
+Usages and Applications
+-----------------------------
+
+The open-source Hummingbird E200 core can be a perferct candidate for the following fields:
+*   Replace legacy 8051 core for better performance
+*   Replace Cortex-M core for lower cost
+*   Also, the Hummingbird E200 core as a simple ultra-low power core and SoC, which is "蜂鸟虽小、五脏俱全", and have detailed docs and Software/FPGA Demos. So it will be a perfect example for lab practice in university or entry-level studying. 
 
 Detailed Introduction
 -----------------------------
@@ -36,6 +45,8 @@ Release History
 -----------------------------
 #### Sep 30, 2017
 
-    The earlier-test version uploaded to github to try.
-    NOTE: This is not the official release, please wait the official release which will coming soon and will be recorded at here. You will see the Release History updates.
+    -- The earlier-test version uploaded to github to try.
+    -- NOTE:
+       ---- This is not the official release, please wait the official release which will coming
+            soon and will be recorded at here. You will see the Release History updates.
     
