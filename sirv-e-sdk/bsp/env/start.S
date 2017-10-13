@@ -16,6 +16,7 @@ _start:
 	/* Bob: Load code section from flash to ITCM */
 	la a0, _itcm_lma
 	la a1, _itcm
+    beq a0, a1, 2f  /*If the ITCM phy-address same as the logic-address, then quit*/
 	la a2, _eitcm
 	bgeu a1, a2, 2f
 1:
