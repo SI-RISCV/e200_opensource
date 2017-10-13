@@ -77,7 +77,7 @@ module tb_top();
   `define U_CPU u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.u_e200_cpu_top.u_e200_cpu
   `define ITCM_BUS_ERR `U_CPU.u_e200_itcm_ctrl.chk_icb_rsp_err
   `define ITCM_BUS_READ `U_CPU.u_e200_itcm_ctrl.e2_icb_read_r
-  `define STATUS_MIE   `U_CPU.u_e205fd_core.u_e205fd_exu.u_e205fd_exu_commit.u_e205fd_exu_excp.status_mie_r
+  `define STATUS_MIE   `U_CPU.u_e200_core.u_e200_exu.u_e200_exu_commit.u_e200_exu_excp.status_mie_r
 
   wire stop_assert_irq = (pc_write_to_host_cnt > 32);
 
