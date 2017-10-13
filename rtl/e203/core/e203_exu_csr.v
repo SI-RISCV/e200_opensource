@@ -415,7 +415,7 @@ wire [`E203_XLEN-1:0] mcgstop_nxt = {30'b0,wbck_csr_dat[1:0]};// Only LSB 2bits 
 sirv_gnrl_dfflr #(`E203_XLEN) mcgstop_dfflr (mcgstop_ena, mcgstop_nxt, mcgstop_r, clk, rst_n);
 wire [`E203_XLEN-1:0] csr_mcgstop = mcgstop_r;
 assign core_cgstop = mcgstop_r[0];// Stop Core clock gating
-assign tcm_cgstop = mcgstop_r[1];// Stop TCM  clock    counter
+assign tcm_cgstop = mcgstop_r[1];// Stop TCM  clock gating
 
 
 //`ifdef E203_SUPPORT_CYCLE //{
@@ -540,7 +540,12 @@ wire [`E203_XLEN-1:0] csr_misa = {
   `endif//
    ,1'b1 // 2 C Compressed extension
    ,1'b0 //              1 B Tentatively reserved for Bit operations extension
-   ,1'b1 // 0 A Atomic extension
+  `ifdef E203_SUPPORT_AMO//{
+   ,1'b1 //              0 A Atomic extension
+  `endif//E203_SUPPORT_AMO}
+  `ifndef E203_SUPPORT_AMO//{
+   ,1'b0 //              0 A Atomic extension
+  `endif//}
                            };
 
 //Machine Information Registers

@@ -39,6 +39,10 @@ module e203_exu_commit(
   output  core_wfi,
   output  nonflush_cmt_ena,
 
+  output  excp_active,
+
+  input   amo_wait,
+
   output  wfi_halt_ifu_req,
   output  wfi_halt_exu_req,
   input   wfi_halt_ifu_ack,
@@ -123,7 +127,7 @@ module e203_exu_commit(
   input                      longp_excp_i_buserr , // The load/store bus-error exception generated
   input [`E203_ADDR_SIZE-1:0]longp_excp_i_badaddr,
   input                      longp_excp_i_insterr,
-  //input [`E203_PC_SIZE-1:0]  longp_excp_i_pc,
+  input [`E203_PC_SIZE-1:0]  longp_excp_i_pc,
 
   //////////////////////////////////////////////////////////////
   // The Flush interface to IFU
@@ -256,7 +260,7 @@ module e203_exu_commit(
     .longp_excp_i_buserr   (longp_excp_i_buserr ),
     .longp_excp_i_badaddr  (longp_excp_i_badaddr),
     .longp_excp_i_insterr  (longp_excp_i_insterr),
-    //.longp_excp_i_pc       (longp_excp_i_pc     ),
+    .longp_excp_i_pc       (longp_excp_i_pc     ),
 
     .csr_mtvec_r           (csr_mtvec_r       ),
 
@@ -293,6 +297,9 @@ module e203_exu_commit(
     .excpirq_flush_pc         (excpirq_flush_pc),
   `endif//}
 
+    .excp_active (excp_active),
+    .amo_wait (amo_wait),
+
     .clk   (clk  ),
     .rst_n (rst_n)
   );
@@ -325,6 +332,7 @@ module e203_exu_commit(
   assign flush_req   = nonalu_excpirq_flush_req_raw;
 
 `ifndef FPGA_SOURCE//{
+`ifndef DISABLE_SV_ASSERTION//{
 //synopsys translate_off
 
 CHECK_1HOT_FLUSH_HALT:
@@ -334,6 +342,7 @@ CHECK_1HOT_FLUSH_HALT:
   else $fatal ("\n Error: Oops, detected non-onehot0 value for halt and flush req!!! This should never happen. \n");
 
 //synopsys translate_on
+`endif//}
 `endif//}
 
 endmodule                                      

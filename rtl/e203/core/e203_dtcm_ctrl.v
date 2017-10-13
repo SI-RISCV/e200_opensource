@@ -37,6 +37,9 @@
 
 module e203_dtcm_ctrl(
   output dtcm_active,
+  // The cgstop is coming from CSR (0xBFE mcgstop)'s filed 1
+  // // This register is our self-defined CSR register to disable the 
+      // ITCM SRAM clock gating for debugging purpose
   input  tcm_cgstop,
   // Note: the DTCM ICB interface only support the single-transaction
   

@@ -974,6 +974,12 @@
 #define CAUSE_FETCH_PAGE_FAULT 0xc
 #define CAUSE_LOAD_PAGE_FAULT 0xd
 #define CAUSE_STORE_PAGE_FAULT 0xf
+
+// Bob add the interrupt cause here
+#define CAUSE_IRQ_M_SFT 0x80000003
+#define CAUSE_IRQ_M_TMR 0x80000007
+#define CAUSE_IRQ_M_EXT 0x8000000b
+
 #endif
 #ifdef DECLARE_INSN
 DECLARE_INSN(beq, MATCH_BEQ, MASK_BEQ)

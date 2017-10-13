@@ -14,27 +14,33 @@ module tb_top();
   `define EXU `CPU_TOP.u_e200_cpu.u_e200_core.u_e200_exu
   `define ITCM `CPU_TOP.u_e200_srams.u_e200_itcm_ram.u_e200_itcm_gnrl_ram.u_sirv_sim_ram
 
+  `define PC_WRITE_TOHOST       `E200_PC_SIZE'h80000086
+  `define PC_EXT_IRQ_BEFOR_MRET `E200_PC_SIZE'h800000a6
+  `define PC_SFT_IRQ_BEFOR_MRET `E200_PC_SIZE'h800000be
+  `define PC_TMR_IRQ_BEFOR_MRET `E200_PC_SIZE'h800000d6
+  `define PC_AFTER_SETMTVEC     `E200_PC_SIZE'h80000148
+
   wire [`E200_XLEN-1:0] x3 = `EXU.u_e200_exu_regfile.rf_r[3];
   wire [`E200_PC_SIZE-1:0] pc = `EXU.u_e200_exu_commit.alu_cmt_i_pc;
 
-  reg [31:0] pc_h8000_003e_cnt;
-  reg [31:0] pc_h8000_003e_cycle;
+  reg [31:0] pc_write_to_host_cnt;
+  reg [31:0] pc_write_to_host_cycle;
   reg [31:0] valid_ir_cycle;
   reg [31:0] cycle_count;
-  reg pc_h8000_003e_flag;
+  reg pc_write_to_host_flag;
 
   always @(posedge hfclk or negedge rst_n)
   begin 
     if(rst_n == 1'b0) begin
-        pc_h8000_003e_cnt <= 32'b0;
-        pc_h8000_003e_flag <= 1'b0;
-        pc_h8000_003e_cycle <= 32'b0;
+        pc_write_to_host_cnt <= 32'b0;
+        pc_write_to_host_flag <= 1'b0;
+        pc_write_to_host_cycle <= 32'b0;
     end
-    else if (pc == `E200_PC_SIZE'h8000_003e) begin
-        pc_h8000_003e_cnt <= pc_h8000_003e_cnt + 1'b1;
-        pc_h8000_003e_flag <= 1'b1;
-        if (pc_h8000_003e_flag == 1'b0) begin
-            pc_h8000_003e_cycle <= cycle_count;
+    else if (pc == `PC_WRITE_TOHOST) begin
+        pc_write_to_host_cnt <= pc_write_to_host_cnt + 1'b1;
+        pc_write_to_host_flag <= 1'b1;
+        if (pc_write_to_host_flag == 1'b0) begin
+            pc_write_to_host_cycle <= cycle_count;
         end
     end
   end
@@ -57,12 +63,106 @@ module tb_top();
     if(rst_n == 1'b0) begin
         valid_ir_cycle <= 32'b0;
     end
-    else if(i_valid & i_ready & (pc_h8000_003e_flag == 1'b0)) begin
+    else if(i_valid & i_ready & (pc_write_to_host_flag == 1'b0)) begin
         valid_ir_cycle <= valid_ir_cycle + 1'b1;
     end
   end
 
 
+  // Randomly force the external interrupt
+  `define EXT_IRQ u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.plic_ext_irq
+  `define SFT_IRQ u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.clint_sft_irq
+  `define TMR_IRQ u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.clint_tmr_irq
+
+  `define U_CPU u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.u_e200_cpu_top.u_e200_cpu
+  `define ITCM_BUS_ERR `U_CPU.u_e200_itcm_ctrl.chk_icb_rsp_err
+  `define ITCM_BUS_READ `U_CPU.u_e200_itcm_ctrl.e2_icb_read_r
+  `define STATUS_MIE   `U_CPU.u_e205fd_core.u_e205fd_exu.u_e205fd_exu_commit.u_e205fd_exu_excp.status_mie_r
+
+  wire stop_assert_irq = (pc_write_to_host_cnt > 32);
+
+  reg tb_itcm_bus_err;
+
+  reg tb_ext_irq;
+  reg tb_tmr_irq;
+  reg tb_sft_irq;
+  initial begin
+    tb_ext_irq = 1'b0;
+    tb_tmr_irq = 1'b0;
+    tb_sft_irq = 1'b0;
+  end
+
+`ifdef ENABLE_TB_FORCE
+  initial begin
+    tb_itcm_bus_err = 1'b0;
+    #100
+    @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
+    forever begin
+      repeat ($urandom_range(1, 20)) @(posedge clk) tb_itcm_bus_err = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 200)) @(posedge clk) tb_itcm_bus_err = 1'b1; // Wait random times
+      if(stop_assert_irq) begin
+          break;
+      end
+    end
+  end
+
+
+  initial begin
+    force `EXT_IRQ = tb_ext_irq;
+    force `SFT_IRQ = tb_sft_irq;
+    force `TMR_IRQ = tb_tmr_irq;
+       // We force the bus-error only when:
+       //   It is in common code, not in exception code, by checking MIE bit
+       //   It is in read operation, not write, otherwise the test cannot recover
+    force `ITCM_BUS_ERR = tb_itcm_bus_err
+                        & `STATUS_MIE 
+                        & `ITCM_BUS_READ
+                        ;
+  end
+
+
+  initial begin
+    #100
+    @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
+    forever begin
+      repeat ($urandom_range(1, 200)) @(posedge clk) tb_ext_irq = 1'b0; // Wait random times
+      tb_ext_irq = 1'b1; // assert the irq
+      @((pc == `PC_EXT_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
+      tb_ext_irq = 1'b0;
+      if(stop_assert_irq) begin
+          break;
+      end
+    end
+  end
+
+  initial begin
+    #100
+    @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
+    forever begin
+      repeat ($urandom_range(1, 200)) @(posedge clk) tb_sft_irq = 1'b0; // Wait random times
+      tb_sft_irq = 1'b1; // assert the irq
+      @((pc == `PC_SFT_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
+      tb_sft_irq = 1'b0;
+      if(stop_assert_irq) begin
+          break;
+      end
+    end
+  end
+
+  initial begin
+    #100
+    @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
+    forever begin
+      repeat ($urandom_range(1, 200)) @(posedge clk) tb_tmr_irq = 1'b0; // Wait random times
+      tb_tmr_irq = 1'b1; // assert the irq
+      @((pc == `PC_TMR_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
+      tb_tmr_irq = 1'b0;
+      if(stop_assert_irq) begin
+          break;
+      end
+    end
+  end
+`endif
 
   reg[8*300:1] testcase;
   integer dumpwave;
@@ -73,13 +173,16 @@ module tb_top();
       $display("TESTCASE=%s",testcase);
     end
 
-    pc_h8000_003e_flag <=0;
+    pc_write_to_host_flag <=0;
     clk   <=0;
     lfextclk   <=0;
     rst_n <=0;
     #120 rst_n <=1;
 
-    @(pc_h8000_003e_cnt == 32'd8)
+    @(pc_write_to_host_cnt == 32'd8) #10 rst_n <=1;
+`ifdef ENABLE_TB_FORCE
+    @((~tb_tmr_irq) & (~tb_sft_irq) & (~tb_ext_irq)) #10 rst_n <=1;// Wait the interrupt to complete
+`endif
 
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -89,7 +192,7 @@ module tb_top();
         $display("~TESTCASE: %s ~~~~~~~~~~~~~", testcase);
         $display("~~~~~~~~~~~~~~Total cycle_count value: %d ~~~~~~~~~~~~~", cycle_count);
         $display("~~~~~~~~~~The valid Instruction Count: %d ~~~~~~~~~~~~~", valid_ir_cycle);
-        $display("~~~~~The test ending reached at cycle: %d ~~~~~~~~~~~~~", pc_h8000_003e_cycle);
+        $display("~~~~~The test ending reached at cycle: %d ~~~~~~~~~~~~~", pc_write_to_host_cycle);
         $display("~~~~~~~~~~~~~~~The final x3 Reg value: %d ~~~~~~~~~~~~~", x3);
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     if (x3 == 1) begin
@@ -118,6 +221,12 @@ module tb_top();
      $finish;
   end
 
+  initial begin
+    #10000000
+        $display("Time Out !!!");
+     $finish;
+  end
+
   always
   begin 
      #2 clk <= ~clk;
@@ -129,12 +238,18 @@ module tb_top();
   end
 
 
+
+  
+  
   //initial begin
   //  $value$plusargs("DUMPWAVE=%d",dumpwave);
   //  if(dumpwave != 0)begin
   //       // To add your waveform generation function
   //  end
   //end
+
+
+
 
 
   integer i;

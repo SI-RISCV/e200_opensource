@@ -49,6 +49,7 @@ module sirv_mrom # (
   genvar i;
   generate 
    if(1) begin: jump_to_ram_gen
+       // Just jump to the ITCM base address 
       for (i=0;i<1024;i=i+1) begin: rom_gen
           if(i==0) begin: rom0_gen
               assign mask_rom[i] = 32'h7ffff297; //auipc   t0, 0x7ffff

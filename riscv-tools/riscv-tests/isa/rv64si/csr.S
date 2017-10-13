@@ -29,6 +29,8 @@ RVTEST_CODE_BEGIN
   TEST_CASE(13, a0, SSTATUS_UXL & (SSTATUS_UXL << 1), csrr a0, sstatus; li a1, SSTATUS_UXL; and a0, a0, a1)
 #endif
 
+        /*Bob added code to disbale the interrupt enables because in irq handler the mscratch will be changed */             
+        csrwi mstatus, 0;                                               
   csrwi sscratch, 3
   TEST_CASE( 2, a0,         3, csrr a0, sscratch);
   TEST_CASE( 3, a1,         3, csrrci a1, sscratch, 1);
@@ -38,6 +40,9 @@ RVTEST_CODE_BEGIN
   TEST_CASE( 7, a0, 0xbad1dea, li a0, 0x0001dea; csrrc a0, sscratch, a0);
   TEST_CASE( 8, a0, 0xbad0000, li a0, 0x000beef; csrrs a0, sscratch, a0);
   TEST_CASE( 9, a0, 0xbadbeef, csrr a0, sscratch);
+        /*Bob added code to enable the interrupt enables again*/       
+        li a0, MSTATUS_MIE;
+        csrs mstatus, a0; 
 
 #ifdef __MACHINE_MODE
   # Is F extension present?

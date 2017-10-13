@@ -202,6 +202,9 @@ module e203_exu_decode(
   wire rv32_resved0  = opcode_6_5_11 & opcode_4_2_010 & opcode_1_0_11; 
 
   wire rv32_miscmem  = opcode_6_5_00 & opcode_4_2_011 & opcode_1_0_11; 
+  `ifdef E203_SUPPORT_AMO//{
+  wire rv32_amo      = opcode_6_5_01 & opcode_4_2_011 & opcode_1_0_11; 
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
   wire rv32_amo      = 1'b0;
   `endif//}
@@ -520,6 +523,20 @@ module e203_exu_decode(
 
   // ===========================================================================
   // Atomic Instructions
+  `ifdef E203_SUPPORT_AMO//{
+  wire rv32_lr_w      = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00010);
+  wire rv32_sc_w      = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00011);
+  wire rv32_amoswap_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00001);
+  wire rv32_amoadd_w  = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00000);
+  wire rv32_amoxor_w  = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00100);
+  wire rv32_amoand_w  = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b01100);
+  wire rv32_amoor_w   = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b01000);
+  wire rv32_amomin_w  = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b10000);
+  wire rv32_amomax_w  = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b10100);
+  wire rv32_amominu_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b11000);
+  wire rv32_amomaxu_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b11100);
+
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
   wire rv32_lr_w      = 1'b0;
   wire rv32_sc_w      = 1'b0;

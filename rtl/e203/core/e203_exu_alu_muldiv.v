@@ -176,14 +176,14 @@ module e203_exu_alu_muldiv(
   wire mul_exec_last_cycle; 
   wire div_exec_last_cycle; 
   wire exec_last_cycle; 
-  assign state_exec_exit_ena = (muldiv_sta_is_exec  
+  assign state_exec_exit_ena =  muldiv_sta_is_exec & ((
           // If it is the last cycle (16th or 32rd cycles), 
-                         & exec_last_cycle 
+                           exec_last_cycle 
               // If it is div op, then jump to DIV_CHECK state
                          & (i_op_div ? 1'b1
               // If it is not div-need-correction, then jump to 0th 
                                             : muldiv_o_hsked))
-            | flush_pulse;
+            | flush_pulse);
   assign state_exec_nxt      = 
                 (
                          flush_pulse ? MULDIV_STATE_0TH :
@@ -196,12 +196,12 @@ module e203_exu_alu_muldiv(
       // **** If the current state is REMD_CHCK,
           // If it is div-need-correction, then jump to QUOT_CORR state
           //   otherwise jump to the 0th
-  assign state_remd_chck_exit_ena = flush_pulse | (muldiv_sta_is_remd_chck   
+  assign state_remd_chck_exit_ena = (muldiv_sta_is_remd_chck & ( 
               // If it is div op, then jump to DIV_CHECK state
-                                            & (div_need_corrct ? 1'b1
+                                              (div_need_corrct ? 1'b1
               // If it is not div-need-correction, then jump to 0th 
                                                          : muldiv_o_hsked) 
-                                                        ) ;
+                                              | flush_pulse )) ;
   assign state_remd_chck_nxt      = flush_pulse ? MULDIV_STATE_0TH :
               // If it is div-need-correction, then jump to QUOT_CORR state
                          div_need_corrct ? MULDIV_STATE_QUOT_CORR
@@ -210,13 +210,13 @@ module e203_exu_alu_muldiv(
 
       // **** If the current state is QUOT_CORR,
           // Always jump to REMD_CORR state
-  assign state_quot_corr_exit_ena = flush_pulse | (muldiv_sta_is_quot_corr & 1'b1);
+  assign state_quot_corr_exit_ena = (muldiv_sta_is_quot_corr & (flush_pulse | 1'b1));
   assign state_quot_corr_nxt      = flush_pulse ? MULDIV_STATE_0TH : MULDIV_STATE_REMD_CORR;
 
                 
       // **** If the current state is REMD_CORR,
               // Then jump to 0th 
-  assign state_remd_corr_exit_ena = flush_pulse | (muldiv_sta_is_remd_corr & muldiv_o_hsked);
+  assign state_remd_corr_exit_ena = (muldiv_sta_is_remd_corr & (flush_pulse | muldiv_o_hsked));
   assign state_remd_corr_nxt      = flush_pulse ? MULDIV_STATE_0TH : MULDIV_STATE_0TH;
 
   // The state will only toggle when each state is meeting the condition to exit 
@@ -541,6 +541,7 @@ module e203_exu_alu_muldiv(
 
 
 `ifndef FPGA_SOURCE//{
+`ifndef DISABLE_SV_ASSERTION//{
 //synopsys translate_off
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -630,6 +631,7 @@ module e203_exu_alu_muldiv(
       end
 
 //synopsys translate_on
+`endif//}
 `endif//}
 
 

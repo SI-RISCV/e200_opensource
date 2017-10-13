@@ -40,7 +40,9 @@ TEST_CASE( 3, a4, 1, \
   sc.w a4, a1, (a0); \
 )
 
-#define LOG_ITERATIONS 10
+# Bob: 1024 times will run too much of times, so I hack it to 64 times
+/*#define LOG_ITERATIONS 10*/
+#define LOG_ITERATIONS 6
 
 # have each core add its coreid+1 to foo 1024 times
 la a0, foo

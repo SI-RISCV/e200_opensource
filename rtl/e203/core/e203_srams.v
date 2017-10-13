@@ -87,7 +87,9 @@ module e203_srams(
     .clk  (clk_itcm_ram      )
     );
     
-  assign itcm_ram_dout = test_mode ? itcm_ram_din : itcm_ram_dout_pre;
+  // Bob: we dont need this bypass here, actually the DFT tools will handle this SRAM black box 
+  //assign itcm_ram_dout = test_mode ? itcm_ram_din : itcm_ram_dout_pre;
+  assign itcm_ram_dout = itcm_ram_dout_pre;
   `endif//}
 
   `ifdef E203_HAS_DTCM //{
@@ -107,7 +109,9 @@ module e203_srams(
     .clk  (clk_dtcm_ram      )
     );
     
-  assign dtcm_ram_dout = test_mode ? dtcm_ram_din : dtcm_ram_dout_pre;
+  // Bob: we dont need this bypass here, actually the DFT tools will handle this SRAM black box 
+  //assign dtcm_ram_dout = test_mode ? dtcm_ram_din : dtcm_ram_dout_pre;
+  assign dtcm_ram_dout = dtcm_ram_dout_pre;
   `endif//}
 
 endmodule

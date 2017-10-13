@@ -35,7 +35,7 @@ Detailed Introduction
 We have provided very detailed introduction and quick start-up documents to help you ramping it up. 
 
 The detailed introduction and the quick start documentation can be seen 
-from e200_opensource/doc directory.
+from `e200_opensource/doc` directory.
 
 By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
 
@@ -50,3 +50,29 @@ Release History
        ---- This is not the official release, please wait the official release which will coming
             soon and will be recorded at here. You will see the Release History updates.
     
+#### Oct 13, 2017
+
+    -- The 1st official release, please clone this version if you want to use it
+         or reclone it (if you already cloned the earlier-test version).
+    -- Compared with earlier-test version, main updates includes:
+       ---- Added the "A" extension for opensourced E203 core, to make it support 
+              IMAC sub-set RISC-V ISA, which is more popularly supported by current
+              toolchain.
+       ---- Updated the RTL Codes accordingly.
+       ---- Updated the Docs accordingly, please see the "revision history" in the
+              Doc from `e200_opensource/doc` directory.
+       ---- Updated verilog tb with random interrupt and bus-error insertion to make
+              more intensive. To support this, updated all the self-check tests accordingly.
+              Although the test become more intensive, the drawback is make the regression 
+              simulation running very slower, so by default now it is turned off.
+              If you want to turn on them without caring the the regression speed,
+              you can hack the tb mannually (de-comment these `force` line from `tb/tb_top.v`)
+              or add macro `ENABLE_TB_FORCE` in simulation (see the note 
+              from `vsim/bin/run.makefile`).
+       ---- Updated some other minor issues which is not matter much, please check the 
+              git history if you really care to.
+       ---- Note: This version does not support the hardware-breakpoint yet, i.e.,
+              you cannot set the breakpoint to read-only address space (e.g., ROM, Flash).
+              But soft-break is okay, means you can use regular interactive debugger 
+              functionalities (including set breakpoint to the regular R/W address space).
+

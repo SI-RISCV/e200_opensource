@@ -727,6 +727,7 @@
   //`endif//}
 
   `ifdef E203_CFG_SUPPORT_AMO//{
+     `define E203_SUPPORT_AMO
   `endif//}
   // No unalign
   //`ifdef E203_CFG_SUPPORT_UNALGNLDST//{

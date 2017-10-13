@@ -45,6 +45,7 @@ module e203_exu_oitf (
   output [`E203_RFIDX_WIDTH-1:0] ret_rdidx,
   output ret_rdwen,
   output ret_rdfpu,
+  output [`E203_PC_SIZE-1:0] ret_pc,
 
   input  disp_i_rs1en,
   input  disp_i_rs2en,
@@ -58,6 +59,7 @@ module e203_exu_oitf (
   input  [`E203_RFIDX_WIDTH-1:0] disp_i_rs2idx,
   input  [`E203_RFIDX_WIDTH-1:0] disp_i_rs3idx,
   input  [`E203_RFIDX_WIDTH-1:0] disp_i_rdidx,
+  input  [`E203_PC_SIZE    -1:0] disp_i_pc,
 
   output oitfrd_match_disprs1,
   output oitfrd_match_disprs2,
@@ -77,11 +79,9 @@ module e203_exu_oitf (
   wire [`E203_OITF_DEPTH-1:0] rdwen_r;
   wire [`E203_OITF_DEPTH-1:0] rdfpu_r;
   wire [`E203_RFIDX_WIDTH-1:0] rdidx_r[`E203_OITF_DEPTH-1:0];
-  // Originally the PC here is to be used at wback stage to track out the
-  //  PC of exception of long-pipe instruction, we later on we found
-  //  the long pipe exception still need to use the ALU commiting PC to 
-  //  store in EPC, so we dont need this pc here any more
-  //wire [`E203_PC_SIZE-1:0] pc_r[`E203_OITF_DEPTH-1:0];
+  // The PC here is to be used at wback stage to track out the
+  //  PC of exception of long-pipe instruction
+  wire [`E203_PC_SIZE-1:0] pc_r[`E203_OITF_DEPTH-1:0];
 
   wire alc_ptr_ena = dis_ena;
   wire ret_ptr_ena = ret_ena;
@@ -95,7 +95,7 @@ module e203_exu_oitf (
   if(`E203_OITF_DEPTH > 1) begin: depth_gt1//{
       wire alc_ptr_flg_r;
       wire alc_ptr_flg_nxt = ~alc_ptr_flg_r;
-      wire alc_ptr_flg_ena = (alc_ptr_r == (`E203_OITF_DEPTH-1)) & alc_ptr_ena;
+      wire alc_ptr_flg_ena = (alc_ptr_r == ($unsigned(`E203_OITF_DEPTH-1))) & alc_ptr_ena;
       
       sirv_gnrl_dfflr #(1) alc_ptr_flg_dfflrs(alc_ptr_flg_ena, alc_ptr_flg_nxt, alc_ptr_flg_r, clk, rst_n);
       
@@ -108,7 +108,7 @@ module e203_exu_oitf (
       
       wire ret_ptr_flg_r;
       wire ret_ptr_flg_nxt = ~ret_ptr_flg_r;
-      wire ret_ptr_flg_ena = (ret_ptr_r == (`E203_OITF_DEPTH-1)) & ret_ptr_ena;
+      wire ret_ptr_flg_ena = (ret_ptr_r == ($unsigned(`E203_OITF_DEPTH-1))) & ret_ptr_ena;
       
       sirv_gnrl_dfflr #(1) ret_ptr_flg_dfflrs(ret_ptr_flg_ena, ret_ptr_flg_nxt, ret_ptr_flg_r, clk, rst_n);
       
@@ -156,7 +156,7 @@ module e203_exu_oitf (
         sirv_gnrl_dfflr #(1) vld_dfflrs(vld_ena[i], vld_nxt[i], vld_r[i], clk, rst_n);
         //Payload only set, no need to clear
         sirv_gnrl_dffl #(`E203_RFIDX_WIDTH) rdidx_dfflrs(vld_set[i], disp_i_rdidx, rdidx_r[i], clk);
-        //sirv_gnrl_dffl #(`E203_PC_SIZE    ) pc_dfflrs (vld_set[i], disp_i_pc   , pc_r[i]   , clk);
+        sirv_gnrl_dffl #(`E203_PC_SIZE    ) pc_dfflrs   (vld_set[i], disp_i_pc   , pc_r[i]   , clk);
         sirv_gnrl_dffl #(1)                 rdwen_dfflrs(vld_set[i], disp_i_rdwen, rdwen_r[i], clk);
         sirv_gnrl_dffl #(1)                 rdfpu_dfflrs(vld_set[i], disp_i_rdfpu, rdfpu_r[i], clk);
 
@@ -174,7 +174,7 @@ module e203_exu_oitf (
   assign oitfrd_match_disprd  = |rd_match_rdidx ;
 
   assign ret_rdidx = rdidx_r[ret_ptr];
-  //assign ret_pc    = pc_r [ret_ptr];
+  assign ret_pc    = pc_r [ret_ptr];
   assign ret_rdwen = rdwen_r[ret_ptr];
   assign ret_rdfpu = rdfpu_r[ret_ptr];
 

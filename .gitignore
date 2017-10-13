@@ -9,3 +9,5 @@ rtl/e205fd
 rtl/e225fd
 restore.github
 restore.real
+vsim/e205fd_irq.rc
+vsim/irq.rc

@@ -38,6 +38,7 @@ module e203_exu_disp(
   output wfi_halt_exu_ack,
 
   input  oitf_empty,
+  input  amo_wait,
   //////////////////////////////////////////////////////////////
   // The operands and decode info from dispatch
   input  disp_i_valid, // Handshake valid
@@ -106,6 +107,8 @@ module e203_exu_disp(
   output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs2idx,
   output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs3idx,
   output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rdidx ,
+
+  output [`E203_PC_SIZE-1:0] disp_oitf_pc ,
 
   
   input  clk,
@@ -203,7 +206,8 @@ module e203_exu_disp(
   wire dep = raw_dep | waw_dep;
 
   // The WFI halt exu ack will be asserted when the OITF is empty
-  assign wfi_halt_exu_ack = oitf_empty;
+  //    and also there is no AMO oustanding uops 
+  assign wfi_halt_exu_ack = oitf_empty & (~amo_wait);
 
   wire disp_condition = 
                  // To be more conservtive, any accessing CSR instruction need to wait the oitf to be empty.
@@ -285,6 +289,8 @@ module e203_exu_disp(
   assign disp_oitf_rs2idx = disp_i_fpu ? disp_i_fpu_rs2idx : disp_i_rs2idx;
   assign disp_oitf_rs3idx = disp_i_fpu ? disp_i_fpu_rs3idx : `E203_RFIDX_WIDTH'b0;
   assign disp_oitf_rdidx  = disp_i_fpu ? disp_i_fpu_rdidx  : disp_i_rdidx;
+
+  assign disp_oitf_pc  = disp_i_pc;
 
 endmodule                                      
                                                

@@ -296,6 +296,7 @@ module e203_exu(
   wire  disp_oitf_rs2en;
   wire  disp_oitf_rs3en;
   wire  disp_oitf_rdwen;
+  wire  [`E203_PC_SIZE-1:0] disp_oitf_pc;
 
   wire oitfrd_match_disprs1;
   wire oitfrd_match_disprs2;
@@ -307,10 +308,14 @@ module e203_exu(
   wire wfi_halt_exu_req;
   wire wfi_halt_exu_ack;
 
+  wire amo_wait;
+
   e203_exu_disp u_e203_exu_disp(
     .wfi_halt_exu_req    (wfi_halt_exu_req),
     .wfi_halt_exu_ack    (wfi_halt_exu_ack),
     .oitf_empty          (oitf_empty),
+
+    .amo_wait            (amo_wait),
 
     .disp_i_valid        (i_valid         ),
     .disp_i_ready        (i_ready         ),
@@ -364,6 +369,7 @@ module e203_exu(
     .disp_oitf_rs2fpu    (disp_oitf_rs2fpu),
     .disp_oitf_rs3fpu    (disp_oitf_rs3fpu),
     .disp_oitf_rdfpu     (disp_oitf_rdfpu),
+    .disp_oitf_pc        (disp_oitf_pc),
 
   
     .oitfrd_match_disprs1(oitfrd_match_disprs1),
@@ -380,7 +386,7 @@ module e203_exu(
   wire oitf_ret_ena;
   wire [`E203_ITAG_WIDTH-1:0] oitf_ret_ptr;
   wire [`E203_RFIDX_WIDTH-1:0] oitf_ret_rdidx;
-  //wire [`E203_PC_SIZE-1:0] oitf_ret_pc;
+  wire [`E203_PC_SIZE-1:0] oitf_ret_pc;
   wire oitf_ret_rdwen;
   wire oitf_ret_rdfpu;
 
@@ -396,6 +402,7 @@ module e203_exu(
     .ret_rdidx            (oitf_ret_rdidx),
     .ret_rdwen            (oitf_ret_rdwen),
     .ret_rdfpu            (oitf_ret_rdfpu),
+    .ret_pc               (oitf_ret_pc),
 
     .disp_i_rs1en         (disp_oitf_rs1en),
     .disp_i_rs2en         (disp_oitf_rs2en),
@@ -409,6 +416,7 @@ module e203_exu(
     .disp_i_rs2fpu        (disp_oitf_rs2fpu),
     .disp_i_rs3fpu        (disp_oitf_rs3fpu),
     .disp_i_rdfpu         (disp_oitf_rdfpu ),
+    .disp_i_pc            (disp_oitf_pc ),
 
     .oitfrd_match_disprs1 (oitfrd_match_disprs1),
     .oitfrd_match_disprs2 (oitfrd_match_disprs2),
@@ -470,6 +478,7 @@ module e203_exu(
 
   wire csr_access_ilgl;
 
+
   e203_exu_alu u_e203_exu_alu(
     .csr_access_ilgl     (csr_access_ilgl),
     .nonflush_cmt_ena    (nonflush_cmt_ena),
@@ -493,6 +502,9 @@ module e203_exu(
 
     .flush_pulse         (flush_pulse    ),
     .flush_req           (flush_req      ),
+
+    .oitf_empty          (oitf_empty),
+    .amo_wait            (amo_wait),
 
     .cmt_o_valid         (alu_cmt_valid      ),
     .cmt_o_ready         (alu_cmt_ready      ),
@@ -575,6 +587,7 @@ module e203_exu(
   wire longp_excp_o_buserr ;
   wire[`E203_ADDR_SIZE-1:0]longp_excp_o_badaddr;
   wire longp_excp_o_insterr;
+  wire[`E203_PC_SIZE-1:0]longp_excp_o_pc;
 
   e203_exu_longpwbck u_e203_exu_longpwbck(
 
@@ -602,10 +615,12 @@ module e203_exu(
     .longp_excp_o_buserr  (longp_excp_o_buserr ),
     .longp_excp_o_badaddr (longp_excp_o_badaddr),
     .longp_excp_o_insterr (longp_excp_o_insterr),
+    .longp_excp_o_pc      (longp_excp_o_pc),
 
     .oitf_ret_rdidx      (oitf_ret_rdidx),
     .oitf_ret_rdwen      (oitf_ret_rdwen),
     .oitf_ret_rdfpu      (oitf_ret_rdfpu),
+    .oitf_ret_pc         (oitf_ret_pc),
     .oitf_empty          (oitf_empty    ),
     .oitf_ret_ptr        (oitf_ret_ptr  ),
     .oitf_ret_ena        (oitf_ret_ena  ),
@@ -669,10 +684,16 @@ module e203_exu(
   wire msie_r;
   wire meie_r;
 
+  wire excp_active;
+
 
   e203_exu_commit u_e203_exu_commit(
     .core_wfi            (core_wfi        ),
     .nonflush_cmt_ena    (nonflush_cmt_ena),
+
+    .excp_active         (excp_active),
+
+    .amo_wait            (amo_wait     ),
 
     .wfi_halt_exu_req    (wfi_halt_exu_req),
     .wfi_halt_exu_ack    (wfi_halt_exu_ack),
@@ -724,7 +745,7 @@ module e203_exu(
     .longp_excp_i_buserr   (longp_excp_o_buserr ),
     .longp_excp_i_badaddr  (longp_excp_o_badaddr),
     .longp_excp_i_insterr  (longp_excp_o_insterr),
-    //.longp_excp_i_pc       (longp_excp_o_pc     ),
+    .longp_excp_i_pc       (longp_excp_o_pc     ),
 
     .dbg_mode              (dbg_mode),
     .dbg_halt_r            (dbg_halt_r),
@@ -845,7 +866,7 @@ module e203_exu(
     .rst_n         (rst_n        ) 
   );
 
-  assign exu_active = (~oitf_empty) | i_valid;
+  assign exu_active = (~oitf_empty) | i_valid | excp_active;
 
 endmodule                                      
                                                

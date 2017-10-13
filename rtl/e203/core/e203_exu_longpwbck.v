@@ -68,11 +68,13 @@ module e203_exu_longpwbck(
   output  longp_excp_o_st,
   output  longp_excp_o_buserr , // The load/store bus-error exception generated
   output [`E203_ADDR_SIZE-1:0] longp_excp_o_badaddr,
+  output [`E203_PC_SIZE -1:0] longp_excp_o_pc,
   //
   //The itag of toppest entry of OITF
   input  oitf_empty,
   input  [`E203_ITAG_WIDTH -1:0] oitf_ret_ptr,
   input  [`E203_RFIDX_WIDTH-1:0] oitf_ret_rdidx,
+  input  [`E203_PC_SIZE-1:0] oitf_ret_pc,
   input  oitf_ret_rdwen,   
   input  oitf_ret_rdfpu,   
   output oitf_ret_ena,
@@ -115,6 +117,7 @@ module e203_exu_longpwbck(
   wire [`E203_FLEN-1:0] wbck_i_wdat;
   wire [5-1:0] wbck_i_flags;
   wire [`E203_RFIDX_WIDTH-1:0] wbck_i_rdidx;
+  wire [`E203_PC_SIZE-1:0] wbck_i_pc;
   wire wbck_i_rdwen;
   wire wbck_i_rdfpu;
   wire wbck_i_err ;
@@ -134,6 +137,7 @@ module e203_exu_longpwbck(
                          ;
   assign wbck_i_err   = wbck_sel_lsu & lsu_wbck_i_err 
                          ;
+  assign wbck_i_pc    = oitf_ret_pc;
   assign wbck_i_rdidx = oitf_ret_rdidx;
   assign wbck_i_rdwen = oitf_ret_rdwen;
   assign wbck_i_rdfpu = oitf_ret_rdfpu;
@@ -158,6 +162,8 @@ module e203_exu_longpwbck(
   assign longp_wbck_o_flags = wbck_i_flags ;
   assign longp_wbck_o_rdfpu = wbck_i_rdfpu ;
   assign longp_wbck_o_rdidx = wbck_i_rdidx;
+
+  assign longp_excp_o_pc    = wbck_i_pc;
 
   assign oitf_ret_ena = wbck_i_valid & wbck_i_ready;
 

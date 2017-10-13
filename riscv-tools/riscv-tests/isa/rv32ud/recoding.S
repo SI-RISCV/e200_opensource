@@ -18,6 +18,12 @@ RVTEST_CODE_BEGIN
 
   # Make sure infinities with different mantissas compare as equal.
   fld f0, minf, a0
+#Bob: Because in our TB we have forced the ITCM-error randomly, so there could be load-access fault, 
+# and after mret this fld instruction will be executed again, but the later address caculate for a0
+# registers have already happened, then cause error.
+# To avoid that, we insert the 2 NOP 
+  nop
+  nop
   fld f1, three, a0
   fmul.d f1, f1, f0
   TEST_CASE( 2, a0, 1, feq.d a0, f0, f1)
@@ -36,6 +42,12 @@ RVTEST_CODE_BEGIN
   # When converting small doubles to single-precision subnormals,
   # ensure that the extra precision is discarded.
   flw f0, big, a0
+#Bob: Because in our TB we have forced the ITCM-error randomly, so there could be load-access fault, 
+# and after mret this fld instruction will be executed again, but the later address caculate for a0
+# registers have already happened, then cause error.
+# To avoid that, we insert the 2 NOP 
+  nop
+  nop
   fld f1, tiny, a0
   fcvt.s.d f1, f1
   fmul.s f0, f0, f1

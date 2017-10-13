@@ -884,7 +884,7 @@ module e203_biu(
   .SPLT_NUM   (BIU_SPLT_I_NUM),
   .SPLT_PTR_W (BIU_SPLT_I_NUM),
   .SPLT_PTR_1HOT (1),
-  .USR_W      (1'b1),
+  .USR_W      (1),
   .AW         (`E203_ADDR_SIZE),
   .DW         (`E203_XLEN) 
   ) u_biu_icb_splt(

@@ -56,7 +56,8 @@ module e203_exu_alu_lsuagu(
   input  flush_req,
   input  flush_pulse,
 
-  output agu_no_outs_mem,
+  output amo_wait,
+  input  oitf_empty,
 
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
@@ -158,6 +159,9 @@ module e203_exu_alu_lsuagu(
 
 
   wire agu_icb_cmd_hsked = agu_icb_cmd_valid & agu_icb_cmd_ready; 
+  `ifdef E203_SUPPORT_AMO//{
+  wire agu_icb_rsp_hsked = agu_icb_rsp_valid & agu_icb_rsp_ready; 
+  `endif//E203_SUPPORT_AMO}
     // These strange ifdef/ifndef rather than the ifdef-else, because of 
     //   our internal text processing scripts need this style
   `ifndef E203_SUPPORT_AMO//{
@@ -175,9 +179,23 @@ module e203_exu_alu_lsuagu(
           | (agu_i_size_w  &  (|agu_icb_cmd_addr[1:0]));
 
   wire state_last_exit_ena;
+  `ifdef E203_SUPPORT_AMO//{
+  wire state_idle_exit_ena;
+  wire unalgn_flg_r;
+  // Set when the ICB state is starting and it is unalign
+  wire unalgn_flg_set = agu_i_addr_unalgn & state_idle_exit_ena;
+  // Clear when the ICB state is entering
+  wire unalgn_flg_clr = unalgn_flg_r & state_last_exit_ena;
+  wire unalgn_flg_ena = unalgn_flg_set | unalgn_flg_clr;
+  wire unalgn_flg_nxt = unalgn_flg_set | (~unalgn_flg_clr);
+  sirv_gnrl_dfflr #(1) unalgn_flg_dffl (unalgn_flg_ena, unalgn_flg_nxt, unalgn_flg_r, clk, rst_n);
+  `endif//E203_SUPPORT_AMO}
 
   wire agu_addr_unalgn = 
   `ifndef E203_SUPPORT_UNALGNLDST//{
+      `ifdef E203_SUPPORT_AMO//{
+      icb_sta_is_idle ? agu_i_addr_unalgn : unalgn_flg_r;
+      `endif//E203_SUPPORT_AMO}
       `ifndef E203_SUPPORT_AMO//{
       agu_i_addr_unalgn;
       `endif//}
@@ -191,6 +209,10 @@ module e203_exu_alu_lsuagu(
   wire agu_i_algnst = (~agu_addr_unalgn) & agu_i_store;
   wire agu_i_algnldst = agu_i_algnld | agu_i_algnst;
 
+  `ifdef E203_SUPPORT_AMO//{
+  wire agu_i_unalgnamo = agu_addr_unalgn & agu_i_amo;
+  wire agu_i_algnamo = (~agu_addr_unalgn) & agu_i_amo;
+  `endif//E203_SUPPORT_AMO}
 
   wire agu_i_ofst0  = agu_i_amo | ((agu_i_load | agu_i_store) & agu_i_excl); 
 
@@ -203,33 +225,165 @@ module e203_exu_alu_lsuagu(
 
   // State 0: The idle state, means there is no any oustanding ifetch request
   localparam ICB_STATE_IDLE = 4'd0;
+  `ifdef E203_SUPPORT_AMO//{
+  // State  : Issued first request and wait response
+  localparam ICB_STATE_1ST  = 4'd1;
+  // State  : Wait to issue second request 
+  localparam ICB_STATE_WAIT2ND  = 4'd2;
+  // State  : Issued second request and wait response
+  localparam ICB_STATE_2ND  = 4'd3;
+  // State  : For AMO instructions, in this state, read-data was in leftover
+  //            buffer for ALU calculation 
+  localparam ICB_STATE_AMOALU  = 4'd4;
+  // State  : For AMO instructions, in this state, ALU have caculated the new
+  //            result and put into leftover buffer again 
+  localparam ICB_STATE_AMORDY  = 4'd5;
+  // State  : For AMO instructions, in this state, the response data have been returned
+  //            and the write back result to commit/wback interface
+  localparam ICB_STATE_WBCK  = 4'd6;
+  `endif//E203_SUPPORT_AMO}
   
    
   
  
+  `ifdef E203_SUPPORT_AMO//{
+  wire [ICB_STATE_WIDTH-1:0] state_idle_nxt   ;
+  wire [ICB_STATE_WIDTH-1:0] state_1st_nxt    ;
+  wire [ICB_STATE_WIDTH-1:0] state_wait2nd_nxt;
+  wire [ICB_STATE_WIDTH-1:0] state_2nd_nxt    ;
+  wire [ICB_STATE_WIDTH-1:0] state_amoalu_nxt ;
+  wire [ICB_STATE_WIDTH-1:0] state_amordy_nxt ;
+  wire [ICB_STATE_WIDTH-1:0] state_wbck_nxt ;
+  `endif//E203_SUPPORT_AMO}
+  `ifdef E203_SUPPORT_AMO//{
+  wire state_1st_exit_ena      ;
+  wire state_wait2nd_exit_ena  ;
+  wire state_2nd_exit_ena      ;
+  wire state_amoalu_exit_ena   ;
+  wire state_amordy_exit_ena   ;
+  wire state_wbck_exit_ena   ;
+  `endif//E203_SUPPORT_AMO}
 
   // Define some common signals and reused later to save gatecounts
   assign icb_sta_is_idle    = (icb_state_r == ICB_STATE_IDLE   );
+  `ifdef E203_SUPPORT_AMO//{
+  wire   icb_sta_is_1st     = (icb_state_r == ICB_STATE_1ST    );
+  wire   icb_sta_is_amoalu  = (icb_state_r == ICB_STATE_AMOALU );
+  wire   icb_sta_is_amordy  = (icb_state_r == ICB_STATE_AMORDY );
+  wire   icb_sta_is_wait2nd = (icb_state_r == ICB_STATE_WAIT2ND);
+  wire   icb_sta_is_2nd     = (icb_state_r == ICB_STATE_2ND    );
+  wire   icb_sta_is_wbck    = (icb_state_r == ICB_STATE_WBCK    );
+  `endif//E203_SUPPORT_AMO}
 
 
+  `ifdef E203_SUPPORT_AMO//{
+      // **** If the current state is idle,
+          // If a new load-store come and the ICB cmd channel is handshaked, next
+          //   state is ICB_STATE_1ST
+  wire state_idle_to_exit =    (( agu_i_algnamo
+                                  // Why do we add an oitf empty signal here? because
+                                  //   it is better to start AMO state-machine when the 
+                                  //   long-pipes are completed, to avoid the long-pipes 
+                                  //   have error-return which need to flush the pipeline
+                                  //   and which also need to wait the AMO state-machine
+                                  //   to complete first, in corner cases it may end 
+                                  //   up with deadlock.
+                                  // Force to wait oitf empty before doing amo state-machine
+                                  //   may hurt performance, but we dont care it. In e200 implementation
+                                  //   the AMO was not target for performance.
+                                  & oitf_empty)
+                                 );
+  assign state_idle_exit_ena = icb_sta_is_idle & state_idle_to_exit 
+                               & agu_icb_cmd_hsked & (~flush_pulse);
+  assign state_idle_nxt      = ICB_STATE_1ST;
+
+      // **** If the current state is 1st,
+          // If a response come, exit this state
+  assign state_1st_exit_ena = icb_sta_is_1st & (agu_icb_rsp_hsked | flush_pulse);
+  assign state_1st_nxt      = flush_pulse ? ICB_STATE_IDLE : 
+                (
+                 // (agu_i_algnamo) ?  // No need this condition, because it will be either
+                                       // amo or unalgn load-store in this state
+                  ICB_STATE_AMOALU
+                );
+            
+      // **** If the current state is AMOALU 
+              // Since the ALU is must be holdoff now, it can always be
+              //   served and then enter into next state
+  assign state_amoalu_exit_ena = icb_sta_is_amoalu & ( 1'b1 | flush_pulse);
+  assign state_amoalu_nxt      = flush_pulse ? ICB_STATE_IDLE : ICB_STATE_AMORDY;
+            
+      // **** If the current state is AMORDY
+              // It always enter into next state
+  assign state_amordy_exit_ena = icb_sta_is_amordy & ( 1'b1 | flush_pulse);
+  assign state_amordy_nxt      = flush_pulse ? ICB_STATE_IDLE : 
+            (
+              // AMO after caculated read-modify-result, need to issue 2nd uop as store
+              //   back to memory, hence two ICB needed and we dont care the performance,
+              //   so always let it jump to wait2nd state
+                                       ICB_STATE_WAIT2ND
+            );
+
+      // **** If the current state is wait-2nd,
+  assign state_wait2nd_exit_ena = icb_sta_is_wait2nd & (agu_icb_cmd_ready | flush_pulse);
+              // If the ICB CMD is ready, then next state is ICB_STATE_2ND
+  assign state_wait2nd_nxt      = flush_pulse ? ICB_STATE_IDLE : ICB_STATE_2ND;
+  
+      // **** If the current state is 2nd,
+          // If a response come, exit this state
+  assign state_2nd_exit_ena = icb_sta_is_2nd & (agu_icb_rsp_hsked | flush_pulse);
+  assign state_2nd_nxt      = flush_pulse ? ICB_STATE_IDLE : 
+                (
+                  ICB_STATE_WBCK 
+                );
+
+       // **** If the current state is wbck,
+          // If it can be write back, exit this state
+  assign state_wbck_exit_ena = icb_sta_is_wbck & (agu_o_ready | flush_pulse);
+  assign state_wbck_nxt      = flush_pulse ? ICB_STATE_IDLE : 
+                (
+                  ICB_STATE_IDLE 
+                );
+  `endif//E203_SUPPORT_AMO}
 
     // The state will only toggle when each state is meeting the condition to exit:
   assign icb_state_ena = 1'b0 
+         `ifdef E203_SUPPORT_AMO//{
+            | state_idle_exit_ena | state_1st_exit_ena  
+            | state_amoalu_exit_ena  | state_amordy_exit_ena  
+            | state_wait2nd_exit_ena | state_2nd_exit_ena   
+            | state_wbck_exit_ena 
+          `endif//E203_SUPPORT_AMO}
           ;
 
   // The next-state is onehot mux to select different entries
   assign icb_state_nxt = 
               ({ICB_STATE_WIDTH{1'b0}})
+         `ifdef E203_SUPPORT_AMO//{
+            | ({ICB_STATE_WIDTH{state_idle_exit_ena   }} & state_idle_nxt   )
+            | ({ICB_STATE_WIDTH{state_1st_exit_ena    }} & state_1st_nxt    )
+            | ({ICB_STATE_WIDTH{state_amoalu_exit_ena }} & state_amoalu_nxt )
+            | ({ICB_STATE_WIDTH{state_amordy_exit_ena }} & state_amordy_nxt )
+            | ({ICB_STATE_WIDTH{state_wait2nd_exit_ena}} & state_wait2nd_nxt)
+            | ({ICB_STATE_WIDTH{state_2nd_exit_ena    }} & state_2nd_nxt    )
+            | ({ICB_STATE_WIDTH{state_wbck_exit_ena   }} & state_wbck_nxt   )
+          `endif//E203_SUPPORT_AMO}
               ;
 
 
   sirv_gnrl_dfflr #(ICB_STATE_WIDTH) icb_state_dfflr (icb_state_ena, icb_state_nxt, icb_state_r, clk, rst_n);
 
 
+  `ifdef E203_SUPPORT_AMO//{
+  wire  icb_sta_is_last = icb_sta_is_wbck;
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
   wire  icb_sta_is_last = 1'b0; 
   `endif//}
 
+  `ifdef E203_SUPPORT_AMO//{
+  assign state_last_exit_ena = state_wbck_exit_ena;
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
   assign state_last_exit_ena = 1'b0;
   `endif//}
@@ -243,8 +397,15 @@ module e203_exu_alu_lsuagu(
 
 
       // Indicate there is no oustanding memory transactions
+  `ifdef E203_SUPPORT_AMO//{
+                    // As long as the statemachine started, we must wait it to be empty
+                    // We cannot really kill this instruction when IRQ comes, becuase
+                    // the AMO uop alreay write data into the memory, and we must commit
+                    // this instructions
+  assign amo_wait = ~icb_sta_is_idle;
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
-  assign agu_no_outs_mem = 1'b1;// If no AMO or UNaligned supported, then always 0
+  assign amo_wait = 1'b0;// If no AMO or UNaligned supported, then always 0
   `endif//}
   //
   /////////////////////////////////////////////////////////////////////////////////
@@ -259,14 +420,30 @@ module e203_exu_alu_lsuagu(
   wire leftover_1_ena;
   wire [`E203_XLEN-1:0] leftover_1_nxt;
   //
+ `ifdef E203_SUPPORT_AMO//{
+  wire amo_1stuop = icb_sta_is_1st & agu_i_algnamo;
+  wire amo_2nduop = icb_sta_is_2nd & agu_i_algnamo;
+ `endif//E203_SUPPORT_AMO}
   assign leftover_ena = agu_icb_rsp_hsked & (
                    1'b0
+                   `ifdef E203_SUPPORT_AMO//{
+                   | amo_1stuop 
+                   | amo_2nduop 
+                   `endif//E203_SUPPORT_AMO}
                    );
   assign leftover_nxt = 
               {`E203_XLEN{1'b0}}
+         `ifdef E203_SUPPORT_AMO//{
+            | ({`E203_XLEN{amo_1stuop        }} & agu_icb_rsp_rdata)// Load the data from bus
+            | ({`E203_XLEN{amo_2nduop        }} & leftover_r)// Unchange the value of leftover_r
+         `endif//E203_SUPPORT_AMO}
             ;
                                    
   assign leftover_err_nxt = 1'b0 
+         `ifdef E203_SUPPORT_AMO//{
+            | ({{amo_1stuop        }} & agu_icb_rsp_err)// 1st error from the bus
+            | ({{amo_2nduop        }} & (agu_icb_rsp_err | leftover_err_r))// second error merged
+         `endif//E203_SUPPORT_AMO}
          ;
   //
   // The instantiation of leftover buffer is actually shared with the ALU SBF-0 Buffer
@@ -278,6 +455,9 @@ module e203_exu_alu_lsuagu(
   sirv_gnrl_dfflr #(1) icb_leftover_err_dfflr (leftover_ena, leftover_err_nxt, leftover_err_r, clk, rst_n);
   
   assign leftover_1_ena = 1'b0 
+         `ifdef E203_SUPPORT_AMO//{
+           | icb_sta_is_amoalu 
+         `endif//E203_SUPPORT_AMO}
          ;
   assign leftover_1_nxt = agu_req_alu_res;
   //
@@ -288,12 +468,22 @@ module e203_exu_alu_lsuagu(
 
 
   assign agu_req_alu_add  = 1'b0
+                     `ifdef E203_SUPPORT_AMO//{
+                           | (icb_sta_is_amoalu & agu_i_amoadd)
+                             // In order to let AMO 2nd uop have correct address
+                           | (agu_i_amo & (icb_sta_is_wait2nd | icb_sta_is_2nd | icb_sta_is_wbck))
+                     `endif//E203_SUPPORT_AMO}
                            // To cut down the timing loop from agu_i_valid // | (icb_sta_is_idle & agu_i_valid)
                            //   we dont need this signal at all
                            | icb_sta_is_idle
                            ;
 
   assign agu_req_alu_op1 =  icb_sta_is_idle   ? agu_i_rs1
+                     `ifdef E203_SUPPORT_AMO//{
+                          : icb_sta_is_amoalu ? leftover_r
+                             // In order to let AMO 2nd uop have correct address
+                          : (agu_i_amo & (icb_sta_is_wait2nd | icb_sta_is_2nd | icb_sta_is_wbck)) ? agu_i_rs1
+                     `endif//E203_SUPPORT_AMO}
                      `ifndef E203_SUPPORT_UNALGNLDST//{
                           : `E203_XLEN'd0 
                      `endif//}
@@ -301,11 +491,26 @@ module e203_exu_alu_lsuagu(
 
   wire [`E203_XLEN-1:0] agu_addr_gen_op2 = agu_i_ofst0 ? `E203_XLEN'b0 : agu_i_imm;
   assign agu_req_alu_op2 =  icb_sta_is_idle   ? agu_addr_gen_op2 
+                     `ifdef E203_SUPPORT_AMO//{
+                          : icb_sta_is_amoalu ? agu_i_rs2
+                             // In order to let AMO 2nd uop have correct address
+                          : (agu_i_amo & (icb_sta_is_wait2nd | icb_sta_is_2nd | icb_sta_is_wbck)) ? agu_addr_gen_op2
+                     `endif//E203_SUPPORT_AMO}
                      `ifndef E203_SUPPORT_UNALGNLDST//{
                           : `E203_XLEN'd0 
                      `endif//}
                      ;
 
+  `ifdef E203_SUPPORT_AMO//{
+  assign agu_req_alu_swap = (icb_sta_is_amoalu & agu_i_amoswap );
+  assign agu_req_alu_and  = (icb_sta_is_amoalu & agu_i_amoand  );
+  assign agu_req_alu_or   = (icb_sta_is_amoalu & agu_i_amoor   );
+  assign agu_req_alu_xor  = (icb_sta_is_amoalu & agu_i_amoxor  );
+  assign agu_req_alu_max  = (icb_sta_is_amoalu & agu_i_amomax  );
+  assign agu_req_alu_min  = (icb_sta_is_amoalu & agu_i_amomin  );
+  assign agu_req_alu_maxu = (icb_sta_is_amoalu & agu_i_amomaxu );
+  assign agu_req_alu_minu = (icb_sta_is_amoalu & agu_i_amominu );
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
   assign agu_req_alu_swap = 1'b0;
   assign agu_req_alu_and  = 1'b0;
@@ -337,6 +542,9 @@ module e203_exu_alu_lsuagu(
 
   assign agu_i_ready =
       ( 1'b0
+  `ifdef E203_SUPPORT_AMO//{
+       | agu_i_algnamo 
+  `endif//E203_SUPPORT_AMO}
        ) ? state_last_exit_ena :
       (agu_icb_cmd_ready & agu_o_ready) ;
   
@@ -354,6 +562,12 @@ module e203_exu_alu_lsuagu(
   //       Directly passed to ICB interface, but also need to pass 
   //       to write-back interface asking for commit
   assign agu_o_valid = 
+        `ifdef E203_SUPPORT_AMO//{
+      // For the unaligned load/store and aligned AMO, it will enter 
+      //   into the state machine and let the last state to send back
+      //   to the commit stage
+      icb_sta_is_last 
+        `endif//E203_SUPPORT_AMO}
       // For the aligned load/store and unaligned AMO, it will be send
       //   to the commit stage right the same cycle of agu_i_valid
       |(
@@ -365,6 +579,9 @@ module e203_exu_alu_lsuagu(
                // same cycle of agu_i_valid
            | agu_i_unalgnldst
         `endif//}
+        `ifdef E203_SUPPORT_AMO//{
+           | agu_i_unalgnamo 
+        `endif//E203_SUPPORT_AMO}
          )
           ////  // Since it is issuing to commit stage and 
           ////  // LSU at same cycle, so we must qualify the icb_cmd_ready signal from LSU
@@ -375,14 +592,25 @@ module e203_exu_alu_lsuagu(
       );
 
   assign agu_o_wbck_wdat = {`E203_XLEN{1'b0 }}
+       `ifdef E203_SUPPORT_AMO//{
+                    | ({`E203_XLEN{agu_i_algnamo  }} & leftover_r) 
+                    | ({`E203_XLEN{agu_i_unalgnamo}} & `E203_XLEN'b0) 
+       `endif//E203_SUPPORT_AMO}
        ;
 
   assign agu_o_cmt_buserr = 1'b0 
+                `ifdef E203_SUPPORT_AMO//{
+                      | (agu_i_algnamo    & leftover_err_r) 
+                      | (agu_i_unalgnamo  & 1'b0) 
+                `endif//E203_SUPPORT_AMO}
                 ;
   assign agu_o_cmt_badaddr = agu_icb_cmd_addr;
 
 
   assign agu_o_cmt_misalgn = 1'b0
+                `ifdef E203_SUPPORT_AMO//{
+                       | agu_i_unalgnamo 
+                `endif//E203_SUPPORT_AMO}
                        | (agu_i_unalgnldst) //& agu_i_excl) We dont support unaligned load/store regardless it is AMO or not
                        ;
   assign agu_o_cmt_ld      = agu_i_load & (~agu_i_excl); 
@@ -404,11 +632,24 @@ module e203_exu_alu_lsuagu(
               // to make sure it is out to commit/LSU at same cycle
               & (agu_o_ready)
             )
+          `ifdef E203_SUPPORT_AMO//{
+            | (agu_i_algnamo & (
+                         (icb_sta_is_idle & agu_i_valid 
+                             // We must qualify the agu_o_ready signal from commit stage
+                             // to make sure it is out to commit/LSU at same cycle
+                             & agu_o_ready)
+                       | (icb_sta_is_wait2nd)))
+            | (agu_i_unalgnamo & 1'b0) 
+          `endif//E203_SUPPORT_AMO}
             ;
   assign agu_icb_cmd_addr = agu_req_alu_res[`E203_ADDR_SIZE-1:0];
 
   assign agu_icb_cmd_read = 
             (agu_i_algnldst & agu_i_load) 
+          `ifdef E203_SUPPORT_AMO//{
+          | (agu_i_algnamo & icb_sta_is_idle & 1'b1)
+          | (agu_i_algnamo & icb_sta_is_wait2nd & 1'b0) 
+          `endif//E203_SUPPORT_AMO}
           ;
      // The AGU ICB CMD Wdata sources:
      //   * For the aligned store instructions
@@ -427,17 +668,33 @@ module e203_exu_alu_lsuagu(
 
           
   assign agu_icb_cmd_wdata = 
+  `ifdef E203_SUPPORT_AMO//{
+      agu_i_amo ? leftover_1_r :
+  `endif//E203_SUPPORT_AMO}
       algnst_wdata;
 
   assign agu_icb_cmd_wmask =
+  `ifdef E203_SUPPORT_AMO//{
+         // If the 1st uop have bus-error, then not write the data for 2nd uop
+      agu_i_amo ? (leftover_err_r ? 4'h0 : 4'hF) :
+  `endif//E203_SUPPORT_AMO}
       algnst_wmask; 
 
   assign agu_icb_cmd_back2agu = 1'b0 
+             `ifdef E203_SUPPORT_AMO//{
+                | agu_i_algnamo  
+             `endif//E203_SUPPORT_AMO}
              ;
   //We dont support lock and exclusive in such 2 stage simple implementation
   assign agu_icb_cmd_lock     = 1'b0 
+             `ifdef E203_SUPPORT_AMO//{
+                 | (agu_i_algnamo & icb_sta_is_idle)
+             `endif//E203_SUPPORT_AMO}
                  ;
   assign agu_icb_cmd_excl     = 1'b0
+             `ifdef E203_SUPPORT_AMO//{
+                 | agu_i_excl
+             `endif//E203_SUPPORT_AMO}
                  ;
 
   assign agu_icb_cmd_itag     = agu_i_itag;

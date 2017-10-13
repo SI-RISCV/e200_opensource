@@ -44,6 +44,9 @@ module e203_exu_alu(
 
   output i_longpipe, // Indicate this instruction is 
                      //   issued as a long pipe instruction
+
+  output amo_wait,
+  input  oitf_empty,
                      
   input  [`E203_ITAG_WIDTH-1:0] i_itag,
   input  [`E203_XLEN-1:0] i_rs1,
@@ -354,7 +357,6 @@ module e203_exu_alu(
   wire  [`E203_DECINFO_WIDTH-1:0]  agu_i_info = {`E203_DECINFO_WIDTH{agu_op}} & i_info;  
   wire  [`E203_ITAG_WIDTH-1:0]     agu_i_itag = {`E203_ITAG_WIDTH   {agu_op}} & i_itag;  
 
-  wire  agu_no_outs_mem;
 
   e203_exu_alu_lsuagu u_e203_exu_alu_lsuagu(
       .agu_i_valid         (agu_i_valid     ),
@@ -368,7 +370,8 @@ module e203_exu_alu(
 
       .flush_pulse         (flush_pulse    ),
       .flush_req           (flush_req      ),
-      .agu_no_outs_mem     (agu_no_outs_mem),
+      .amo_wait            (amo_wait),
+      .oitf_empty          (oitf_empty),
 
       .agu_o_valid         (agu_o_valid         ),
       .agu_o_ready         (agu_o_ready         ),

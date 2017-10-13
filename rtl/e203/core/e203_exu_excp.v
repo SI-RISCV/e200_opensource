@@ -40,6 +40,8 @@ module e203_exu_excp(
   input   wfi_halt_ifu_ack,
   input   wfi_halt_exu_ack,
 
+  input   amo_wait,
+
   output  alu_excp_i_ready,
   input   alu_excp_i_valid       ,
   input   alu_excp_i_ld          ,
@@ -64,7 +66,7 @@ module e203_exu_excp(
   input   longp_excp_i_buserr , // The load/store bus-error exception generated
   input   longp_excp_i_insterr, 
   input   [`E203_ADDR_SIZE-1:0] longp_excp_i_badaddr,
-  //input   [`E203_PC_SIZE-1:0] longp_excp_i_pc,
+  input   [`E203_PC_SIZE-1:0] longp_excp_i_pc,
 
   input   excpirq_flush_ack,
   output  excpirq_flush_req,
@@ -118,22 +120,36 @@ module e203_exu_excp(
   input   h_mode,
   input   m_mode,
 
+  output  excp_active,
 
   input   clk,
   input   rst_n
   );
 
+  ////////////////////////////////////////////////////////////////////////////
+  // Because the core's clock may be gated when it is idle, we need to check
+  //  if the interrupts is coming, and generate an active indication, and use
+  //  this active signal to turn on core's clock
+  wire irq_req_active;
+  wire nonalu_dbg_entry_req_raw;
+
+  assign excp_active = irq_req_active | nonalu_dbg_entry_req_raw;
+
+
+  ////////////////////////////////////////////////////////////////////////////
+  // WFI flag generation
+  //
   wire wfi_req_hsked = wfi_halt_ifu_req & wfi_halt_ifu_ack & wfi_halt_exu_req & wfi_halt_exu_ack;
      // The wfi_flag will be set if there is a new WFI instruction halt req handshaked
   wire wfi_flag_set = wfi_req_hsked;
-     // The wfi_flag will be cleared if there is local interrupt pending, or debug entry request
+     // The wfi_flag will be cleared if there is interrupt pending, or debug entry request
   wire wfi_irq_req;
   wire dbg_entry_req;
-  wire wfi_flag_clr = wfi_irq_req | dbg_entry_req;
+  wire wfi_flag_r;
+  wire wfi_flag_clr = (wfi_irq_req | dbg_entry_req);// & wfi_flag_r;// Here we cannot use this flag_r
   wire wfi_flag_ena = wfi_flag_set | wfi_flag_clr;
      // If meanwhile set and clear, then clear preempt
   wire wfi_flag_nxt = wfi_flag_set & (~wfi_flag_clr);
-  wire wfi_flag_r;
   sirv_gnrl_dfflr #(1) wfi_flag_dfflr (wfi_flag_ena, wfi_flag_nxt, wfi_flag_r, clk, rst_n);
   assign core_wfi = wfi_flag_r & (~wfi_flag_clr);
 
@@ -172,9 +188,31 @@ module e203_exu_excp(
   //       ---- Must wait the OITF empty and PC vld 
   //   *** ALU triggered exception (excluded the ebreakm into debug-mode)  
   //       ---- Must wait the OITF empty 
+  
+  // Exclude the pc_vld for longp, to just always make sure the longp can always accepted
+  wire longp_excp_flush_req = longp_need_flush ;
+  assign longp_excp_i_ready = excpirq_flush_ack;
+
+  //   ^^^ Below we qualified the pc_vld signal to IRQ and Debug-entry req, why? 
+  //       -- The Asyn-precise-excp (include IRQ and Debug-entry exception) 
+  //            need to use the next upcoming (not yet commited) instruction's PC
+  //            for the mepc value, so we must wait next valid instruction coming
+  //            and use its PC.
+  //       -- The pc_vld indicate is just used to indicate next instruction's valid
+  //            PC value.
+  //   ^^^ Then the questions are coming, is there a possible that there is no pc_vld
+  //         comes forever? and then this async-precise-exception never
+  //         get served, and then become a deadlock?
+  //       -- It should not be. Becuase:
+  //            The IFU is always actively fetching next instructions, never stop,
+  //            so ideally it will always provide next valid instructions as
+  //            long as the Ifetch-path (bus to external memory or ITCM) is not hang 
+  //            (no bus response returned).
+  //            ^^^ Then if there possible the Ifetch-path is hang? For examples:
+  //                  -- The Ifetched external memory does not provide response because of the External IRQ is not
+  //                       accepted by core.
+  //                          ** How could it be? This should not happen, otherwise it is a SoC bug.
   //
-  wire longp_excp_flush_req = longp_need_flush & alu_excp_i_pc_vld;
-  assign longp_excp_i_ready = excpirq_flush_ack & alu_excp_i_pc_vld; 
 
   wire dbg_entry_flush_req  = dbg_entry_req & oitf_empty & alu_excp_i_pc_vld & (~longp_need_flush);
   wire alu_excp_i_ready4dbg = (dbg_ebrk_req | dbg_trig_req) ? 
@@ -202,9 +240,9 @@ module e203_exu_excp(
 
   assign excpirq_flush_req  = longp_excp_flush_req | dbg_entry_flush_req | irq_flush_req | alu_excp_flush_req;
   wire   all_excp_flush_req = longp_excp_flush_req | alu_excp_flush_req;
-  assign nonalu_excpirq_flush_req = longp_excp_flush_req | (dbg_entry_flush_req & (~(dbg_ebrk_req | dbg_trig_req))) | irq_flush_req;
+  assign nonalu_excpirq_flush_req = longp_excp_flush_req | 
+      (dbg_entry_flush_req & (~(dbg_ebrk_req | dbg_trig_req))) | irq_flush_req;
 
-  wire nonalu_dbg_entry_req_raw;
   assign nonalu_excpirq_flush_req_raw = 
              longp_need_flush | 
              nonalu_dbg_entry_req_raw |
@@ -273,10 +311,10 @@ module e203_exu_excp(
       // The debug-mode will mask off the debug-mode-entry
   wire dbg_entry_mask  = dbg_mode;
   assign dbg_entry_req = (~dbg_entry_mask) & (
-                                              dbg_irq_req 
-                                            | dbg_halt_req
+                                              (dbg_irq_req & (~amo_wait))
+                                            | (dbg_halt_req & (~amo_wait))
                                             | dbg_step_req
-                                            | dbg_trig_req
+                                            | (dbg_trig_req & (~amo_wait))
                                             | dbg_ebrk_req
                                             );
   assign nonalu_dbg_entry_req_raw = (~dbg_entry_mask) & (
@@ -296,8 +334,19 @@ module e203_exu_excp(
   //
     // The debug mode will mask off the interrupts
     // The single-step mode will mask off the interrupts
-  wire irq_mask  = dbg_mode | dbg_step_r | (~status_mie_r);
+  wire irq_mask  = dbg_mode | dbg_step_r | (~status_mie_r) 
+                  // Why do we put a AMO_wait here, because the AMO instructions 
+                  //   is atomic, we must wait it to complete its all atomic operations
+                  //   and during wait cycles irq must be masked, otherwise the irq_req
+                  //   will block ALU commit (including AMO) and cause a deadlock
+                  // Dont need to worry about the clock gating issue, if amo_wait,
+                  //   then defefinitely the ALU is active, and clock on
+                   | amo_wait;
   wire wfi_irq_mask  = dbg_mode | dbg_step_r;
+                  // Why dont we put amo_wait here, because this is for IRQ to wake
+                  //   up the core from sleep mode, the core was in sleep mode, then 
+                  //   means there is no chance for it to still executing the AMO instructions
+                  //   with oustanding uops, so we dont need to worry about it.
   wire irq_req_raw   = ( 
                                     //(|lcl_irq_r) // not support this now
                                     (ext_irq_r & meie_r) 
@@ -306,6 +355,8 @@ module e203_exu_excp(
                                   );
   assign irq_req     = (~irq_mask) & irq_req_raw;
   assign wfi_irq_req = (~wfi_irq_mask) & irq_req_raw;
+
+  assign irq_req_active = wfi_flag_r ? wfi_irq_req : irq_req; 
 
   wire [`E203_XLEN-1:0] irq_cause;
 
@@ -442,11 +493,10 @@ module e203_exu_excp(
                        alu_excp_flush_req_ifu_ilegl ? alu_excp_i_instr :
                             `E203_ADDR_SIZE'b0;
 
-  // Originally we use the exact PC of long-instruction when exception happened,
-  // later on we found the long pipe exception still need to use the ALU commiting PC to 
-  //  store in EPC, so we dont need this pc here any more
-  //assign cmt_epc = longp_excp_i_valid ? longp_excp_i_pc : alu_excp_i_pc;
-  assign cmt_epc = alu_excp_i_pc;
+  // We use the exact PC of long-instruction when exception happened, but 
+  //   to note since the later instruction may already commited, so long-pipe
+  //   excpetion is async-imprecise exceptions
+  assign cmt_epc = longp_excp_i_valid ? longp_excp_i_pc : alu_excp_i_pc;
 
   assign cmt_cause = excp_taken_ena ? excp_cause : irq_cause;
 

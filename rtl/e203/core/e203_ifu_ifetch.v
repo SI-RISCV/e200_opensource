@@ -157,8 +157,8 @@ module e203_ifu_ifetch(
      //    * Currently halt_ack is not asserting
      //    * Currently the ifetch REQ channel is ready, means
      //        there is no oustanding transactions
-  wire new_req_condi;
-  assign halt_ack_set = ifu_halt_req & (~halt_ack_r) & new_req_condi;
+  wire ifu_no_outs;
+  assign halt_ack_set = ifu_halt_req & (~halt_ack_r) & ifu_no_outs;
      // The halt_ack_r valid is cleared when 
      //    * Currently halt_ack is asserting
      //    * Currently halt_req is de-asserting
@@ -176,15 +176,14 @@ module e203_ifu_ifetch(
   //////////////////////////////////////////////////////////////
   // The flush ack signal generation
    //
-   //   The flush is acked when the ifetch interface is ready
+   //   Ideally the flush is acked when the ifetch interface is ready
    //     or there is rsponse valid 
    //   But to cut the comb loop between EXU and IFU, we always accept
    //     the flush, when it is not really acknowledged, we use a 
    //     delayed flush indication to remember this flush
-   //       Note: but if there is a delayed flush pending there, we
-   //             cannot accept new flush request
-   wire dly_flush_r;
-   assign pipe_flush_ack = (~dly_flush_r);
+   //   Note: Even if there is a delayed flush pending there, we
+   //     still can accept new flush request
+   assign pipe_flush_ack = 1'b1;
 
    wire dly_flush_set;
    wire dly_flush_clr;
@@ -194,6 +193,7 @@ module e203_ifu_ifetch(
       // The dly_flush will be set when
       //    * There is a flush requst is coming, but the ifu
       //        is not ready to accept new fetch request
+   wire dly_flush_r;
    assign dly_flush_set = pipe_flush_req & (~ifu_req_hsked);
       // The dly_flush_r valid is cleared when 
       //    * The delayed flush is issued
@@ -491,7 +491,11 @@ module e203_ifu_ifetch(
   //   * Or if there is outstanding, but it is reponse valid back
   wire out_flag_clr;
   wire out_flag_r;
-  assign new_req_condi = (~out_flag_r) | out_flag_clr;
+  wire new_req_condi = (~out_flag_r) | out_flag_clr;
+  assign ifu_no_outs   = (~out_flag_r) | ifu_rsp_valid;
+        // Here we use the rsp_valid rather than the out_flag_clr (ifu_rsp_hsked) because
+        //   as long as the rsp_valid is asserting then means last request have returned the
+        //   response back, in WFI case, we cannot expect it to be handshaked (otherwise deadlock)
 
   assign ifu_req_valid = ifu_req_valid_pre & new_req_condi;
 
@@ -530,27 +534,12 @@ module e203_ifu_ifetch(
 
   sirv_gnrl_dfflr #(1) pc_newpend_dfflr (pc_newpend_ena, pc_newpend_nxt, pc_newpend_r, clk, rst_n);
 
-  //   // The replay will be set if:
-  //   //   * there is a new replay response back
-  //   //   * there is a new response back but the ifetch req channel is not ready to accept
-  //assign ifu_rsp_need_replay = ifu_rsp_valid & (ifu_rsp_replay | (ifu_rsp2ir_ready & (~ifu_req_ready)));
-  //wire ifetch_replay_req_set = ifu_rsp_need_replay;
-  //   // The replay will be clear if the replay ifetch is handshaked
-  //wire ifetch_replay_hsked = ifetch_replay_req & ifu_req_hsked;
-  //wire ifetch_replay_req_clr = ifetch_replay_hsked;
-  //wire ifetch_replay_req_ena = ifetch_replay_req_set | ifetch_replay_req_clr;
-  //   // If meanwhile set and clear, then clear preempt
-  //wire ifetch_replay_req_nxt = ifetch_replay_req_set & (~ifetch_replay_req_clr);
-  //wire ifetch_replay_req_r;
-
-  //sirv_gnrl_dfflr #(1) ifetch_replay_req_dfflr (ifetch_replay_req_ena, ifetch_replay_req_nxt, ifetch_replay_req_r, clk, rst_n);
-
-  //assign ifetch_replay_req = ifetch_replay_req_r;
 
   assign ifu_rsp_need_replay = 1'b0;
   assign ifetch_replay_req = 1'b0;
 
   `ifndef FPGA_SOURCE//{
+  `ifndef DISABLE_SV_ASSERTION//{
 //synopsys translate_off
 
 CHECK_IFU_REQ_VALID_NO_X:
@@ -560,6 +549,7 @@ CHECK_IFU_REQ_VALID_NO_X:
   else $fatal ("\n Error: Oops, detected X value for ifu_req_valid !!! This should never happen. \n");
 
 //synopsys translate_on
+`endif//}
 `endif//}
 
 endmodule

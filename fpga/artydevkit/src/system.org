@@ -1136,6 +1136,7 @@ module system
     //.clock(hfclk),
        // Use the low frequency clock, becuase the 65MHz have the timing violations 
     .hfclk(hfclk),
+       // Note: this is not the SoC top level reset signal
     .hfclkrst(),
     .io_pads_jtag_TCK_i_ival(dut_io_pads_jtag_TCK_i_ival),
     .io_pads_jtag_TCK_o_oval(dut_io_pads_jtag_TCK_o_oval),
@@ -1395,12 +1396,14 @@ module system
     .io_pads_qspi_cs_0_o_ie(dut_io_pads_qspi_cs_0_o_ie),
     .io_pads_qspi_cs_0_o_pue(dut_io_pads_qspi_cs_0_o_pue),
     .io_pads_qspi_cs_0_o_ds(dut_io_pads_qspi_cs_0_o_ds),
+       // Note: this is the real SoC top level reset signal
     .io_pads_aon_erst_n_i_ival(dut_io_pads_aon_erst_n_i_ival),
     .io_pads_aon_erst_n_o_oval(dut_io_pads_aon_erst_n_o_oval),
     .io_pads_aon_erst_n_o_oe(dut_io_pads_aon_erst_n_o_oe),
     .io_pads_aon_erst_n_o_ie(dut_io_pads_aon_erst_n_o_ie),
     .io_pads_aon_erst_n_o_pue(dut_io_pads_aon_erst_n_o_pue),
     .io_pads_aon_erst_n_o_ds(dut_io_pads_aon_erst_n_o_ds),
+       // Note: this is the real SoC top AON domain slow clock
     .io_pads_aon_lfextclk_i_ival(dut_io_pads_aon_lfextclk_i_ival),
     .io_pads_aon_lfextclk_o_oval(dut_io_pads_aon_lfextclk_o_oval),
     .io_pads_aon_lfextclk_o_oe(dut_io_pads_aon_lfextclk_o_oe),

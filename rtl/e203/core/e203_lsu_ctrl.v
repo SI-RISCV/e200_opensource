@@ -320,6 +320,14 @@ module e203_lsu_ctrl(
   wire [LSU_ARBT_I_NUM*USR_W-1:0] arbt_bus_icb_rsp_usr;
 
   //CMD Channel
+  wire [LSU_ARBT_I_NUM*1-1:0] arbt_bus_icb_cmd_valid_raw;
+  assign arbt_bus_icb_cmd_valid_raw =
+      // The EAI take higher priority
+                           {
+                             agu_icb_cmd_valid
+                           , eai_icb_cmd_valid
+                           } ;
+
   assign arbt_bus_icb_cmd_valid =
       // The EAI take higher priority
                            {
@@ -510,6 +518,30 @@ module e203_lsu_ctrl(
   wire splt_fifo_wen = arbt_icb_cmd_valid & arbt_icb_cmd_ready;
   wire splt_fifo_ren = arbt_icb_rsp_valid & arbt_icb_rsp_ready;
 
+  `ifdef E203_SUPPORT_AMO//{
+       // In E200 single core config, we always assume the store-condition is checked by the core itself
+       //    because no other core to race
+       
+  wire excl_flg_r;
+  wire [`E203_ADDR_SIZE-1:0] excl_addr_r;
+  wire icb_cmdaddr_eq_excladdr = (arbt_icb_cmd_addr == excl_addr_r);
+  // Set when the Excl-load instruction going
+  wire excl_flg_set = splt_fifo_wen & arbt_icb_cmd_usr[USR_PACK_EXCL] & arbt_icb_cmd_read & arbt_icb_cmd_excl;
+  // Clear when any going store hit the same address
+  wire excl_flg_clr = splt_fifo_wen & (~arbt_icb_cmd_read) & icb_cmdaddr_eq_excladdr & excl_flg_r;
+  wire excl_flg_ena = excl_flg_set | excl_flg_clr;
+  wire excl_flg_nxt = excl_flg_set | (~excl_flg_clr);
+  sirv_gnrl_dfflr #(1) excl_flg_dffl (excl_flg_ena, excl_flg_nxt, excl_flg_r, clk, rst_n);
+  //
+  // The address is set when excl-load instruction going
+  wire excl_addr_ena = excl_flg_set;
+  wire [`E203_ADDR_SIZE-1:0] excl_addr_nxt = arbt_icb_cmd_addr;
+  sirv_gnrl_dfflr #(`E203_ADDR_SIZE) excl_addr_dffl (excl_addr_ena, excl_addr_nxt, excl_addr_r, clk, rst_n);
+
+  // For excl-store (scond) instruction, it will be true if the flag is true and the address is matching
+  wire arbt_icb_cmd_scond = arbt_icb_cmd_usr[USR_PACK_EXCL] & (~arbt_icb_cmd_read);
+  wire arbt_icb_cmd_scond_true = arbt_icb_cmd_scond & icb_cmdaddr_eq_excladdr & excl_flg_r;
+  `endif//E203_SUPPORT_AMO}
 
   //
 
@@ -526,6 +558,11 @@ module e203_lsu_ctrl(
   wire arbt_icb_rsp_itcm;
   wire arbt_icb_rsp_scond_true;
 
+  `ifdef E203_SUPPORT_AMO//{
+  localparam SPLT_FIFO_W = (USR_W+5);
+  wire [`E203_XLEN/8-1:0] arbt_icb_cmd_wmask_pos = 
+      (arbt_icb_cmd_scond & (~arbt_icb_cmd_scond_true)) ? {`E203_XLEN/8{1'b0}} : arbt_icb_cmd_wmask;
+  `endif//E203_SUPPORT_AMO}
 
   `ifndef E203_SUPPORT_AMO//{
   localparam SPLT_FIFO_W = (USR_W+4);
@@ -540,6 +577,9 @@ module e203_lsu_ctrl(
           arbt_icb_cmd_dcache,
           arbt_icb_cmd_dtcm,
           arbt_icb_cmd_itcm,
+  `ifdef E203_SUPPORT_AMO//{
+          arbt_icb_cmd_scond_true,
+  `endif//E203_SUPPORT_AMO}
           arbt_icb_cmd_usr 
           };
 
@@ -549,6 +589,9 @@ module e203_lsu_ctrl(
           arbt_icb_rsp_dcache,
           arbt_icb_rsp_dtcm,
           arbt_icb_rsp_itcm,
+  `ifdef E203_SUPPORT_AMO//{
+          arbt_icb_rsp_scond_true, 
+  `endif//E203_SUPPORT_AMO}
           arbt_icb_rsp_usr 
           } = splt_fifo_rdat & {SPLT_FIFO_W{splt_fifo_o_valid}};
           // The output signals will be used as 
@@ -824,6 +867,15 @@ module e203_lsu_ctrl(
   wire rsp_lh  = (pre_agu_icb_rsp_size == 2'b01) & (pre_agu_icb_rsp_usign == 1'b0);
   wire rsp_lw  = (pre_agu_icb_rsp_size == 2'b10);
 
+  `ifdef E203_SUPPORT_AMO//{
+       // In E200 single core config, we always assume the store-condition is checked by the core itself
+       //    because no other core to race. So we dont use the returned excl-ok, but use the LSU tracked
+       //    scond_true
+  //wire [`E203_XLEN-1:0] sc_excl_wdata = pre_agu_icb_rsp_excl_ok ? `E203_XLEN'd0 : `E203_XLEN'd1; 
+  wire [`E203_XLEN-1:0] sc_excl_wdata = arbt_icb_rsp_scond_true ? `E203_XLEN'd0 : `E203_XLEN'd1; 
+                // If it is scond (excl-write), then need to update the regfile
+  assign lsu_o_wbck_wdat   = ((~pre_agu_icb_rsp_read) & pre_agu_icb_rsp_excl) ? sc_excl_wdata :
+  `endif//E203_SUPPORT_AMO}
   `ifndef E203_SUPPORT_AMO//{
        // If not support the store-condition instructions, then we have no chance to issue excl transaction
            // no need to consider the store-condition result write-back
@@ -841,7 +893,7 @@ module e203_lsu_ctrl(
   assign lsu_o_cmt_ld=  pre_agu_icb_rsp_read;
   assign lsu_o_cmt_st= ~pre_agu_icb_rsp_read;
 
-  assign lsu_ctrl_active = (|arbt_bus_icb_cmd_valid) | splt_fifo_o_valid;
+  assign lsu_ctrl_active = (|arbt_bus_icb_cmd_valid_raw) | splt_fifo_o_valid;
 
 endmodule
 

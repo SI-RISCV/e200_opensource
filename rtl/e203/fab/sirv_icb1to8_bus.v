@@ -537,7 +537,7 @@ module sirv_icb1to8_bus # (
   .SPLT_NUM   (SPLT_I_NUM),
   .SPLT_PTR_W (SPLT_I_NUM),
   .SPLT_PTR_1HOT (1),
-  .USR_W      (1'b1),
+  .USR_W      (1),
   .AW         (AW),
   .DW         (DW) 
   ) u_i_icb_splt(

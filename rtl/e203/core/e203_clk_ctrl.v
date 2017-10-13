@@ -39,6 +39,9 @@ module e203_clk_ctrl (
   input  rst_n,      // async reset
   input  test_mode,  // test mode 
 
+  // The cgstop is coming from CSR (0xBFE mcgstop)'s filed 0
+  // // This register is our self-defined CSR register to disable the 
+      // automaticall clock gating for CPU logics for debugging purpose
   input  core_cgstop,
 
   // The Top always on clk and rst
@@ -76,12 +79,13 @@ module e203_clk_ctrl (
 
   // The CSR control bit CGSTOP will override the automatical clock gating here for special debug purpose
 
+      // The IFU is always actively fetching unless it is WFI to override it
   wire ifu_clk_en = core_cgstop | (core_ifu_active & (~core_wfi));
-  wire exu_clk_en = core_cgstop | (core_exu_active & (~core_wfi));
-      // The LSU and BIU module's clock gating does not need to check
+      // The EXU, LSU and BIU module's clock gating does not need to check
       //  WFI because it may have request from external agent
       //  and also, it actually will automactically become inactive regardess
       //  currently is WFI or not, hence we dont need WFI here
+  wire exu_clk_en = core_cgstop | (core_exu_active);
   wire lsu_clk_en = core_cgstop | (core_lsu_active);
   wire biu_clk_en = core_cgstop | (core_biu_active);
 

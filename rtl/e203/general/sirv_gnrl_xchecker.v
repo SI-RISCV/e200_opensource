@@ -34,6 +34,7 @@
 
 
 `ifndef FPGA_SOURCE//{
+`ifndef DISABLE_SV_ASSERTION//{
 //synopsys translate_off
 module sirv_gnrl_xchecker # (
   parameter DW = 32
@@ -51,4 +52,5 @@ CHECK_THE_X_VALUE:
 
 endmodule
 //synopsys translate_on
+`endif//}
 `endif//}

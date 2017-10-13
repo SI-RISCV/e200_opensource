@@ -117,13 +117,38 @@ _start:                                                                 \
         .align 2;                                                       \
 trap_vector:                                                            \
         /* test whether the test came from pass/fail */                 \
+        /* Bob: since we have added the random irq */                   \
+        /* Bob:  we need to save-and-restore the registers: begin */    \
+        csrw mscratch, a0;                                              \
+        la  a0, test_trap_data ;                                        \
+        sw t5, 0(a0);                                                   \
+        sw t6, 4(a0);                                                   \
+  .pushsection .data; \
+  .align 2; \
+  test_trap_data: \
+  .word 0; \
+  .word 0; \
+  .popsection \
+        /* Bob: since we have added the random irq */                   \
+        /* Bob:  we need to save-and-restore the registers: end */      \
         csrr t5, mcause;                                                \
+        /* Bob: Here to check irq first: Begin */                   \
+        bltz t5, other_interrupts;                                      \
+        /* Bob: Here to check irq first: end */      \
         li t6, CAUSE_USER_ECALL;                                        \
         beq t5, t6, write_tohost;                                       \
         li t6, CAUSE_SUPERVISOR_ECALL;                                  \
         beq t5, t6, write_tohost;                                       \
         li t6, CAUSE_MACHINE_ECALL;                                     \
         beq t5, t6, write_tohost;                                       \
+        /* Bob: Here to check bus-error : Begin */                   \
+        li t6, CAUSE_FETCH_ACCESS;                                     \
+        beq t5, t6, ifetch_error_handler;                                      \
+        li t6, CAUSE_LOAD_ACCESS;                                     \
+        beq t5, t6, load_error_handler;                                      \
+        li t6, CAUSE_STORE_ACCESS;                                     \
+        beq t5, t6, store_error_handler;                                      \
+        /* Bob: Here to check bus-error : end */      \
         /* if an mtvec_handler is defined, jump to it */                \
         la t5, mtvec_handler;                                           \
         beqz t5, 1f;                                                    \
@@ -136,10 +161,78 @@ handle_exception:                                                       \
         /* we don't know how to handle whatever the exception was */    \
   other_exception:                                                      \
         /* some unhandlable exception occurred */                       \
+        /* Bob add IRQ Cause here: begin */                       \
+        j 1f ;                                        \
+  other_interrupts:                                                      \
+        li t6, CAUSE_IRQ_M_SFT ;                                        \
+        beq t5, t6, sft_irq_handler;                                       \
+        li t6, CAUSE_IRQ_M_TMR ;                                        \
+        beq t5, t6, tmr_irq_handler;                                       \
+        li t6, CAUSE_IRQ_M_EXT ;                                        \
+        beq t5, t6, ext_irq_handler;                                       \
+        /* Bob add IRQ Cause here: End */                       \
   1:    ori TESTNUM, TESTNUM, 1337;                                     \
   write_tohost:                                                         \
+        /*Bob added code to enable the interrupt enables: begin*/              \
+        li a0, MSTATUS_MIE;                                                   \
+        csrs mstatus, a0;                                                     \
+        /*Bob added code to enable the interrupt enables: end*/              \
         sw TESTNUM, tohost, t5;                                         \
         j write_tohost;                                                 \
+        /* Bob add IRQ handler here: begin */                       \
+  ext_irq_handler:                                                         \
+        /* we need to save-and-restore the registers: begin */    \
+        la  a0, test_trap_data ;                                        \
+        lw t5, 0(a0);                                                   \
+        lw t6, 4(a0);                                                   \
+        csrr a0, mscratch;                                              \
+        /* we need to save-and-restore the registers: End */    \
+      mret;                                         \
+  sft_irq_handler:                                                         \
+        /* we need to save-and-restore the registers: begin */    \
+        la  a0, test_trap_data ;                                        \
+        lw t5, 0(a0);                                                   \
+        lw t6, 4(a0);                                                   \
+        csrr a0, mscratch;                                              \
+        /* we need to save-and-restore the registers: End */    \
+        mret;                                         \
+  tmr_irq_handler:                                                         \
+        /* we need to save-and-restore the registers: begin */    \
+        la  a0, test_trap_data ;                                        \
+        lw t5, 0(a0);                                                   \
+        lw t6, 4(a0);                                                   \
+        csrr a0, mscratch;                                              \
+        /* we need to save-and-restore the registers: End */    \
+        mret;                                         \
+        /* Bob add IRQ handler here: End */                       \
+        /* Bob add bus-error handler here: Begin */                       \
+  ifetch_error_handler:                                                         \
+        /* we need to save-and-restore the registers: begin */    \
+        la  a0, test_trap_data ;                                        \
+        lw t5, 0(a0);                                                   \
+        lw t6, 4(a0);                                                   \
+        csrr a0, mscratch;                                              \
+        /* we need to save-and-restore the registers: End */    \
+        mret;                                         \
+        /* Bob add handler here: End */                       \
+  load_error_handler:                                                         \
+        /* we need to save-and-restore the registers: begin */    \
+        la  a0, test_trap_data ;                                        \
+        lw t5, 0(a0);                                                   \
+        lw t6, 4(a0);                                                   \
+        csrr a0, mscratch;                                              \
+        /* we need to save-and-restore the registers: End */    \
+        mret;                                         \
+        /* Bob add handler here: End */                       \
+  store_error_handler:                                                         \
+        /* we need to save-and-restore the registers: begin */    \
+        la  a0, test_trap_data ;                                        \
+        lw t5, 0(a0);                                                   \
+        lw t6, 4(a0);                                                   \
+        csrr a0, mscratch;                                              \
+        /* we need to save-and-restore the registers: End */    \
+        mret;                                         \
+        /* Bob add bus-error handler here: End */                       \
 reset_vector:                                                           \
         RISCV_MULTICORE_DISABLE;                                        \
         /*INIT_SPTBR;*/                                                     \
@@ -147,6 +240,12 @@ reset_vector:                                                           \
         /*DELEGATE_NO_TRAPS;*/                                              \
         li TESTNUM, 0;                                                  \
         la t0, trap_vector;                                             \
+        /*Bob added code to enable the interrupt enables: begin*/              \
+        li a0, MSTATUS_MIE;                                                   \
+        csrs mstatus, a0;                                                     \
+        li a0, 0xFFFFFFFF;                                                   \
+        csrs mie, a0;                                                     \
+        /*Bob added code to enable the interrupt enables: End*/              \
         csrw mtvec, t0;                                                 \
         /*CHECK_XLEN;*/                                                     \
         /* if an stvec_handler is defined, delegate exceptions to it */ \
@@ -163,6 +262,10 @@ reset_vector:                                                           \
         csrr t1, medeleg;                                               \
         bne t0, t1, other_exception;                                    \
 1:      csrwi mstatus, 0;                                               \
+        /*Bob added code to enable the interrupt enables: begin*/              \
+        li a0, MSTATUS_MPIE;                                                   \
+        csrs mstatus, a0;                                                     \
+        /*Bob added code to enable the interrupt enables: end*/              \
         init;                                                           \
         EXTRA_INIT;                                                     \
         EXTRA_INIT_TIMER;                                               \
