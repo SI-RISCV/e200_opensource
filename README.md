@@ -19,7 +19,7 @@ China mainland with industry level quality and state-of-art CPU design skills to
 Our ambition is to make "Hummingbird E200" become next 8051 in China, please go with us to make it happen.
 
 
-If there are any questions or problems, you can directly contact bobhu_riscv@163.com
+If there are any questions or problems, you can directly contact zhenbo.hu@si-in.com
 
 Usages and Applications
 -----------------------------
