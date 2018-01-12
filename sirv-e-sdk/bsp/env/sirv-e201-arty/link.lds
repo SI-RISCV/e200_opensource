@@ -4,9 +4,9 @@ ENTRY( _start )
 
 MEMORY
 {
-  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
+  flash (rxai!w) : ORIGIN = 0x20000000, LENGTH = 8M
   itcm (rxai!w) : ORIGIN = 0x80000000, LENGTH = 64K
-  ram (wxa!ri) : ORIGIN = 0x90000000, LENGTH = 16K
+  ram (wxa!ri) : ORIGIN = 0x90000000, LENGTH = 64K
 }
 
 
@@ -21,6 +21,7 @@ SECTIONS
 
   .ilalign         :
   {
+    . = ALIGN(4);
     PROVIDE( _itcm_lma = . );
   } >flash AT>flash 
 
@@ -42,25 +43,20 @@ SECTIONS
     KEEP (*(SORT_NONE(.fini)))
   } >itcm AT>flash 
 
+  . = ALIGN(4);
+
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
+  PROVIDE( _eitcm = . );
 
-  .rodata         :
-  {
-    *(.rdata)
-    *(.rodata .rodata.*)
-    *(.gnu.linkonce.r.*)
-  } >itcm AT>flash 
-
-  . = ALIGN(4);
 
   .preinit_array  :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >itcm AT>flash 
+  } >flash AT>flash 
 
   .init_array     :
   {
@@ -68,7 +64,7 @@ SECTIONS
     KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
     KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >itcm AT>flash 
+  } >flash AT>flash 
 
   .fini_array     :
   {
@@ -76,7 +72,7 @@ SECTIONS
     KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >itcm AT>flash 
+  } >flash AT>flash 
 
   .ctors          :
   {
@@ -98,7 +94,7 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
     KEEP (*(SORT(.ctors.*)))
     KEEP (*(.ctors))
-  } >itcm AT>flash 
+  } >flash AT>flash 
 
   .dtors          :
   {
@@ -107,7 +103,7 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
     KEEP (*(SORT(.dtors.*)))
     KEEP (*(.dtors))
-  } >itcm AT>flash 
+  } >flash AT>flash 
 
     . = ALIGN(4);
     PROVIDE( _eitcm = . );
@@ -126,6 +122,9 @@ SECTIONS
 
   .data          :
   {
+    *(.rdata)
+    *(.rodata .rodata.*)
+    *(.gnu.linkonce.r.*)
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
     . = ALIGN(8);
