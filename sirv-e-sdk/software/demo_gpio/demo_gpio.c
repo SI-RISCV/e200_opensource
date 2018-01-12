@@ -7,8 +7,7 @@
 #include "plic/plic_driver.h"
 #include "encoding.h"
 #include <unistd.h>
-// Bob comment out this becuase e203 does not support the A extension
-//#include "stdatomic.h"
+#include "stdatomic.h"
 
 void reset_demo (void);
 
@@ -56,9 +55,7 @@ void handle_m_time_interrupt(){
   // read the current value of the LEDS and invert them.
   uint32_t leds = GPIO_REG(GPIO_OUTPUT_VAL);
 
-  GPIO_REG(GPIO_OUTPUT_VAL) ^= ((0x1 << RED_LED_OFFSET)   |
-				(0x1 << GREEN_LED_OFFSET) |
-				(0x1 << BLUE_LED_OFFSET));
+  GPIO_REG(GPIO_OUTPUT_VAL) ^= ((0x1 << BLUE_LED_OFFSET));
   
   // Re-enable the timer interrupt.
   set_csr(mie, MIP_MTIP);
@@ -129,21 +126,23 @@ const char * instructions_msg_sirv = " \
                    ####    ####\n\
 \n\
 \n\
-                Silicion Integrated\n\
+                !! HummingBird !! \n\
 \n\
-            ####      #    #####   #    #\n\
-           #          #    #    #  #    #\n\
-            ####      #    #    #  #    #\n\
-                #     #    #####   #    #\n\
-           #    #     #    #   #    #  #\n\
-            ####      #    #    #    ##\n\
+   ######    ###    #####   #####          #     #\n\
+   #     #    #    #     # #     #         #     #\n\
+   #     #    #    #       #               #     #\n\
+   ######     #     #####  #        #####  #     #\n\
+   #   #      #          # #                #   #\n\
+   #    #     #    #     # #     #           # #\n\
+   #     #   ###    #####   #####             #\n\
 \n\
  ";
 
 void print_instructions() {
 
   //write (STDOUT_FILENO, instructions_msg, strlen(instructions_msg));
-  write (STDOUT_FILENO, instructions_msg_sirv, strlen(instructions_msg_sirv));
+  //write (STDOUT_FILENO, instructions_msg_sirv, strlen(instructions_msg_sirv));
+  printf ("%s",instructions_msg_sirv);
 
 }
 
@@ -247,12 +246,16 @@ int main(int argc, char **argv)
   GPIO_REG(GPIO_INPUT_EN)   |=  ((0x1 << BUTTON_0_OFFSET) | (0x1 << BUTTON_1_OFFSET) | (0x1 << BUTTON_2_OFFSET));
 #endif
 
-  GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-  GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-  GPIO_REG(GPIO_OUTPUT_VAL)  |=   (0x1 << BLUE_LED_OFFSET) ;
-  GPIO_REG(GPIO_OUTPUT_VAL)  &=  ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET)) ;
+//  GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET));
+//  GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+//  GPIO_REG(GPIO_OUTPUT_VAL)  |=  ((0x1 << RED_LED_OFFSET) | (0x1 << GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET));
+//  GPIO_REG(GPIO_OUTPUT_VAL)  &=  ~((0x1 << RED_LED_OFFSET) | (0x1 << GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 
   
+  GPIO_REG(GPIO_INPUT_EN) &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET) | (0x1<< PIN_16_OFFSET) | (0x1<< PIN_17_OFFSET) | (0x1<< PIN_18_OFFSET) | (0x1<< PIN_19_OFFSET));
+  GPIO_REG(GPIO_OUTPUT_EN) |= ((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET) | (0x1<< PIN_16_OFFSET) | (0x1<< PIN_17_OFFSET) | (0x1<< PIN_18_OFFSET) | (0x1<< PIN_19_OFFSET));
+  GPIO_REG(GPIO_OUTPUT_VAL) |= ((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET) | (0x1<< PIN_16_OFFSET) | (0x1<< PIN_17_OFFSET) | (0x1<< PIN_18_OFFSET) | (0x1<< PIN_19_OFFSET));
+  GPIO_REG(GPIO_OUTPUT_VAL) &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET) | (0x1<< PIN_16_OFFSET) | (0x1<< PIN_17_OFFSET) | (0x1<< PIN_18_OFFSET) | (0x1<< PIN_19_OFFSET));
   // For Bit-banging with Atomics demo.
   
   uint32_t bitbang_mask = 0;
@@ -275,6 +278,7 @@ int main(int argc, char **argv)
 	    PLIC_NUM_INTERRUPTS,
 	    PLIC_NUM_PRIORITIES);
 
+
   reset_demo();
 
   /**************************************************************************
@@ -286,9 +290,7 @@ int main(int argc, char **argv)
   // For Bit-banging with Atomics demo.
   
   while (1){
-    // Bob comment out this becuase e203 does not support the A extension
-    //atomic_fetch_xor_explicit(&GPIO_REG(GPIO_OUTPUT_VAL), bitbang_mask, memory_order_relaxed);
-    GPIO_REG(GPIO_OUTPUT_VAL) ^= bitbang_mask;
+    atomic_fetch_xor_explicit(&GPIO_REG(GPIO_OUTPUT_VAL), bitbang_mask, memory_order_relaxed);
   }
 
   return 0;

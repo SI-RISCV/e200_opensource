@@ -1,5 +1,5 @@
 TARGET = demo_gpio
-CFLAGS += -O2 -fno-builtin-printf -DUSE_PLIC -DUSE_M_TIME
+CFLAGS += -O2 -DUSE_PLIC -DUSE_M_TIME
 
 BSP_BASE = ../../bsp
 
