@@ -11,6 +11,8 @@ $(info Obtaining additional make variables from $(extra_configs))
 include $(extra_configs)
 endif
 
+GCCVER ?= 6
+
 # Default target
 BOARD ?= freedom-e300-hifive1
 PROGRAM ?= demo_gpio
@@ -106,11 +108,21 @@ toolchain_prefix := $(toolchain_builddir)/prefix
 
 RISCV_PATH ?= $(toolchain_prefix)
 
+ifeq ($(GCCVER),6)
 RISCV_GCC     := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-gcc)
 RISCV_GXX     := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-g++)
 RISCV_OBJDUMP := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-objdump)
 RISCV_GDB     := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-gdb)
 RISCV_AR      := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-ar)
+endif
+
+ifeq ($(GCCVER),7)
+RISCV_GCC     := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-gcc)
+RISCV_GXX     := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-g++)
+RISCV_OBJDUMP := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-objdump)
+RISCV_GDB     := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-gdb)
+RISCV_AR      := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-ar)
+endif
 
 PATH := $(abspath $(RISCV_PATH)/bin):$(PATH)
 
