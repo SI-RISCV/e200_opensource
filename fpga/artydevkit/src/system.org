@@ -27,7 +27,7 @@ module system
   inout wire sw_0,
   inout wire sw_1,
   inout wire sw_2,
-  input wire sw_3,
+  inout wire sw_3,
 
   // Buttons. First 3 used as GPIOs, the last is used as wakeup
   inout wire btn_0,
@@ -69,24 +69,14 @@ module system
 );
 
   wire clk_out1;
-  wire hfclk;
   wire mmcm_locked;
 
-  wire reset_core;
-  wire reset_bus;
   wire reset_periph;
-  wire reset_intcon_n;
-  wire reset_periph_n;
 
   // All wires connected to the chip top
   wire dut_clock;
   wire dut_reset;
   wire dut_io_pads_jtag_TCK_i_ival;
-  wire dut_io_pads_jtag_TCK_o_oval;
-  wire dut_io_pads_jtag_TCK_o_oe;
-  wire dut_io_pads_jtag_TCK_o_ie;
-  wire dut_io_pads_jtag_TCK_o_pue;
-  wire dut_io_pads_jtag_TCK_o_ds;
   wire dut_io_pads_jtag_TMS_i_ival;
   wire dut_io_pads_jtag_TMS_o_oval;
   wire dut_io_pads_jtag_TMS_o_oe;
@@ -94,23 +84,8 @@ module system
   wire dut_io_pads_jtag_TMS_o_pue;
   wire dut_io_pads_jtag_TMS_o_ds;
   wire dut_io_pads_jtag_TDI_i_ival;
-  wire dut_io_pads_jtag_TDI_o_oval;
-  wire dut_io_pads_jtag_TDI_o_oe;
-  wire dut_io_pads_jtag_TDI_o_ie;
-  wire dut_io_pads_jtag_TDI_o_pue;
-  wire dut_io_pads_jtag_TDI_o_ds;
-  wire dut_io_pads_jtag_TDO_i_ival;
   wire dut_io_pads_jtag_TDO_o_oval;
   wire dut_io_pads_jtag_TDO_o_oe;
-  wire dut_io_pads_jtag_TDO_o_ie;
-  wire dut_io_pads_jtag_TDO_o_pue;
-  wire dut_io_pads_jtag_TDO_o_ds;
-  wire dut_io_pads_jtag_TRST_n_i_ival;
-  wire dut_io_pads_jtag_TRST_n_o_oval;
-  wire dut_io_pads_jtag_TRST_n_o_oe;
-  wire dut_io_pads_jtag_TRST_n_o_ie;
-  wire dut_io_pads_jtag_TRST_n_o_pue;
-  wire dut_io_pads_jtag_TRST_n_o_ds;
   wire dut_io_pads_gpio_0_i_ival;
   wire dut_io_pads_gpio_0_o_oval;
   wire dut_io_pads_gpio_0_o_oe;
@@ -303,12 +278,7 @@ module system
   wire dut_io_pads_gpio_31_o_ie;
   wire dut_io_pads_gpio_31_o_pue;
   wire dut_io_pads_gpio_31_o_ds;
-  wire dut_io_pads_qspi_sck_i_ival = 1'b0;
   wire dut_io_pads_qspi_sck_o_oval;
-  wire dut_io_pads_qspi_sck_o_oe;
-  wire dut_io_pads_qspi_sck_o_ie;
-  wire dut_io_pads_qspi_sck_o_pue;
-  wire dut_io_pads_qspi_sck_o_ds;
   wire dut_io_pads_qspi_dq_0_i_ival;
   wire dut_io_pads_qspi_dq_0_o_oval;
   wire dut_io_pads_qspi_dq_0_o_oe;
@@ -333,47 +303,27 @@ module system
   wire dut_io_pads_qspi_dq_3_o_ie;
   wire dut_io_pads_qspi_dq_3_o_pue;
   wire dut_io_pads_qspi_dq_3_o_ds;
-  wire dut_io_pads_qspi_cs_0_i_ival = 1'b0;
   wire dut_io_pads_qspi_cs_0_o_oval;
-  wire dut_io_pads_qspi_cs_0_o_oe;
-  wire dut_io_pads_qspi_cs_0_o_ie;
-  wire dut_io_pads_qspi_cs_0_o_pue;
-  wire dut_io_pads_qspi_cs_0_o_ds;
   wire dut_io_pads_aon_erst_n_i_ival;
-  wire dut_io_pads_aon_erst_n_o_oval;
-  wire dut_io_pads_aon_erst_n_o_oe;
-  wire dut_io_pads_aon_erst_n_o_ie;
-  wire dut_io_pads_aon_erst_n_o_pue;
-  wire dut_io_pads_aon_erst_n_o_ds;
-  wire dut_io_pads_aon_lfextclk_i_ival;
-  wire dut_io_pads_aon_lfextclk_o_oval;
-  wire dut_io_pads_aon_lfextclk_o_oe;
-  wire dut_io_pads_aon_lfextclk_o_ie;
-  wire dut_io_pads_aon_lfextclk_o_pue;
-  wire dut_io_pads_aon_lfextclk_o_ds;
   wire dut_io_pads_aon_pmu_dwakeup_n_i_ival;
-  wire dut_io_pads_aon_pmu_dwakeup_n_o_oval;
-  wire dut_io_pads_aon_pmu_dwakeup_n_o_oe;
-  wire dut_io_pads_aon_pmu_dwakeup_n_o_ie;
-  wire dut_io_pads_aon_pmu_dwakeup_n_o_pue;
-  wire dut_io_pads_aon_pmu_dwakeup_n_o_ds;
-  wire dut_io_pads_aon_pmu_vddpaden_i_ival;
   wire dut_io_pads_aon_pmu_vddpaden_o_oval;
-  wire dut_io_pads_aon_pmu_vddpaden_o_oe;
-  wire dut_io_pads_aon_pmu_vddpaden_o_ie;
-  wire dut_io_pads_aon_pmu_vddpaden_o_pue;
-  wire dut_io_pads_aon_pmu_vddpaden_o_ds;
+  wire dut_io_pads_aon_pmu_padrst_o_oval ;
+  wire dut_io_pads_bootrom_n_i_ival;
+  wire dut_io_pads_dbgmode0_n_i_ival;
+  wire dut_io_pads_dbgmode1_n_i_ival;
+  wire dut_io_pads_dbgmode2_n_i_ival;
 
   //=================================================
   // Clock & Reset
 
-  wire SRST_n; // From FTDI Chip
+  //wire SRST_n; // From FTDI Chip
 
   mmcm ip_mmcm
   (
     .clk_in1(CLK100MHZ),
-    .clk_out1(hfclk), // 8.388 MHz = 32.768 kHz * 256
-    .clk_out2(), // 65 MHz
+    .clk_out1(clk_8388), // 8.388 MHz = 32.768 kHz * 256
+    //.clk_out2(), // 65 MHz
+    .clk_out2(clk_16M), // 16 MHz, this clock we set to 16MHz on Arty board
     .resetn(ck_rst),
     .locked(mmcm_locked)
   );
@@ -381,23 +331,24 @@ module system
   wire slowclk;
   clkdivider slowclkgen
   (
-    .clk(hfclk),
+    .clk(clk_8388),// We use this clock divide to 32.768KHz
     .reset(~mmcm_locked),
     .clk_out(slowclk)
   );
 
   reset_sys ip_reset_sys
   (
-    .slowest_sync_clk(hfclk),
-    .ext_reset_in(ck_rst & SRST_n), // Active-low
+    .slowest_sync_clk(clk_16M),
+    //.ext_reset_in(ck_rst & SRST_n), // Active-low
+    .ext_reset_in(ck_rst), // Active-low
     .aux_reset_in(1'b1),
     .mb_debug_sys_rst(1'b0),
     .dcm_locked(mmcm_locked),
-    .mb_reset(reset_core),
-    .bus_struct_reset(reset_bus),
+    .mb_reset(),
+    .bus_struct_reset(),
     .peripheral_reset(reset_periph),
-    .interconnect_aresetn(reset_intcon_n),
-    .peripheral_aresetn(reset_periph_n)
+    .interconnect_aresetn(),
+    .peripheral_aresetn()
   );
 
   //=================================================
@@ -699,7 +650,9 @@ module system
   );
   // This GPIO input is shared between FTDI TX pin and Arduino shield pin using SW[3]
   // see below for details
-  assign dut_io_pads_gpio_16_i_ival = sw_3 ? (iobuf_gpio_16_o & dut_io_pads_gpio_16_o_ie) : (uart_txd_in & dut_io_pads_gpio_16_o_ie);
+  //assign dut_io_pads_gpio_16_i_ival = sw_3 ? (iobuf_gpio_16_o & dut_io_pads_gpio_16_o_ie) : (uart_txd_in & dut_io_pads_gpio_16_o_ie);
+  //Bob: I hacked this, just let it always come from FDTI, and free the sw_3
+  assign dut_io_pads_gpio_16_i_ival = (uart_txd_in & dut_io_pads_gpio_16_o_ie);
 
   wire iobuf_gpio_17_o;
   IOBUF
@@ -972,10 +925,10 @@ module system
   (
     .O(iobuf_jtag_TCK_o),
     .IO(jd_2),
-    .I(dut_io_pads_jtag_TCK_o_oval),
-    .T(~dut_io_pads_jtag_TCK_o_oe)
+    .I(1'b0),
+    .T(1'b1)
   );
-  assign dut_io_pads_jtag_TCK_i_ival = iobuf_jtag_TCK_o & dut_io_pads_jtag_TCK_o_ie;
+  assign dut_io_pads_jtag_TCK_i_ival = iobuf_jtag_TCK_o ;
   PULLUP pullup_TCK (.O(jd_2));
 
   wire iobuf_jtag_TMS_o;
@@ -990,10 +943,10 @@ module system
   (
     .O(iobuf_jtag_TMS_o),
     .IO(jd_5),
-    .I(dut_io_pads_jtag_TMS_o_oval),
-    .T(~dut_io_pads_jtag_TMS_o_oe)
+    .I(1'b0),
+    .T(1'b1)
   );
-  assign dut_io_pads_jtag_TMS_i_ival = iobuf_jtag_TMS_o & dut_io_pads_jtag_TMS_o_ie;
+  assign dut_io_pads_jtag_TMS_i_ival = iobuf_jtag_TMS_o;
   PULLUP pullup_TMS (.O(jd_5));
 
   wire iobuf_jtag_TDI_o;
@@ -1008,10 +961,10 @@ module system
   (
     .O(iobuf_jtag_TDI_o),
     .IO(jd_4),
-    .I(dut_io_pads_jtag_TDI_o_oval),
-    .T(~dut_io_pads_jtag_TDI_o_oe)
+    .I(1'b0),
+    .T(1'b1)
   );
-  assign dut_io_pads_jtag_TDI_i_ival = iobuf_jtag_TDI_o & dut_io_pads_jtag_TDI_o_ie;
+  assign dut_io_pads_jtag_TDI_i_ival = iobuf_jtag_TDI_o;
   PULLUP pullup_TDI (.O(jd_4));
 
   wire iobuf_jtag_TDO_o;
@@ -1029,29 +982,28 @@ module system
     .I(dut_io_pads_jtag_TDO_o_oval),
     .T(~dut_io_pads_jtag_TDO_o_oe)
   );
-  assign dut_io_pads_jtag_TDO_i_ival = iobuf_jtag_TDO_o & dut_io_pads_jtag_TDO_o_ie;
 
-  wire iobuf_jtag_TRST_n_o;
-  IOBUF
-  #(
-    .DRIVE(12),
-    .IBUF_LOW_PWR("TRUE"),
-    .IOSTANDARD("DEFAULT"),
-    .SLEW("SLOW")
-  )
-  IOBUF_jtag_TRST_n
-  (
-    .O(iobuf_jtag_TRST_n_o),
-    .IO(jd_1),
-    .I(dut_io_pads_jtag_TRST_n_o_oval),
-    .T(~dut_io_pads_jtag_TRST_n_o_oe)
-  );
-  assign dut_io_pads_jtag_TRST_n_i_ival = iobuf_jtag_TRST_n_o & dut_io_pads_jtag_TRST_n_o_ie;
-  PULLUP pullup_TRST_n(.O(jd_1));
+  //wire iobuf_jtag_TRST_n_o;
+  //IOBUF
+  //#(
+  //  .DRIVE(12),
+  //  .IBUF_LOW_PWR("TRUE"),
+  //  .IOSTANDARD("DEFAULT"),
+  //  .SLEW("SLOW")
+  //)
+  //IOBUF_jtag_TRST_n
+  //(
+  //  .O(iobuf_jtag_TRST_n_o),
+  //  .IO(jd_1),
+  //  .I(dut_io_pads_jtag_TRST_n_o_oval),
+  //  .T(~dut_io_pads_jtag_TRST_n_o_oe)
+  //);
+  //assign dut_io_pads_jtag_TRST_n_i_ival = iobuf_jtag_TRST_n_o & dut_io_pads_jtag_TRST_n_o_ie;
+  //PULLUP pullup_TRST_n(.O(jd_1));
 
   // Mimic putting a pullup on this line (part of reset vote).
-  assign SRST_n = jd_6;
-  PULLUP pullup_SRST_n(.O(SRST_n));
+  //assign SRST_n = jd_6;
+  //PULLUP pullup_SRST_n(.O(SRST_n));
 
   //=================================================
   // Assignment of IOBUF "IO" pins to package pins
@@ -1088,7 +1040,6 @@ module system
   assign ck_io[17] = gpio_11; // A3 = PWM2(1)
   assign ck_io[18] = gpio_12; // A4 = PWM2(2) / SDA
   assign ck_io[19] = gpio_13; // A5 = PWM2(3) / SCL
-
   // Mirror outputs of GPIOs with PWM peripherals to RGB LEDs on Arty
   // assign RGB LED0 R,G,B inputs = PWM0(1,2,3) when iof_1 is active
   assign led0_r = dut_io_pads_gpio_1_o_oval & dut_io_pads_gpio_1_o_oe;
@@ -1126,48 +1077,32 @@ module system
   assign ck_sck = gpio_29;
 
   // Use the LEDs for some more useful debugging things.
-  assign led_0 = ck_rst;
-  assign led_1 = SRST_n;
+  assign led_0 = dut_io_pads_aon_pmu_vddpaden_o_oval;  //LD4
+  assign led_1 = dut_io_pads_aon_pmu_padrst_o_oval;		//LD5
   assign led_2 = dut_io_pads_aon_pmu_dwakeup_n_i_ival;
   assign led_3 = gpio_14;
 
-  e200_fpga_soc_top dut
+  // model select
+  assign sw_0 = dut_io_pads_bootrom_n_i_ival;   //
+  assign sw_1 = dut_io_pads_dbgmode0_n_i_ival;
+  assign sw_2 = dut_io_pads_dbgmode1_n_i_ival;
+  assign sw_3 = dut_io_pads_dbgmode2_n_i_ival;
+  //
+
+  e200_soc_top dut
   (
-    //.clock(hfclk),
-       // Use the low frequency clock, becuase the 65MHz have the timing violations 
-    .hfclk(hfclk),
-       // Note: this is not the SoC top level reset signal
-    .hfclkrst(),
+    .hfextclk(clk_16M),
+    .hfxoscen(),
+
+    .lfextclk(slowclk),
+    .lfxoscen(),
+
+       // Note: this is the real SoC top AON domain slow clock
     .io_pads_jtag_TCK_i_ival(dut_io_pads_jtag_TCK_i_ival),
-    .io_pads_jtag_TCK_o_oval(dut_io_pads_jtag_TCK_o_oval),
-    .io_pads_jtag_TCK_o_oe(dut_io_pads_jtag_TCK_o_oe),
-    .io_pads_jtag_TCK_o_ie(dut_io_pads_jtag_TCK_o_ie),
-    .io_pads_jtag_TCK_o_pue(dut_io_pads_jtag_TCK_o_pue),
-    .io_pads_jtag_TCK_o_ds(dut_io_pads_jtag_TCK_o_ds),
     .io_pads_jtag_TMS_i_ival(dut_io_pads_jtag_TMS_i_ival),
-    .io_pads_jtag_TMS_o_oval(dut_io_pads_jtag_TMS_o_oval),
-    .io_pads_jtag_TMS_o_oe(dut_io_pads_jtag_TMS_o_oe),
-    .io_pads_jtag_TMS_o_ie(dut_io_pads_jtag_TMS_o_ie),
-    .io_pads_jtag_TMS_o_pue(dut_io_pads_jtag_TMS_o_pue),
-    .io_pads_jtag_TMS_o_ds(dut_io_pads_jtag_TMS_o_ds),
     .io_pads_jtag_TDI_i_ival(dut_io_pads_jtag_TDI_i_ival),
-    .io_pads_jtag_TDI_o_oval(dut_io_pads_jtag_TDI_o_oval),
-    .io_pads_jtag_TDI_o_oe(dut_io_pads_jtag_TDI_o_oe),
-    .io_pads_jtag_TDI_o_ie(dut_io_pads_jtag_TDI_o_ie),
-    .io_pads_jtag_TDI_o_pue(dut_io_pads_jtag_TDI_o_pue),
-    .io_pads_jtag_TDI_o_ds(dut_io_pads_jtag_TDI_o_ds),
-    .io_pads_jtag_TDO_i_ival(dut_io_pads_jtag_TDO_i_ival),
     .io_pads_jtag_TDO_o_oval(dut_io_pads_jtag_TDO_o_oval),
     .io_pads_jtag_TDO_o_oe(dut_io_pads_jtag_TDO_o_oe),
-    .io_pads_jtag_TDO_o_ie(dut_io_pads_jtag_TDO_o_ie),
-    .io_pads_jtag_TDO_o_pue(dut_io_pads_jtag_TDO_o_pue),
-    .io_pads_jtag_TDO_o_ds(dut_io_pads_jtag_TDO_o_ds),
-    .io_pads_jtag_TRST_n_i_ival(dut_io_pads_jtag_TRST_n_i_ival),
-    .io_pads_jtag_TRST_n_o_oval(dut_io_pads_jtag_TRST_n_o_oval),
-    .io_pads_jtag_TRST_n_o_oe(dut_io_pads_jtag_TRST_n_o_oe),
-    .io_pads_jtag_TRST_n_o_ie(dut_io_pads_jtag_TRST_n_o_ie),
-    .io_pads_jtag_TRST_n_o_pue(dut_io_pads_jtag_TRST_n_o_pue),
-    .io_pads_jtag_TRST_n_o_ds(dut_io_pads_jtag_TRST_n_o_ds),
     .io_pads_gpio_0_i_ival(dut_io_pads_gpio_0_i_ival),
     .io_pads_gpio_0_o_oval(dut_io_pads_gpio_0_o_oval),
     .io_pads_gpio_0_o_oe(dut_io_pads_gpio_0_o_oe),
@@ -1360,12 +1295,7 @@ module system
     .io_pads_gpio_31_o_ie(dut_io_pads_gpio_31_o_ie),
     .io_pads_gpio_31_o_pue(dut_io_pads_gpio_31_o_pue),
     .io_pads_gpio_31_o_ds(dut_io_pads_gpio_31_o_ds),
-    .io_pads_qspi_sck_i_ival(dut_io_pads_qspi_sck_i_ival),
     .io_pads_qspi_sck_o_oval(dut_io_pads_qspi_sck_o_oval),
-    .io_pads_qspi_sck_o_oe(dut_io_pads_qspi_sck_o_oe),
-    .io_pads_qspi_sck_o_ie(dut_io_pads_qspi_sck_o_ie),
-    .io_pads_qspi_sck_o_pue(dut_io_pads_qspi_sck_o_pue),
-    .io_pads_qspi_sck_o_ds(dut_io_pads_qspi_sck_o_ds),
     .io_pads_qspi_dq_0_i_ival(dut_io_pads_qspi_dq_0_i_ival),
     .io_pads_qspi_dq_0_o_oval(dut_io_pads_qspi_dq_0_o_oval),
     .io_pads_qspi_dq_0_o_oe(dut_io_pads_qspi_dq_0_o_oe),
@@ -1390,38 +1320,19 @@ module system
     .io_pads_qspi_dq_3_o_ie(dut_io_pads_qspi_dq_3_o_ie),
     .io_pads_qspi_dq_3_o_pue(dut_io_pads_qspi_dq_3_o_pue),
     .io_pads_qspi_dq_3_o_ds(dut_io_pads_qspi_dq_3_o_ds),
-    .io_pads_qspi_cs_0_i_ival(dut_io_pads_qspi_cs_0_i_ival),
     .io_pads_qspi_cs_0_o_oval(dut_io_pads_qspi_cs_0_o_oval),
-    .io_pads_qspi_cs_0_o_oe(dut_io_pads_qspi_cs_0_o_oe),
-    .io_pads_qspi_cs_0_o_ie(dut_io_pads_qspi_cs_0_o_ie),
-    .io_pads_qspi_cs_0_o_pue(dut_io_pads_qspi_cs_0_o_pue),
-    .io_pads_qspi_cs_0_o_ds(dut_io_pads_qspi_cs_0_o_ds),
        // Note: this is the real SoC top level reset signal
     .io_pads_aon_erst_n_i_ival(dut_io_pads_aon_erst_n_i_ival),
-    .io_pads_aon_erst_n_o_oval(dut_io_pads_aon_erst_n_o_oval),
-    .io_pads_aon_erst_n_o_oe(dut_io_pads_aon_erst_n_o_oe),
-    .io_pads_aon_erst_n_o_ie(dut_io_pads_aon_erst_n_o_ie),
-    .io_pads_aon_erst_n_o_pue(dut_io_pads_aon_erst_n_o_pue),
-    .io_pads_aon_erst_n_o_ds(dut_io_pads_aon_erst_n_o_ds),
-       // Note: this is the real SoC top AON domain slow clock
-    .io_pads_aon_lfextclk_i_ival(dut_io_pads_aon_lfextclk_i_ival),
-    .io_pads_aon_lfextclk_o_oval(dut_io_pads_aon_lfextclk_o_oval),
-    .io_pads_aon_lfextclk_o_oe(dut_io_pads_aon_lfextclk_o_oe),
-    .io_pads_aon_lfextclk_o_ie(dut_io_pads_aon_lfextclk_o_ie),
-    .io_pads_aon_lfextclk_o_pue(dut_io_pads_aon_lfextclk_o_pue),
-    .io_pads_aon_lfextclk_o_ds(dut_io_pads_aon_lfextclk_o_ds),
     .io_pads_aon_pmu_dwakeup_n_i_ival(dut_io_pads_aon_pmu_dwakeup_n_i_ival),
-    .io_pads_aon_pmu_dwakeup_n_o_oval(dut_io_pads_aon_pmu_dwakeup_n_o_oval),
-    .io_pads_aon_pmu_dwakeup_n_o_oe(dut_io_pads_aon_pmu_dwakeup_n_o_oe),
-    .io_pads_aon_pmu_dwakeup_n_o_ie(dut_io_pads_aon_pmu_dwakeup_n_o_ie),
-    .io_pads_aon_pmu_dwakeup_n_o_pue(dut_io_pads_aon_pmu_dwakeup_n_o_pue),
-    .io_pads_aon_pmu_dwakeup_n_o_ds(dut_io_pads_aon_pmu_dwakeup_n_o_ds),
-    .io_pads_aon_pmu_vddpaden_i_ival(dut_io_pads_aon_pmu_vddpaden_i_ival),
     .io_pads_aon_pmu_vddpaden_o_oval(dut_io_pads_aon_pmu_vddpaden_o_oval),
-    .io_pads_aon_pmu_vddpaden_o_oe(dut_io_pads_aon_pmu_vddpaden_o_oe),
-    .io_pads_aon_pmu_vddpaden_o_ie(dut_io_pads_aon_pmu_vddpaden_o_ie),
-    .io_pads_aon_pmu_vddpaden_o_pue(dut_io_pads_aon_pmu_vddpaden_o_pue),
-    .io_pads_aon_pmu_vddpaden_o_ds(dut_io_pads_aon_pmu_vddpaden_o_ds)
+
+    .io_pads_aon_pmu_padrst_o_oval    (dut_io_pads_aon_pmu_padrst_o_oval ),
+
+    .io_pads_bootrom_n_i_ival       (dut_io_pads_bootrom_n_i_ival),
+
+    .io_pads_dbgmode0_n_i_ival       (dut_io_pads_dbgmode0_n_i_ival),
+    .io_pads_dbgmode1_n_i_ival       (dut_io_pads_dbgmode1_n_i_ival),
+    .io_pads_dbgmode2_n_i_ival       (dut_io_pads_dbgmode2_n_i_ival) 
   );
 
   // Assign reasonable values to otherwise unconnected inputs to chip top
@@ -1438,13 +1349,12 @@ module system
   (
     .O(iobuf_dwakeup_o),
     .IO(btn_3),
-    .I(~dut_io_pads_aon_pmu_dwakeup_n_o_oval),
-    .T(~dut_io_pads_aon_pmu_dwakeup_n_o_oe)
+    .I(1'b1),
+    .T(1'b1)
   );
-  assign dut_io_pads_aon_pmu_dwakeup_n_i_ival = (~iobuf_dwakeup_o) & dut_io_pads_aon_pmu_dwakeup_n_o_ie;
+  assign dut_io_pads_aon_pmu_dwakeup_n_i_ival = (~iobuf_dwakeup_o);
 
   assign dut_io_pads_aon_erst_n_i_ival = ~reset_periph;
-  assign dut_io_pads_aon_lfextclk_i_ival = slowclk;
 
   assign dut_io_pads_aon_pmu_vddpaden_i_ival = 1'b1;
 
@@ -1466,6 +1376,7 @@ module system
   assign dut_io_pads_qspi_dq_2_i_ival = qspi_ui_dq_i[2];
   assign dut_io_pads_qspi_dq_3_i_ival = qspi_ui_dq_i[3];
   assign qspi_sck = dut_io_pads_qspi_sck_o_oval;
+
 endmodule
 
 
