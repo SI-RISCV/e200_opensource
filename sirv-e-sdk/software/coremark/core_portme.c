@@ -29,12 +29,12 @@ static CORE_TICKS t0, t1;
 
 void start_time(void)
 {
-  t0 = get_timer_value();
+  t0 = get_cycle_value();
 }
 
 void stop_time(void)
 {
-  t1 = get_timer_value();
+  t1 = get_cycle_value();
 }
 
 CORE_TICKS get_time(void)

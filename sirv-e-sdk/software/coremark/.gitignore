@@ -1,9 +1,3 @@
 /*.o
-core_list_join.c
-core_main.c
-coremark.h
-core_matrix.c
-core_state.c
-core_util.c
 coremark
 
