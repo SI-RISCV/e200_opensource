@@ -43,6 +43,25 @@ What are you waiting for? Try it out now!
 
 Release History
 -----------------------------
+#### Jan 13, 2018
+
+    -- The 2nd official release, please clone this version if you want to use it
+         or reclone it (if you already cloned the earlier-test version).
+    -- Compared with earlier-test version, main updates includes:
+       ---- Change the default configuration (in rtl/e203/core/config.v) to 
+              * Add two stage of syncer for IRQ lines to core, not for function, but for timing
+              * Configure the ITCM and DTCM to 64KB by default
+              * Configure the Regfile as DFF based rather than latch based
+       ---- Update the SoC components and structure to make it in line with the latest SoC Spec
+              * Please check `e200_opensource/doc/HBird_OpenSource_MCU_SoC_Spec.pdf` for the details of SoC spec
+       ---- Update some internal core logics, mostly to enhance the timing and frequency, 
+            which is not matter much, please check the git history if you really care to.
+       ---- Note: This version still does not support the hardware-breakpoint yet, i.e.,
+              you cannot set the breakpoint to read-only address space (e.g., ROM, Flash).
+              But soft-break is okay, means you can use regular interactive debugger 
+              functionalities (including set breakpoint to the regular R/W address space).
+
+
 #### Oct 13, 2017
 
     -- The 1st official release, please clone this version if you want to use it
