@@ -202,16 +202,24 @@ module e203_exu_alu_lsuagu(
   `endif//}
 
  
-  wire agu_i_unalgnld = agu_addr_unalgn & agu_i_load;
-  wire agu_i_unalgnst = agu_addr_unalgn & agu_i_store;
-  wire agu_i_unalgnldst = agu_i_unalgnld | agu_i_unalgnst;
-  wire agu_i_algnld = (~agu_addr_unalgn) & agu_i_load;
-  wire agu_i_algnst = (~agu_addr_unalgn) & agu_i_store;
-  wire agu_i_algnldst = agu_i_algnld | agu_i_algnst;
+  wire agu_i_unalgnld = (agu_addr_unalgn & agu_i_load)
+                      ;
+  wire agu_i_unalgnst = (agu_addr_unalgn & agu_i_store) 
+                      ;
+  wire agu_i_unalgnldst = (agu_i_unalgnld | agu_i_unalgnst)
+                      ;
+  wire agu_i_algnld = (~agu_addr_unalgn) & agu_i_load
+                      ;
+  wire agu_i_algnst = (~agu_addr_unalgn) & agu_i_store
+                      ;
+  wire agu_i_algnldst = (agu_i_algnld | agu_i_algnst)
+                      ;
 
   `ifdef E203_SUPPORT_AMO//{
-  wire agu_i_unalgnamo = agu_addr_unalgn & agu_i_amo;
-  wire agu_i_algnamo = (~agu_addr_unalgn) & agu_i_amo;
+  wire agu_i_unalgnamo = (agu_addr_unalgn & agu_i_amo) 
+                        ;
+  wire agu_i_algnamo = ((~agu_addr_unalgn) & agu_i_amo) 
+                        ;
   `endif//E203_SUPPORT_AMO}
 
   wire agu_i_ofst0  = agu_i_amo | ((agu_i_load | agu_i_store) & agu_i_excl); 
@@ -598,27 +606,30 @@ module e203_exu_alu_lsuagu(
        `endif//E203_SUPPORT_AMO}
        ;
 
-  assign agu_o_cmt_buserr = 1'b0 
+  assign agu_o_cmt_buserr = (1'b0 
                 `ifdef E203_SUPPORT_AMO//{
                       | (agu_i_algnamo    & leftover_err_r) 
                       | (agu_i_unalgnamo  & 1'b0) 
                 `endif//E203_SUPPORT_AMO}
+                      )
                 ;
   assign agu_o_cmt_badaddr = agu_icb_cmd_addr;
 
 
-  assign agu_o_cmt_misalgn = 1'b0
+  assign agu_o_cmt_misalgn = (1'b0
                 `ifdef E203_SUPPORT_AMO//{
                        | agu_i_unalgnamo 
                 `endif//E203_SUPPORT_AMO}
                        | (agu_i_unalgnldst) //& agu_i_excl) We dont support unaligned load/store regardless it is AMO or not
+                       )
                        ;
   assign agu_o_cmt_ld      = agu_i_load & (~agu_i_excl); 
   assign agu_o_cmt_stamo   = agu_i_store | agu_i_amo | agu_i_excl;
 
   
   // The exception or error result cannot write-back
-  assign agu_o_wbck_err = agu_o_cmt_buserr | agu_o_cmt_misalgn;
+  assign agu_o_wbck_err = agu_o_cmt_buserr | agu_o_cmt_misalgn
+                          ;
 
 
   assign agu_icb_rsp_ready = 1'b1;

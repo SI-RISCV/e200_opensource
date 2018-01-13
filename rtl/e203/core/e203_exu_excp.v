@@ -34,6 +34,7 @@
 
 
 module e203_exu_excp(
+  output  commit_trap,
   output  core_wfi,
   output  wfi_halt_ifu_req,
   output  wfi_halt_exu_req,
@@ -70,7 +71,6 @@ module e203_exu_excp(
 
   input   excpirq_flush_ack,
   output  excpirq_flush_req,
-  output  nonalu_excpirq_flush_req,
   output  nonalu_excpirq_flush_req_raw,
   output  [`E203_PC_SIZE-1:0] excpirq_flush_add_op1,  
   output  [`E203_PC_SIZE-1:0] excpirq_flush_add_op2,  
@@ -139,7 +139,8 @@ module e203_exu_excp(
   ////////////////////////////////////////////////////////////////////////////
   // WFI flag generation
   //
-  wire wfi_req_hsked = wfi_halt_ifu_req & wfi_halt_ifu_ack & wfi_halt_exu_req & wfi_halt_exu_ack;
+  wire wfi_req_hsked = (wfi_halt_ifu_req & wfi_halt_ifu_ack & wfi_halt_exu_req & wfi_halt_exu_ack)
+                          ;
      // The wfi_flag will be set if there is a new WFI instruction halt req handshaked
   wire wfi_flag_set = wfi_req_hsked;
      // The wfi_flag will be cleared if there is interrupt pending, or debug entry request
@@ -166,11 +167,17 @@ module e203_exu_excp(
   sirv_gnrl_dfflr #(1) wfi_halt_req_dfflr (wfi_halt_req_ena, wfi_halt_req_nxt, wfi_halt_req_r, clk, rst_n);
     // In order to make sure the flush to IFU and halt to IFU is not asserte at same cycle
     //   we use the clr signal here to qualify it
-  assign wfi_halt_ifu_req = wfi_halt_req_r & (~wfi_halt_req_clr);
+  assign wfi_halt_ifu_req = (wfi_halt_req_r & (~wfi_halt_req_clr))
+                            ;
     // To cut the comb loops, we dont use the clr signal here to qualify, 
     //   the outcome is the halt-to-exu will be deasserted 1 cycle later than to-IFU
     //   but it doesnt matter much.
-  assign wfi_halt_exu_req = wfi_halt_req_r;
+  assign wfi_halt_exu_req = wfi_halt_req_r 
+                            ;
+
+
+
+
 
   wire irq_req;
   wire longp_need_flush;
@@ -215,8 +222,7 @@ module e203_exu_excp(
   //
 
   wire dbg_entry_flush_req  = dbg_entry_req & oitf_empty & alu_excp_i_pc_vld & (~longp_need_flush);
-  wire alu_excp_i_ready4dbg = (dbg_ebrk_req | dbg_trig_req) ? 
-                                (excpirq_flush_ack & oitf_empty & alu_excp_i_pc_vld & (~longp_need_flush)) : 1'b1;  
+  wire alu_excp_i_ready4dbg = (excpirq_flush_ack & oitf_empty & alu_excp_i_pc_vld & (~longp_need_flush));
 
   wire irq_flush_req        = irq_req & oitf_empty & alu_excp_i_pc_vld
                               & (~dbg_entry_req)
@@ -227,21 +233,24 @@ module e203_exu_excp(
                               & (~dbg_entry_req)
                               & (~longp_need_flush);
 
+  wire nonalu_dbg_entry_req;
   wire alu_excp_i_ready4nondbg =  alu_need_flush ? 
-                                (excpirq_flush_ack & oitf_empty & (~irq_req) & (~dbg_entry_req) & (~longp_need_flush))
+                                (excpirq_flush_ack & oitf_empty & (~irq_req) & (~nonalu_dbg_entry_req) & (~longp_need_flush))
                               : (  // The other higher priorty flush will override ALU commit
                                      (~irq_req)
-                                   & (~dbg_entry_req)
+                                   & (~nonalu_dbg_entry_req)
                                    & (~longp_need_flush)
                                 );
 
-  assign alu_excp_i_ready =  (dbg_ebrk_req | dbg_trig_req) ? alu_excp_i_ready4dbg : alu_excp_i_ready4nondbg;
+  wire alu_ebreakm_flush_req_novld;
+  wire alu_dbgtrig_flush_req_novld; 
+  assign alu_excp_i_ready =  (alu_ebreakm_flush_req_novld | alu_dbgtrig_flush_req_novld) ? alu_excp_i_ready4dbg : alu_excp_i_ready4nondbg;
+
+
 
 
   assign excpirq_flush_req  = longp_excp_flush_req | dbg_entry_flush_req | irq_flush_req | alu_excp_flush_req;
   wire   all_excp_flush_req = longp_excp_flush_req | alu_excp_flush_req;
-  assign nonalu_excpirq_flush_req = longp_excp_flush_req | 
-      (dbg_entry_flush_req & (~(dbg_ebrk_req | dbg_trig_req))) | irq_flush_req;
 
   assign nonalu_excpirq_flush_req_raw = 
              longp_need_flush | 
@@ -250,6 +259,7 @@ module e203_exu_excp(
 
 
   wire excpirq_taken_ena = excpirq_flush_req & excpirq_flush_ack;
+  assign commit_trap     = excpirq_taken_ena;
 
   wire excp_taken_ena      = all_excp_flush_req  & excpirq_taken_ena;
   wire irq_taken_ena       = irq_flush_req       & excpirq_taken_ena;
@@ -295,8 +305,10 @@ module e203_exu_excp(
   assign dbg_trig_req = alu_dbgtrig_flush_req & (~step_req_r);
   assign dbg_ebrk_req = alu_ebreakm_flush_req & (~alu_dbgtrig_flush_req) & (~step_req_r);
   wire   dbg_irq_req  = dbg_irq_r  & (~alu_ebreakm_flush_req) & (~alu_dbgtrig_flush_req) & (~step_req_r);
+  wire   nonalu_dbg_irq_req  = dbg_irq_r & (~step_req_r);
         // The step have higher priority, and will preempt the halt
   wire   dbg_halt_req = dbg_halt_r & (~dbg_irq_r) & (~alu_ebreakm_flush_req) & (~alu_dbgtrig_flush_req) & (~step_req_r) & (~dbg_step_r);
+  wire   nonalu_dbg_halt_req = dbg_halt_r & (~dbg_irq_r) & (~step_req_r) & (~dbg_step_r);
   
   // The debug-step request will be set when currently the step_r is high, and one 
   //   instruction (in non debug_mode) have been executed
@@ -311,11 +323,25 @@ module e203_exu_excp(
       // The debug-mode will mask off the debug-mode-entry
   wire dbg_entry_mask  = dbg_mode;
   assign dbg_entry_req = (~dbg_entry_mask) & (
+                  // Why do we put a AMO_wait here, because the AMO instructions 
+                  //   is atomic, we must wait it to complete its all atomic operations
+                  //   and during wait cycles irq must be masked, otherwise the irq_req
+                  //   will block ALU commit (including AMO) and cause a deadlock
+                  //   
+                  // Note: Only the async irq and halt and trig need to have this amo_wait to check
+                  //   others are sync event, no need to check with this
                                               (dbg_irq_req & (~amo_wait))
                                             | (dbg_halt_req & (~amo_wait))
                                             | dbg_step_req
                                             | (dbg_trig_req & (~amo_wait))
                                             | dbg_ebrk_req
+                                            );
+  assign nonalu_dbg_entry_req = (~dbg_entry_mask) & (
+                                              (nonalu_dbg_irq_req & (~amo_wait))
+                                            | (nonalu_dbg_halt_req & (~amo_wait))
+                                            | dbg_step_req
+                                            //| (dbg_trig_req & (~amo_wait))
+                                            //| dbg_ebrk_req
                                             );
   assign nonalu_dbg_entry_req_raw = (~dbg_entry_mask) & (
                                               dbg_irq_r 
@@ -362,9 +388,9 @@ module e203_exu_excp(
 
   assign irq_cause[31] = 1'b1;
   assign irq_cause[30:4] = 27'b0;
-  assign irq_cause[3:0]  =  sft_irq_r ? 4'd3  :  // 3  Machine software interrupt
-                            tmr_irq_r ? 4'd7  :  // 7  Machine timer interrupt
-                            ext_irq_r ? 4'd11 :  // 11 Machine external interrupt
+  assign irq_cause[3:0]  =  (sft_irq_r & msie_r) ? 4'd3  :  // 3  Machine software interrupt
+                            (tmr_irq_r & mtie_r) ? 4'd7  :  // 7  Machine timer interrupt
+                            (ext_irq_r & meie_r) ? 4'd11 :  // 11 Machine external interrupt
                                         4'b0;
 
   ////////////////////////////////////////////////////////////////////////////
@@ -376,7 +402,8 @@ module e203_exu_excp(
 
   // The ebreak instruction will generated regular exception when the ebreakm
   //    bit of DCSR reg is not set
-  wire alu_excp_i_ebreak4excp = alu_excp_i_ebreak & ((~dbg_ebreakm_r) | dbg_mode);
+  wire alu_excp_i_ebreak4excp = (alu_excp_i_ebreak & ((~dbg_ebreakm_r) | dbg_mode))
+                                ;
   // The ebreak instruction will enter into the debug-mode when the ebreakm
   //    bit of DCSR reg is set
   wire alu_excp_i_ebreak4dbg = alu_excp_i_ebreak 
@@ -385,8 +412,10 @@ module e203_exu_excp(
                                & (~dbg_mode);//Not in debug mode
 
   assign alu_ebreakm_flush_req = alu_excp_i_valid & alu_excp_i_ebreak4dbg;
+  assign alu_ebreakm_flush_req_novld = alu_excp_i_ebreak4dbg;
     `ifndef E203_SUPPORT_TRIGM//{
     // We dont support the HW Trigger Module yet
+  assign alu_dbgtrig_flush_req_novld = 1'b0;
   assign alu_dbgtrig_flush_req = 1'b0;
     `endif
 

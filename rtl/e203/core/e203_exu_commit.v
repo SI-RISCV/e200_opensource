@@ -36,6 +36,8 @@
 `include "e203_defines.v"
 
 module e203_exu_commit(
+  output  commit_mret,
+  output  commit_trap,
   output  core_wfi,
   output  nonflush_cmt_ena,
 
@@ -165,7 +167,6 @@ module e203_exu_commit(
 
   wire                      cmt_dret_ena;
 
-  wire nonalu_excpirq_flush_req;
   wire nonalu_excpirq_flush_req_raw;
 
   e203_exu_branchslv u_e203_exu_branchslv(
@@ -213,7 +214,9 @@ module e203_exu_commit(
 
   wire cmt_ena;
 
+
   e203_exu_excp u_e203_exu_excp(
+    .commit_trap           (commit_trap     ),
     .core_wfi              (core_wfi        ),
     .wfi_halt_ifu_req      (wfi_halt_ifu_req),
     .wfi_halt_exu_req      (wfi_halt_exu_req),
@@ -289,7 +292,6 @@ module e203_exu_commit(
 
     .excpirq_flush_ack        (excpirq_flush_ack       ),
     .excpirq_flush_req        (excpirq_flush_req       ),
-    .nonalu_excpirq_flush_req (nonalu_excpirq_flush_req),
     .nonalu_excpirq_flush_req_raw (nonalu_excpirq_flush_req_raw ),
     .excpirq_flush_add_op1    (excpirq_flush_add_op1),  
     .excpirq_flush_add_op2    (excpirq_flush_add_op2),  
@@ -306,10 +308,8 @@ module e203_exu_commit(
 
  
 
-                                        // The Exception is always acknowledged first
   assign excpirq_flush_ack = pipe_flush_ack;
-                                        // The Non-ALU flush will override the branch flush
-  assign alu_brchmis_flush_ack = pipe_flush_ack & (~nonalu_excpirq_flush_req);
+  assign alu_brchmis_flush_ack = pipe_flush_ack;
 
   assign pipe_flush_req = excpirq_flush_req | alu_brchmis_flush_req;
             
@@ -331,15 +331,19 @@ module e203_exu_commit(
   assign flush_pulse = pipe_flush_ack & pipe_flush_req;
   assign flush_req   = nonalu_excpirq_flush_req_raw;
 
+  assign commit_mret = cmt_mret_ena;
+
 `ifndef FPGA_SOURCE//{
 `ifndef DISABLE_SV_ASSERTION//{
 //synopsys translate_off
 
+ `ifndef E203_HAS_LOCKSTEP//{
 CHECK_1HOT_FLUSH_HALT:
   assert property (@(posedge clk) disable iff (~rst_n)
                      ($onehot0({wfi_halt_ifu_req,pipe_flush_req}))
                   )
   else $fatal ("\n Error: Oops, detected non-onehot0 value for halt and flush req!!! This should never happen. \n");
+ `endif//}
 
 //synopsys translate_on
 `endif//}

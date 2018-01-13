@@ -55,7 +55,7 @@ module e203_exu_regfile(
   `ifdef E203_REGFILE_LATCH_BASED //{
   // Use DFF to buffer the write-port
   wire [`E203_XLEN-1:0] wbck_dest_dat_r;
-  sirv_gnrl_dffl #(`E203_XLEN)        wbck_dat_dffl (wbck_dest_wen, wbck_dest_dat, wbck_dest_dat_r, clk);
+  sirv_gnrl_dffl #(`E203_XLEN) wbck_dat_dffl (wbck_dest_wen, wbck_dest_dat, wbck_dest_dat_r, clk);
   wire [`E203_RFREG_NUM-1:0] clk_rf_ltch;
   `endif//}
 

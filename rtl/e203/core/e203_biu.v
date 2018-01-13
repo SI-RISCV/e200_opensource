@@ -34,6 +34,7 @@
 `include "e203_defines.v"
 
 module e203_biu(
+
   output                         biu_active,
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
@@ -948,6 +949,7 @@ module e203_biu(
   assign  ifuerr_icb_rsp_err   = 1'b1;
   assign  ifuerr_icb_rsp_excl_ok = 1'b0;
   assign  ifuerr_icb_rsp_rdata   = {`E203_XLEN{1'b0}};
+
 
 endmodule
 

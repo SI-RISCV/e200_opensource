@@ -33,7 +33,9 @@
 
 `include "e203_defines.v"
 
-module e203_irq_sync (
+module e203_irq_sync #(
+  parameter MASTER = 1 
+) (
   input  clk,    
   input  rst_n,   
 
@@ -47,54 +49,69 @@ module e203_irq_sync (
   output tmr_irq_r,
   output dbg_irq_r 
 );
-`ifdef E203_IRQ_NEED_SYNC//{
-sirv_gnrl_sync # (
-  .DP(`E203_ASYNC_FF_LEVELS),
-  .DW(1)
-) u_dbg_irq_sync(
-    .din_a    (dbg_irq_a),
-    .dout     (dbg_irq_r),
-    .clk      (clk  ),
-    .rst_n    (rst_n) 
-);
-
-
-sirv_gnrl_sync # (
-  .DP(`E203_ASYNC_FF_LEVELS),
-  .DW(1)
-) u_ext_irq_sync(
-    .din_a    (ext_irq_a),
-    .dout     (ext_irq_r),
-    .clk      (clk  ),
-    .rst_n    (rst_n) 
-);
-
-sirv_gnrl_sync # (
-  .DP(`E203_ASYNC_FF_LEVELS),
-  .DW(1)
-) u_sft_irq_sync(
-    .din_a    (sft_irq_a),
-    .dout     (sft_irq_r),
-    .clk      (clk  ),
-    .rst_n    (rst_n) 
-);
-
-sirv_gnrl_sync # (
-  .DP(`E203_ASYNC_FF_LEVELS),
-  .DW(1)
-) u_tmr_irq_sync(
-    .din_a    (tmr_irq_a),
-    .dout     (tmr_irq_r),
-    .clk      (clk  ),
-    .rst_n    (rst_n) 
-);
-`else//}{
-  assign ext_irq_r = ext_irq_a;
-  assign sft_irq_r = sft_irq_a;
-  assign tmr_irq_r = tmr_irq_a;
-  assign dbg_irq_r = dbg_irq_a;
-`endif//}
-
+generate 
+  if(MASTER == 1) begin:master_gen
+      `ifndef E203_HAS_LOCKSTEP//{
+      `ifdef E203_IRQ_NEED_SYNC//{
+      sirv_gnrl_sync # (
+        .DP(`E203_ASYNC_FF_LEVELS),
+        .DW(1)
+      ) u_dbg_irq_sync(
+          .din_a    (dbg_irq_a),
+          .dout     (dbg_irq_r),
+          .clk      (clk  ),
+          .rst_n    (rst_n) 
+      );
+      
+      
+      sirv_gnrl_sync # (
+        .DP(`E203_ASYNC_FF_LEVELS),
+        .DW(1)
+      ) u_ext_irq_sync(
+          .din_a    (ext_irq_a),
+          .dout     (ext_irq_r),
+          .clk      (clk  ),
+          .rst_n    (rst_n) 
+      );
+      
+      sirv_gnrl_sync # (
+        .DP(`E203_ASYNC_FF_LEVELS),
+        .DW(1)
+      ) u_sft_irq_sync(
+          .din_a    (sft_irq_a),
+          .dout     (sft_irq_r),
+          .clk      (clk  ),
+          .rst_n    (rst_n) 
+      );
+      
+      sirv_gnrl_sync # (
+        .DP(`E203_ASYNC_FF_LEVELS),
+        .DW(1)
+      ) u_tmr_irq_sync(
+          .din_a    (tmr_irq_a),
+          .dout     (tmr_irq_r),
+          .clk      (clk  ),
+          .rst_n    (rst_n) 
+      );
+      `else//}{
+        assign ext_irq_r = ext_irq_a;
+        assign sft_irq_r = sft_irq_a;
+        assign tmr_irq_r = tmr_irq_a;
+        assign dbg_irq_r = dbg_irq_a;
+      `endif//}
+      `endif//}
+      
+      
+  end
+  else begin:slave_gen
+         // Just pass through for slave in lockstep mode
+     assign ext_irq_r = ext_irq_a;
+     assign sft_irq_r = sft_irq_a;
+     assign tmr_irq_r = tmr_irq_a;
+     assign dbg_irq_r = dbg_irq_a;
+   
+  end
+endgenerate
 
 
 endmodule

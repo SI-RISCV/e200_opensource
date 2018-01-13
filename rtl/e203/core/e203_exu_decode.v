@@ -632,6 +632,9 @@ module e203_exu_decode(
                    );
 
   // All the RV32IMA need RS1 register except the
+  //   * lui
+  //   * auipc
+  //   * jal
   //   * fence, fence_i 
   //   * ecall, ebreak  
   //   * csrrwi
@@ -640,7 +643,10 @@ module e203_exu_decode(
   wire rv32_need_rs1 =
                       (~rv32_rs1_x0) & (
                     (
-                      (~rv32_fence_fencei)
+                      (~rv32_lui)
+                    & (~rv32_auipc)
+                    & (~rv32_jal)
+                    & (~rv32_fence_fencei)
                     & (~rv32_ecall_ebreak_ret_wfi)
                     & (~rv32_csrrwi)
                     & (~rv32_csrrsi)

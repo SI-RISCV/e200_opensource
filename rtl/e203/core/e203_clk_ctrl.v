@@ -48,6 +48,7 @@ module e203_clk_ctrl (
   output clk_aon,
 
 
+
   input  core_ifu_active,
   input  core_exu_active,
   input  core_lsu_active,
@@ -88,6 +89,7 @@ module e203_clk_ctrl (
   wire exu_clk_en = core_cgstop | (core_exu_active);
   wire lsu_clk_en = core_cgstop | (core_lsu_active);
   wire biu_clk_en = core_cgstop | (core_biu_active);
+
 
 
 

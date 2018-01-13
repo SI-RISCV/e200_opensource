@@ -34,7 +34,25 @@
 
 `include "e203_defines.v"
 
-module e203_cpu(
+module e203_cpu #(
+    parameter MASTER = 1
+)(
+  output [`E203_PC_SIZE-1:0] inspect_pc,
+  output inspect_dbg_irq      ,
+  output inspect_mem_cmd_valid,
+  output inspect_mem_cmd_ready,
+  output inspect_mem_rsp_valid,
+  output inspect_mem_rsp_ready,
+  output inspect_core_clk          ,
+  output core_csr_clk      ,
+  `ifdef E203_HAS_ITCM
+  output rst_itcm,
+  `endif
+  `ifdef E203_HAS_DTCM
+  output rst_dtcm,
+  `endif
+
+
   output  core_wfi,
   output  tm_stop,
   
@@ -293,12 +311,10 @@ module e203_cpu(
   // The ITCM/DTCM clk and rst
   `ifdef E203_HAS_ITCM
   wire clk_itcm;
-  wire rst_itcm;
   wire itcm_active;
   `endif
-  `ifdef E203_HAS_ITCM
+  `ifdef E203_HAS_DTCM
   wire clk_dtcm;
-  wire rst_dtcm;
   wire dtcm_active;
   `endif
 
@@ -308,23 +324,25 @@ module e203_cpu(
 
   // The reset ctrl and clock ctrl should be in the power always-on domain
 
-  e203_reset_ctrl u_e203_reset_ctrl (
+  e203_reset_ctrl #(.MASTER(MASTER)) u_e203_reset_ctrl (
     .clk        (clk_aon  ),
     .rst_n      (rst_n    ),
     .test_mode  (test_mode),
 
     .rst_core   (rst_core),
 
+
   `ifdef E203_HAS_ITCM
     .rst_itcm   (rst_itcm),
   `endif
-  `ifdef E203_HAS_ITCM
+  `ifdef E203_HAS_DTCM
     .rst_dtcm   (rst_dtcm),
   `endif
 
     .rst_aon   (rst_aon) 
 
   );
+
 
 
   e203_clk_ctrl u_e203_clk_ctrl(
@@ -335,6 +353,7 @@ module e203_cpu(
     .clk_aon      (clk_aon      ),
 
     .core_cgstop   (core_cgstop),
+    
 
 
     .clk_core_ifu (clk_core_ifu      ),
@@ -363,10 +382,11 @@ module e203_cpu(
   wire sft_irq_r;
   wire tmr_irq_r;
 
-  e203_irq_sync u_e203_irq_sync(
+  e203_irq_sync  #(.MASTER(MASTER)) u_e203_irq_sync(
     .clk       (clk_aon  ),
     .rst_n     (rst_aon  ),
                          
+
     .dbg_irq_a (dbg_irq_a),
     .dbg_irq_r (dbg_irq_r),
 
@@ -424,8 +444,42 @@ module e203_cpu(
   wire [`E203_XLEN-1:0]              lsu2dtcm_icb_rsp_rdata;
   `endif//}
 
+  `ifdef E203_HAS_CSR_EAI//{
+  wire         eai_csr_valid;
+  wire         eai_csr_ready;
+  wire  [31:0] eai_csr_addr;
+  wire         eai_csr_wr;
+  wire  [31:0] eai_csr_wdata;
+  wire  [31:0] eai_csr_rdata;
+
+  // This is an empty module to just connect the EAI CSR interface, 
+  //  user can hack it to become a real one
+  e203_extend_csr u_e203_extend_csr(
+    .eai_csr_valid (eai_csr_valid),
+    .eai_csr_ready (eai_csr_ready),
+    .eai_csr_addr  (eai_csr_addr ),
+    .eai_csr_wr    (eai_csr_wr   ),
+    .eai_csr_wdata (eai_csr_wdata),
+    .eai_csr_rdata (eai_csr_rdata),
+    .clk           (clk_core_exu ),
+    .rst_n         (rst_core ) 
+   );
+  `endif//}
+
  
+
   e203_core u_e203_core(
+    .inspect_pc            (inspect_pc),
+
+
+  `ifdef E203_HAS_CSR_EAI//{
+    .eai_csr_valid (eai_csr_valid),
+    .eai_csr_ready (eai_csr_ready),
+    .eai_csr_addr  (eai_csr_addr ),
+    .eai_csr_wr    (eai_csr_wr   ),
+    .eai_csr_wdata (eai_csr_wdata),
+    .eai_csr_rdata (eai_csr_rdata),
+  `endif//}
     .tcm_cgstop              (tcm_cgstop),
     .core_cgstop             (core_cgstop),
     .tm_stop                 (tm_stop),
@@ -741,5 +795,14 @@ module e203_cpu(
     .rst_n                   (rst_dtcm) 
   );
   `endif//}
+
+
+  assign inspect_dbg_irq       = dbg_irq_a;
+  assign inspect_mem_cmd_valid = mem_icb_cmd_valid;
+  assign inspect_mem_cmd_ready = mem_icb_cmd_ready;
+  assign inspect_mem_rsp_valid = mem_icb_rsp_valid;
+  assign inspect_mem_rsp_ready = mem_icb_rsp_ready;
+  assign inspect_core_clk   = clk;
+  assign core_csr_clk       = clk_core_exu;
 
 endmodule

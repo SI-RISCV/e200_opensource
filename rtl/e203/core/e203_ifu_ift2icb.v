@@ -37,6 +37,7 @@
 module e203_ifu_ift2icb(
 
 
+  input  itcm_nohold,
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
   // Fetch Interface to memory system, internal protocol
@@ -374,7 +375,7 @@ module e203_ifu_ift2icb(
   // The current accessing PC is same as last accessed ICB address
   wire ifu_req_lane_holdup = 1'b0
             `ifdef E203_HAS_ITCM //{
-            | (ifu_req_pc2itcm & ifu2itcm_holdup) 
+            | (ifu_req_pc2itcm & ifu2itcm_holdup & (~itcm_nohold)) 
             `endif//}
             ;
 

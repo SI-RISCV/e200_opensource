@@ -33,6 +33,8 @@
 `include "e203_defines.v"
 
 module e203_lsu_ctrl(
+  input  commit_mret,
+  input  commit_trap,
   output lsu_ctrl_active,
   `ifdef E203_HAS_ITCM //{
   input [`E203_ADDR_SIZE-1:0] itcm_region_indic,
@@ -528,7 +530,9 @@ module e203_lsu_ctrl(
   // Set when the Excl-load instruction going
   wire excl_flg_set = splt_fifo_wen & arbt_icb_cmd_usr[USR_PACK_EXCL] & arbt_icb_cmd_read & arbt_icb_cmd_excl;
   // Clear when any going store hit the same address
-  wire excl_flg_clr = splt_fifo_wen & (~arbt_icb_cmd_read) & icb_cmdaddr_eq_excladdr & excl_flg_r;
+  //   also clear if there is any trap happened
+  wire excl_flg_clr = (splt_fifo_wen & (~arbt_icb_cmd_read) & icb_cmdaddr_eq_excladdr & excl_flg_r) 
+                    | commit_trap | commit_mret;
   wire excl_flg_ena = excl_flg_set | excl_flg_clr;
   wire excl_flg_nxt = excl_flg_set | (~excl_flg_clr);
   sirv_gnrl_dfflr #(1) excl_flg_dffl (excl_flg_ena, excl_flg_nxt, excl_flg_r, clk, rst_n);

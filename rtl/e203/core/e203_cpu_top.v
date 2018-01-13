@@ -35,6 +35,18 @@
 `include "e203_defines.v"
 
 module e203_cpu_top(
+  output [`E203_PC_SIZE-1:0] inspect_pc,
+  output inspect_dbg_irq      ,
+  output inspect_mem_cmd_valid,
+  output inspect_mem_cmd_ready,
+  output inspect_mem_rsp_valid,
+  output inspect_mem_rsp_ready,
+  output inspect_core_clk     ,
+
+  output core_csr_clk         ,
+
+    
+
     // If this signal is high, then indicate the Core have executed WFI instruction
     //   and entered into the sleep state
   output core_wfi,
@@ -229,16 +241,19 @@ module e203_cpu_top(
   input  rst_n
   );
 
-
   `ifdef E203_HAS_ITCM //{
   wire  itcm_ls;
+
+  wire rst_itcm;
 
   wire                          itcm_ram_cs  ;
   wire                          itcm_ram_we  ;
   wire  [`E203_ITCM_RAM_AW-1:0] itcm_ram_addr;
   wire  [`E203_ITCM_RAM_MW-1:0] itcm_ram_wem ;
   wire  [`E203_ITCM_RAM_DW-1:0] itcm_ram_din ;
+    `ifndef E203_HAS_LOCKSTEP//{
   wire  [`E203_ITCM_RAM_DW-1:0] itcm_ram_dout;
+    `endif//}
   wire                          clk_itcm_ram ;
   `endif//}
 
@@ -246,16 +261,107 @@ module e203_cpu_top(
   `ifdef E203_HAS_DTCM //{
   wire  dtcm_ls;
 
+  wire rst_dtcm;
   wire                          dtcm_ram_cs  ;
   wire                          dtcm_ram_we  ;
   wire  [`E203_DTCM_RAM_AW-1:0] dtcm_ram_addr;
   wire  [`E203_DTCM_RAM_MW-1:0] dtcm_ram_wem ;
   wire  [`E203_DTCM_RAM_DW-1:0] dtcm_ram_din ;
+    `ifndef E203_HAS_LOCKSTEP//{
   wire  [`E203_DTCM_RAM_DW-1:0] dtcm_ram_dout;
+    `endif//}
   wire                          clk_dtcm_ram ;
   `endif//}
 
-  e203_cpu u_e203_cpu(
+
+`ifndef E203_HAS_LOCKSTEP//{
+  wire ppi_icb_rsp_excl_ok   ;
+  wire fio_icb_rsp_excl_ok   ;
+  wire plic_icb_rsp_excl_ok  ;
+  wire clint_icb_rsp_excl_ok ;
+  wire mem_icb_rsp_excl_ok   ;
+
+
+    `ifdef E203_HAS_PPI
+  wire ppi_icb_enable;
+  wire [`E203_ADDR_SIZE-1:0] ppi_region_indic;
+    `endif
+
+    `ifdef E203_HAS_PLIC
+  wire plic_icb_enable;
+  wire [`E203_ADDR_SIZE-1:0] plic_region_indic;
+    `endif
+
+    `ifdef E203_HAS_CLINT
+  wire clint_icb_enable;
+  wire [`E203_ADDR_SIZE-1:0] clint_region_indic;
+    `endif
+
+    `ifdef E203_HAS_MEM_ITF
+  wire mem_icb_enable;
+    `endif
+
+    `ifdef E203_HAS_FIO
+  wire fio_icb_enable;
+  wire [`E203_ADDR_SIZE-1:0] fio_region_indic;
+    `endif
+
+`endif//}
+
+    assign ppi_icb_rsp_excl_ok   = 1'b0;
+    assign fio_icb_rsp_excl_ok   = 1'b0;
+    assign plic_icb_rsp_excl_ok  = 1'b0;
+    assign clint_icb_rsp_excl_ok = 1'b0;
+    assign mem_icb_rsp_excl_ok   = 1'b0;
+
+
+    `ifdef E203_HAS_PPI
+    assign ppi_icb_enable = 1'b1;
+    assign ppi_region_indic = `E203_PPI_ADDR_BASE;
+    `else
+    assign ppi_icb_enable = 1'b0;
+    `endif
+
+    `ifdef E203_HAS_PLIC
+    assign plic_icb_enable = 1'b1;
+    assign plic_region_indic = `E203_PLIC_ADDR_BASE;
+    `else
+    assign plic_icb_enable = 1'b0;
+    `endif
+
+    `ifdef E203_HAS_CLINT
+    assign clint_icb_enable = 1'b1;
+    assign clint_region_indic = `E203_CLINT_ADDR_BASE;
+    `else
+    assign clint_icb_enable = 1'b0;
+    `endif
+
+    `ifdef E203_HAS_MEM_ITF
+    assign mem_icb_enable = 1'b1;
+    `else
+    assign mem_icb_enable = 1'b0;
+    `endif
+
+    `ifdef E203_HAS_FIO
+    assign fio_icb_enable = 1'b1;
+    assign fio_region_indic = `E203_FIO_ADDR_BASE;
+    `else
+    assign fio_icb_enable = 1'b0;
+    `endif
+
+  e203_cpu #(.MASTER(1)) u_e203_cpu(
+    .inspect_pc               (inspect_pc), 
+    .inspect_dbg_irq          (inspect_dbg_irq      ),
+    .inspect_mem_cmd_valid    (inspect_mem_cmd_valid), 
+    .inspect_mem_cmd_ready    (inspect_mem_cmd_ready), 
+    .inspect_mem_rsp_valid    (inspect_mem_rsp_valid),
+    .inspect_mem_rsp_ready    (inspect_mem_rsp_ready),
+    .inspect_core_clk         (inspect_core_clk     ),
+
+
+    .core_csr_clk          (core_csr_clk      ),
+
+
     .tm_stop (tm_stop),
     .pc_rtvec(pc_rtvec),
   `ifdef E203_HAS_ITCM //{
@@ -290,11 +396,11 @@ module e203_cpu_top(
     .dbg_ebreakm_r   (dbg_ebreakm_r),
     .dbg_stopcycle   (dbg_stopcycle),
 
-    .core_mhartid            (core_mhartid),  
-    .dbg_irq_a               (dbg_irq_a),
-    .ext_irq_a               (ext_irq_a),
-    .sft_irq_a               (sft_irq_a),
-    .tmr_irq_a               (tmr_irq_a),
+    .core_mhartid    (core_mhartid),  
+    .dbg_irq_a       (dbg_irq_a),
+    .ext_irq_a       (ext_irq_a),
+    .sft_irq_a       (sft_irq_a),
+    .tmr_irq_a       (tmr_irq_a),
 
   `ifdef E203_HAS_ITCM_EXTITF //{
     .ext2itcm_icb_cmd_valid  (ext2itcm_icb_cmd_valid),
@@ -325,12 +431,8 @@ module e203_cpu_top(
   `endif//}
 
 
-    .ppi_region_indic      (`E203_PPI_ADDR_BASE),
-    `ifdef E203_HAS_PPI
-    .ppi_icb_enable        (1'b1),
-    `else
-    .ppi_icb_enable        (1'b0),
-    `endif
+    .ppi_region_indic      (ppi_region_indic),
+    .ppi_icb_enable        (ppi_icb_enable),
     .ppi_icb_cmd_valid     (ppi_icb_cmd_valid),
     .ppi_icb_cmd_ready     (ppi_icb_cmd_ready),
     .ppi_icb_cmd_addr      (ppi_icb_cmd_addr ),
@@ -344,15 +446,11 @@ module e203_cpu_top(
     .ppi_icb_rsp_valid     (ppi_icb_rsp_valid),
     .ppi_icb_rsp_ready     (ppi_icb_rsp_ready),
     .ppi_icb_rsp_err       (ppi_icb_rsp_err  ),
-    .ppi_icb_rsp_excl_ok   (1'b0  ),
+    .ppi_icb_rsp_excl_ok   (ppi_icb_rsp_excl_ok  ),
     .ppi_icb_rsp_rdata     (ppi_icb_rsp_rdata),
 
-    .clint_region_indic      (`E203_CLINT_ADDR_BASE),
-    `ifdef E203_HAS_CLINT
-    .clint_icb_enable        (1'b1),
-    `else
-    .clint_icb_enable        (1'b0),
-    `endif
+    .clint_region_indic      (clint_region_indic),
+    .clint_icb_enable        (clint_icb_enable),
     .clint_icb_cmd_valid     (clint_icb_cmd_valid),
     .clint_icb_cmd_ready     (clint_icb_cmd_ready),
     .clint_icb_cmd_addr      (clint_icb_cmd_addr ),
@@ -366,15 +464,11 @@ module e203_cpu_top(
     .clint_icb_rsp_valid     (clint_icb_rsp_valid),
     .clint_icb_rsp_ready     (clint_icb_rsp_ready),
     .clint_icb_rsp_err       (clint_icb_rsp_err  ),
-    .clint_icb_rsp_excl_ok   (1'b0  ),
+    .clint_icb_rsp_excl_ok   (clint_icb_rsp_excl_ok  ),
     .clint_icb_rsp_rdata     (clint_icb_rsp_rdata),
 
-    .plic_region_indic      (`E203_PLIC_ADDR_BASE),
-    `ifdef E203_HAS_PLIC
-    .plic_icb_enable        (1'b1),
-    `else
-    .plic_icb_enable        (1'b0),
-    `endif
+    .plic_region_indic      (plic_region_indic),
+    .plic_icb_enable        (plic_icb_enable),
     .plic_icb_cmd_valid     (plic_icb_cmd_valid),
     .plic_icb_cmd_ready     (plic_icb_cmd_ready),
     .plic_icb_cmd_addr      (plic_icb_cmd_addr ),
@@ -388,17 +482,13 @@ module e203_cpu_top(
     .plic_icb_rsp_valid     (plic_icb_rsp_valid),
     .plic_icb_rsp_ready     (plic_icb_rsp_ready),
     .plic_icb_rsp_err       (plic_icb_rsp_err  ),
-    .plic_icb_rsp_excl_ok   (1'b0  ),
+    .plic_icb_rsp_excl_ok   (plic_icb_rsp_excl_ok  ),
     .plic_icb_rsp_rdata     (plic_icb_rsp_rdata),
 
 
   `ifdef E203_HAS_FIO //{
-    `ifdef E203_HAS_FIO
-    .fio_icb_enable        (1'b1),
-    `else
-    .fio_icb_enable        (1'b0),
-    `endif
-    .fio_region_indic      (`E203_FIO_ADDR_BASE),
+    .fio_icb_enable        (fio_icb_enable),
+    .fio_region_indic      (fio_region_indic),
     .fio_icb_cmd_valid     (fio_icb_cmd_valid),
     .fio_icb_cmd_ready     (fio_icb_cmd_ready),
     .fio_icb_cmd_addr      (fio_icb_cmd_addr ),
@@ -412,16 +502,12 @@ module e203_cpu_top(
     .fio_icb_rsp_valid     (fio_icb_rsp_valid),
     .fio_icb_rsp_ready     (fio_icb_rsp_ready),
     .fio_icb_rsp_err       (fio_icb_rsp_err  ),
-    .fio_icb_rsp_excl_ok   (1'b0  ),
+    .fio_icb_rsp_excl_ok   (fio_icb_rsp_excl_ok  ),
     .fio_icb_rsp_rdata     (fio_icb_rsp_rdata),
   `endif//}
 
   `ifdef E203_HAS_MEM_ITF //{
-    `ifdef E203_HAS_MEM_ITF
-    .mem_icb_enable        (1'b1),
-    `else
-    .mem_icb_enable        (1'b0),
-    `endif
+    .mem_icb_enable     (mem_icb_enable),
     .mem_icb_cmd_valid  (mem_icb_cmd_valid),
     .mem_icb_cmd_ready  (mem_icb_cmd_ready),
     .mem_icb_cmd_addr   (mem_icb_cmd_addr ),
@@ -437,7 +523,7 @@ module e203_cpu_top(
     .mem_icb_rsp_valid  (mem_icb_rsp_valid),
     .mem_icb_rsp_ready  (mem_icb_rsp_ready),
     .mem_icb_rsp_err    (mem_icb_rsp_err  ),
-    .mem_icb_rsp_excl_ok(1'b0  ),
+    .mem_icb_rsp_excl_ok(mem_icb_rsp_excl_ok  ),
     .mem_icb_rsp_rdata  (mem_icb_rsp_rdata),
   `endif//}
 
@@ -449,6 +535,7 @@ module e203_cpu_top(
     .itcm_ram_din  (itcm_ram_din ),         
     .itcm_ram_dout (itcm_ram_dout),
     .clk_itcm_ram  (clk_itcm_ram ),  
+    .rst_itcm(rst_itcm),
   `endif//}
 
   `ifdef E203_HAS_DTCM //{
@@ -459,11 +546,14 @@ module e203_cpu_top(
     .dtcm_ram_din  (dtcm_ram_din ),         
     .dtcm_ram_dout (dtcm_ram_dout),
     .clk_dtcm_ram  (clk_dtcm_ram ),  
+    .rst_dtcm(rst_dtcm),
   `endif//}
 
     .test_mode     (test_mode), 
-    .clk           (clk  ),
-    .rst_n         (rst_n) 
+  `ifndef E203_HAS_LOCKSTEP//{
+  `endif//}
+    .rst_n         (rst_n),
+    .clk           (clk  ) 
 
   );
 
@@ -480,6 +570,7 @@ module e203_cpu_top(
    .dtcm_ram_din  (dtcm_ram_din ),         
    .dtcm_ram_dout (dtcm_ram_dout),
    .clk_dtcm_ram  (clk_dtcm_ram ),  
+   .rst_dtcm(rst_dtcm),
   `endif//}
 
   `ifdef E203_HAS_ITCM //{
@@ -494,8 +585,12 @@ module e203_cpu_top(
    .itcm_ram_din  (itcm_ram_din ),         
    .itcm_ram_dout (itcm_ram_dout),
    .clk_itcm_ram  (clk_itcm_ram ),  
+   .rst_itcm(rst_itcm),
   `endif//}
    .test_mode (test_mode) 
   );
+
+  
+
 
 endmodule

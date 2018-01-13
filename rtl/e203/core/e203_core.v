@@ -35,6 +35,16 @@
 `include "e203_defines.v"
 
 module e203_core(
+  output[`E203_PC_SIZE-1:0] inspect_pc,
+
+  `ifdef E203_HAS_CSR_EAI//{
+  output         eai_csr_valid,
+  input          eai_csr_ready,
+  output  [31:0] eai_csr_addr,
+  output         eai_csr_wr,
+  output  [31:0] eai_csr_wdata,
+  input   [31:0] eai_csr_rdata,
+  `endif//}
   output core_wfi,
   output tm_stop,
   output core_cgstop,
@@ -293,7 +303,6 @@ module e203_core(
   wire                         ifu2biu_icb_rsp_excl_ok;
   wire [`E203_XLEN-1:0]        ifu2biu_icb_rsp_rdata;
    
-  //wire                         ifu2biu_replay;
   `endif//}
 
 
@@ -334,9 +343,15 @@ module e203_core(
   wire dec2ifu_remu  ;
 
 
+  wire itcm_nohold;
+
   e203_ifu u_e203_ifu(
+    .inspect_pc   (inspect_pc),
+
     .ifu_active      (ifu_active),
     .pc_rtvec        (pc_rtvec),  
+
+    .itcm_nohold     (itcm_nohold),
 
   `ifdef E203_HAS_ITCM //{
     .ifu2itcm_holdup (ifu2itcm_holdup),
@@ -364,7 +379,6 @@ module e203_core(
     .ifu2biu_icb_rsp_err    (ifu2biu_icb_rsp_err  ),
     .ifu2biu_icb_rsp_rdata  (ifu2biu_icb_rsp_rdata),
 
-    //.ifu2biu_replay         (ifu2biu_replay),
   `endif//}
 
 
@@ -437,12 +451,29 @@ module e203_core(
   wire                         agu_icb_rsp_excl_ok  ; 
   wire [`E203_XLEN-1:0]        agu_icb_rsp_rdata;
 
-
+  wire commit_mret;
+  wire commit_trap;
+  wire excp_active;
 
   e203_exu u_e203_exu(
+
+  `ifdef E203_HAS_CSR_EAI//{
+    .eai_csr_valid (eai_csr_valid),
+    .eai_csr_ready (eai_csr_ready),
+    .eai_csr_addr  (eai_csr_addr ),
+    .eai_csr_wr    (eai_csr_wr   ),
+    .eai_csr_wdata (eai_csr_wdata),
+    .eai_csr_rdata (eai_csr_rdata),
+  `endif//}
+
+
+    .excp_active            (excp_active),
+    .commit_mret            (commit_mret),
+    .commit_trap            (commit_trap),
     .test_mode              (test_mode),
     .core_wfi               (core_wfi),
     .tm_stop                (tm_stop),
+    .itcm_nohold            (itcm_nohold),
     .core_cgstop            (core_cgstop),
     .tcm_cgstop             (tcm_cgstop),
     .exu_active             (exu_active),
@@ -542,6 +573,7 @@ module e203_core(
     .dec2ifu_remu           (dec2ifu_remu  ),
 
 
+    .clk_aon                (clk_aon),
     .clk                    (clk_core_exu),
     .rst_n                  (rst_n  ) 
   );
@@ -563,6 +595,9 @@ module e203_core(
   wire [`E203_XLEN-1:0]        lsu2biu_icb_rsp_rdata;
 
   e203_lsu u_e203_lsu(
+    .excp_active         (excp_active),
+    .commit_mret            (commit_mret),
+    .commit_trap         (commit_trap),
     .lsu_active          (lsu_active),
     .lsu_o_valid         (lsu_o_valid   ),
     .lsu_o_ready         (lsu_o_ready   ),
@@ -659,6 +694,8 @@ module e203_core(
 
 
   e203_biu u_e203_biu(
+
+
     .biu_active             (biu_active),
 
     .lsu2biu_icb_cmd_valid  (lsu2biu_icb_cmd_valid),
@@ -698,7 +735,6 @@ module e203_core(
     .ifu2biu_icb_rsp_excl_ok(ifu2biu_icb_rsp_excl_ok),
     .ifu2biu_icb_rsp_rdata  (ifu2biu_icb_rsp_rdata),
 
-    //.ifu2biu_replay         (ifu2biu_replay),
   `endif//}
 
     .ppi_region_indic      (ppi_region_indic ),
