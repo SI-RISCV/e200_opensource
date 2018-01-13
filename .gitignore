@@ -7,7 +7,9 @@ rtl/e205
 rtl/e205f
 rtl/e205fd
 rtl/e225fd
+rtl/e225
 restore.github
+restore.github.vcs
 restore.real
 vsim/e205fd_irq.rc
 vsim/irq.rc
