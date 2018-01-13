@@ -426,44 +426,6 @@ module e203_itcm_ctrl(
   .rst_n                  (rst_n)
   );
 
-  //
-  wire arbt_o_icb_cmd_valid;
-  wire arbt_o_icb_cmd_ready;
-  wire [`E203_ITCM_ADDR_WIDTH-1:0] arbt_o_icb_cmd_addr;
-  wire arbt_o_icb_cmd_read;
-  wire [`E203_ITCM_DATA_WIDTH-1:0] arbt_o_icb_cmd_wdata;
-  wire [`E203_ITCM_WMSK_WIDTH-1:0] arbt_o_icb_cmd_wmask;
-
-  wire arbt_o_icb_rsp_valid;
-  wire arbt_o_icb_rsp_ready;
-  wire arbt_o_icb_rsp_err;
-  wire [`E203_ITCM_DATA_WIDTH-1:0] arbt_o_icb_rsp_rdata;
-
-  e203_itcm_icb_gen u_itcm_icb_gen (
-  .i_icb_cmd_valid        (arbt_icb_cmd_valid ),  
-  .i_icb_cmd_ready        (arbt_icb_cmd_ready ),
-  .i_icb_cmd_read         (arbt_icb_cmd_read ) ,
-  .i_icb_cmd_addr         (arbt_icb_cmd_addr ) ,
-  .i_icb_cmd_wdata        (arbt_icb_cmd_wdata ),
-  .i_icb_cmd_wmask        (arbt_icb_cmd_wmask) ,
-   
-  .i_icb_rsp_valid        (arbt_icb_rsp_valid ),
-  .i_icb_rsp_ready        (arbt_icb_rsp_ready ),
-  .i_icb_rsp_err          (arbt_icb_rsp_err)   ,
-  .i_icb_rsp_rdata        (arbt_icb_rsp_rdata ),
-                                                
-  .o_icb_cmd_valid        (arbt_o_icb_cmd_valid ),  
-  .o_icb_cmd_ready        (arbt_o_icb_cmd_ready ),
-  .o_icb_cmd_read         (arbt_o_icb_cmd_read ) ,
-  .o_icb_cmd_addr         (arbt_o_icb_cmd_addr ) ,
-  .o_icb_cmd_wdata        (arbt_o_icb_cmd_wdata ),
-  .o_icb_cmd_wmask        (arbt_o_icb_cmd_wmask) ,
-   
-  .o_icb_rsp_valid        (arbt_o_icb_rsp_valid ),
-  .o_icb_rsp_ready        (arbt_o_icb_rsp_ready ),
-  .o_icb_rsp_err          (arbt_o_icb_rsp_err)   ,
-  .o_icb_rsp_rdata        (arbt_o_icb_rsp_rdata ) 
-  );
 
 
 
@@ -484,7 +446,7 @@ module e203_itcm_ctrl(
   wire sram_icb_cmd_valid;
 
   assign ifu2itcm_icb_cmd_ready = sram_ready2ifu   & sram_icb_cmd_ready;
-  assign arbt_o_icb_cmd_ready = sram_ready2arbt  & sram_icb_cmd_ready;
+  assign arbt_icb_cmd_ready = sram_ready2arbt  & sram_icb_cmd_ready;
 
 
 
@@ -494,152 +456,93 @@ module e203_itcm_ctrl(
   wire [`E203_ITCM_WMSK_WIDTH-1:0] sram_icb_cmd_wmask;
 
   assign sram_icb_cmd_valid = (sram_sel_ifu   & ifu2itcm_icb_cmd_valid)
-                            | (sram_sel_arbt  & arbt_o_icb_cmd_valid);
+                            | (sram_sel_arbt  & arbt_icb_cmd_valid);
+
+  assign sram_icb_cmd_addr  = ({`E203_ITCM_ADDR_WIDTH{sram_sel_ifu  }} & ifu2itcm_icb_cmd_addr)
+                            | ({`E203_ITCM_ADDR_WIDTH{sram_sel_arbt }} & arbt_icb_cmd_addr);
+  assign sram_icb_cmd_read  = (sram_sel_ifu   & ifu2itcm_icb_cmd_read)
+                            | (sram_sel_arbt  & arbt_icb_cmd_read);
+  assign sram_icb_cmd_wdata = ({`E203_ITCM_DATA_WIDTH{sram_sel_ifu  }} & ifu2itcm_icb_cmd_wdata)
+                            | ({`E203_ITCM_DATA_WIDTH{sram_sel_arbt }} & arbt_icb_cmd_wdata);
+  assign sram_icb_cmd_wmask = ({`E203_ITCM_WMSK_WIDTH{sram_sel_ifu  }} & ifu2itcm_icb_cmd_wmask)
+                            | ({`E203_ITCM_WMSK_WIDTH{sram_sel_arbt }} & arbt_icb_cmd_wmask);
+
+                        
+  wire sram_icb_cmd_ifu = sram_sel_ifu;
 
 
-  assign sram_icb_cmd_addr  =  
-                              ({`E203_ITCM_ADDR_WIDTH{sram_sel_ifu  }} & ifu2itcm_icb_cmd_addr)
-                            | ({`E203_ITCM_ADDR_WIDTH{sram_sel_arbt }} & arbt_o_icb_cmd_addr);
-  assign sram_icb_cmd_read  =  
-                              (sram_sel_ifu   & ifu2itcm_icb_cmd_read)
-                            | (sram_sel_arbt  & arbt_o_icb_cmd_read);
-  assign sram_icb_cmd_wdata =  
-                              ({`E203_ITCM_DATA_WIDTH{sram_sel_ifu  }} & ifu2itcm_icb_cmd_wdata)
-                            | ({`E203_ITCM_DATA_WIDTH{sram_sel_arbt }} & arbt_o_icb_cmd_wdata);
-  assign sram_icb_cmd_wmask =  
-                              ({`E203_ITCM_WMSK_WIDTH{sram_sel_ifu  }} & ifu2itcm_icb_cmd_wmask)
-                            | ({`E203_ITCM_WMSK_WIDTH{sram_sel_arbt }} & arbt_o_icb_cmd_wmask);
- wire e1_sel_ifu_r;
- wire e2_sel_ifu_r;
+  wire  [1:0] sram_icb_rsp_usr;
+  wire  [1:0] sram_icb_cmd_usr =  {sram_icb_cmd_ifu,sram_icb_cmd_read};
+  wire sram_icb_rsp_ifu ;
+  wire sram_icb_rsp_read; 
+  assign {sram_icb_rsp_ifu, sram_icb_rsp_read} = sram_icb_rsp_usr;
+  
+  wire itcm_sram_ctrl_active;
 
- wire e1_icb_read_r;
- wire e2_icb_read_r;
+  wire sram_icb_rsp_valid;
+  wire sram_icb_rsp_ready;
+  wire [`E203_ITCM_DATA_WIDTH-1:0] sram_icb_rsp_rdata;
+  wire sram_icb_rsp_err;
 
- wire[1:0] e1_i_dat;
+  `ifndef E203_HAS_ECC //{
+  sirv_sram_icb_ctrl #(
+      .DW     (`E203_ITCM_DATA_WIDTH),
+      .AW     (`E203_ITCM_ADDR_WIDTH),
+      .MW     (`E203_ITCM_WMSK_WIDTH),
+      .AW_LSB (3),// ITCM is 64bits wide, so the LSB is 3
+      .USR_W  (2) 
+  ) u_sram_icb_ctrl(
+     .sram_ctrl_active (itcm_sram_ctrl_active),
+     .tcm_cgstop       (tcm_cgstop),
+     
+     .i_icb_cmd_valid (sram_icb_cmd_valid),
+     .i_icb_cmd_ready (sram_icb_cmd_ready),
+     .i_icb_cmd_read  (sram_icb_cmd_read ),
+     .i_icb_cmd_addr  (sram_icb_cmd_addr ), 
+     .i_icb_cmd_wdata (sram_icb_cmd_wdata), 
+     .i_icb_cmd_wmask (sram_icb_cmd_wmask), 
+     .i_icb_cmd_usr   (sram_icb_cmd_usr  ),
+  
+     .i_icb_rsp_valid (sram_icb_rsp_valid),
+     .i_icb_rsp_ready (sram_icb_rsp_ready),
+     .i_icb_rsp_rdata (sram_icb_rsp_rdata),
+     .i_icb_rsp_usr   (sram_icb_rsp_usr  ),
+  
+     .ram_cs   (itcm_ram_cs  ),  
+     .ram_we   (itcm_ram_we  ),  
+     .ram_addr (itcm_ram_addr), 
+     .ram_wem  (itcm_ram_wem ),
+     .ram_din  (itcm_ram_din ),          
+     .ram_dout (itcm_ram_dout),
+     .clk_ram  (clk_itcm_ram ),
+  
+     .test_mode(test_mode  ),
+     .clk  (clk  ),
+     .rst_n(rst_n)  
+    );
 
- wire      e1_o_vld;
- wire      e1_o_rdy;
- wire[1:0] e1_o_dat;
+    assign sram_icb_rsp_err = 1'b0;
+  `endif//}
 
- wire      e2_i_vld;
- wire      e2_i_rdy;
- wire      e2_o_vld;
- wire      e2_o_rdy;
- wire[`E203_ITCM_DATA_WIDTH+2-1:0] e2_i_dat;
- wire[`E203_ITCM_DATA_WIDTH+2-1:0] e2_o_dat;
-
- wire  [`E203_ITCM_DATA_WIDTH-1:0] itcm_ram_dout_r;
-
- assign e1_i_dat ={
-                       sram_sel_ifu
-                      ,sram_icb_cmd_read
-                     };
- 
- assign {
-            e1_sel_ifu_r 
-          , e1_icb_read_r 
-         } = e1_o_dat;
-
- assign e2_i_dat = {
-             e1_sel_ifu_r 
-           , e1_icb_read_r 
-           , itcm_ram_dout 
-        };
-
- assign {
-             e2_sel_ifu_r 
-           , e2_icb_read_r 
-           , itcm_ram_dout_r 
-        } = e2_o_dat;
-
- sirv_gnrl_pipe_stage # (
-  .CUT_READY(0),
-  .DP(1),
-  .DW(2)
- ) u_itcm_e1_stage (
-   .i_vld(sram_icb_cmd_valid), 
-   .i_rdy(sram_icb_cmd_ready), 
-   .i_dat(e1_i_dat),
-   .o_vld(e1_o_vld), 
-   .o_rdy(e1_o_rdy), 
-   .o_dat(e1_o_dat),
- 
-   .clk  (clk  ),
-   .rst_n(rst_n)  
-  );
-
- assign e2_i_vld = e1_o_vld;
- assign e1_o_rdy = e2_i_rdy;
-
- sirv_gnrl_pipe_stage # (
-  .CUT_READY(0),
-  .DP(0),
-  .DW(`E203_ITCM_DATA_WIDTH+2)
- ) u_itcm_e2_stage (
-   .i_vld(e2_i_vld), 
-   .i_rdy(e2_i_rdy), 
-   .i_dat(e2_i_dat),
-   .o_vld(e2_o_vld), 
-   .o_rdy(e2_o_rdy), 
-   .o_dat(e2_o_dat),
- 
-   .clk  (clk  ),
-   .rst_n(rst_n)
-  );
+  
 
 
-  wire chk_icb_rsp_valid;
-  wire chk_icb_rsp_ready;
-  wire chk_icb_rsp_err;
-  wire [`E203_ITCM_DATA_WIDTH-1:0] chk_icb_rsp_rdata;
-  wire chk_icb_rsp_ifu;
-
-  //
-  e203_itcm_icb_chck u_itcm_icb_chck (
-  .i_vld(e2_o_vld), 
-  .i_rdy(e2_o_rdy), 
-  .i_dat(itcm_ram_dout_r[`E203_ITCM_DATA_WIDTH-1:0]), 
-  .i_sel_ifu (e2_sel_ifu_r), 
-  .i_icb_read(e2_icb_read_r), 
-
-  .o_icb_rsp_valid        (chk_icb_rsp_valid ),
-  .o_icb_rsp_ready        (chk_icb_rsp_ready ),
-  .o_icb_rsp_err          (chk_icb_rsp_err)   ,
-  .o_icb_rsp_rdata        (chk_icb_rsp_rdata ),
-  .o_icb_rsp_ifu          (chk_icb_rsp_ifu ),
-                                                
-   
-  .clk                    (clk  ),
-  .rst_n                  (rst_n)                 
-  );
 
   // The E2 pass to IFU RSP channel only when it is IFU access 
   // The E2 pass to ARBT RSP channel only when it is not IFU access
-  assign chk_icb_rsp_ready = chk_icb_rsp_ifu ? 
-                    ifu2itcm_icb_rsp_ready : arbt_o_icb_rsp_ready;
+  assign sram_icb_rsp_ready = sram_icb_rsp_ifu ? 
+                    ifu2itcm_icb_rsp_ready : arbt_icb_rsp_ready;
 
-  assign ifu2itcm_icb_rsp_valid = chk_icb_rsp_valid & chk_icb_rsp_ifu;
-  assign ifu2itcm_icb_rsp_err   = chk_icb_rsp_err;
-  assign ifu2itcm_icb_rsp_rdata = chk_icb_rsp_rdata;
+  assign ifu2itcm_icb_rsp_valid = sram_icb_rsp_valid & sram_icb_rsp_ifu;
+  assign ifu2itcm_icb_rsp_err   = sram_icb_rsp_err;
+  assign ifu2itcm_icb_rsp_rdata = sram_icb_rsp_rdata;
 
-  assign arbt_o_icb_rsp_valid = chk_icb_rsp_valid & (~chk_icb_rsp_ifu);
-  assign arbt_o_icb_rsp_err   = chk_icb_rsp_err;
-  assign arbt_o_icb_rsp_rdata = chk_icb_rsp_rdata;
+  assign arbt_icb_rsp_valid = sram_icb_rsp_valid & (~sram_icb_rsp_ifu);
+  assign arbt_icb_rsp_err   = sram_icb_rsp_err;
+  assign arbt_icb_rsp_rdata = sram_icb_rsp_rdata;
 
-  assign itcm_ram_cs = sram_icb_cmd_valid & sram_icb_cmd_ready;  
-  assign itcm_ram_we = (~sram_icb_cmd_read);  
-  assign itcm_ram_addr= sram_icb_cmd_addr [`E203_ITCM_ADDR_WIDTH-1:`E203_ITCM_ADDR_WIDTH-`E203_ITCM_RAM_AW];          
-  assign itcm_ram_wem = sram_icb_cmd_wmask[`E203_ITCM_WMSK_WIDTH-1:0];          
-  assign itcm_ram_din = sram_icb_cmd_wdata[`E203_ITCM_DATA_WIDTH-1:0];          
+ 
 
-  wire itcm_sram_clk_en = itcm_ram_cs | tcm_cgstop;
-
-  e203_clkgate u_itcm_clkgate(
-    .clk_in   (clk        ),
-    .test_mode(test_mode  ),
-    .clock_en (itcm_sram_clk_en),
-    .clk_out  (clk_itcm_ram)
-  );
 
   // The holdup indicating the target is not accessed by other agents 
   // since last accessed by IFU, and the output of it is holding up
@@ -654,16 +557,17 @@ module e203_itcm_ctrl(
                 //   *** I$ updated by cache maintaineice operation
   wire ifu_holdup_r;
   // The IFU holdup will be set after last time accessed by a IFU access
-  wire ifu_holdup_set =   sram_sel_ifu & itcm_ram_cs;
+  wire ifu_holdup_set =   sram_icb_cmd_ifu & itcm_ram_cs;
   // The IFU holdup will be cleared after last time accessed by a non-IFU access
-  wire ifu_holdup_clr = (~sram_sel_ifu) & itcm_ram_cs;
+  wire ifu_holdup_clr = (~sram_icb_cmd_ifu) & itcm_ram_cs;
   wire ifu_holdup_ena = ifu_holdup_set | ifu_holdup_clr;
   wire ifu_holdup_nxt = ifu_holdup_set & (~ifu_holdup_clr);
   sirv_gnrl_dfflr #(1)ifu_holdup_dffl(ifu_holdup_ena, ifu_holdup_nxt, ifu_holdup_r, clk, rst_n);
-  assign ifu2itcm_holdup = ifu_holdup_r;
+  assign ifu2itcm_holdup = ifu_holdup_r 
+                            ;
 
 
-  assign itcm_active = ifu2itcm_icb_cmd_valid | lsu2itcm_icb_cmd_valid | e1_o_vld | e2_o_vld
+  assign itcm_active = ifu2itcm_icb_cmd_valid | lsu2itcm_icb_cmd_valid | itcm_sram_ctrl_active
                   `ifdef E203_HAS_ITCM_EXTITF //{
                       | ext2itcm_icb_cmd_valid
                   `endif//}

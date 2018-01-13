@@ -39,7 +39,7 @@ module e203_dtcm_ctrl(
   output dtcm_active,
   // The cgstop is coming from CSR (0xBFE mcgstop)'s filed 1
   // // This register is our self-defined CSR register to disable the 
-      // ITCM SRAM clock gating for debugging purpose
+      // DTCM SRAM clock gating for debugging purpose
   input  tcm_cgstop,
   // Note: the DTCM ICB interface only support the single-transaction
   
@@ -259,195 +259,86 @@ module e203_dtcm_ctrl(
   .rst_n                  (rst_n)
   );
 
-  ////////////////////////////////////////////////////////////////
-  //
-  wire arbt_o_icb_cmd_valid;
-  wire arbt_o_icb_cmd_ready;
-  wire [`E203_DTCM_ADDR_WIDTH-1:0] arbt_o_icb_cmd_addr;
-  wire arbt_o_icb_cmd_read;
-  wire [`E203_DTCM_DATA_WIDTH-1:0] arbt_o_icb_cmd_wdata;
-  wire [`E203_DTCM_WMSK_WIDTH-1:0] arbt_o_icb_cmd_wmask;
-
-  wire arbt_o_icb_rsp_valid;
-  wire arbt_o_icb_rsp_ready;
-  wire arbt_o_icb_rsp_err;
-  wire [`E203_DTCM_DATA_WIDTH-1:0] arbt_o_icb_rsp_rdata;
-
-  e203_dtcm_icb_gen u_dtcm_icb_gen (
-  .i_icb_cmd_valid        (arbt_icb_cmd_valid ),  
-  .i_icb_cmd_ready        (arbt_icb_cmd_ready ),
-  .i_icb_cmd_read         (arbt_icb_cmd_read ) ,
-  .i_icb_cmd_addr         (arbt_icb_cmd_addr ) ,
-  .i_icb_cmd_wdata        (arbt_icb_cmd_wdata ),
-  .i_icb_cmd_wmask        (arbt_icb_cmd_wmask) ,
-   
-  .i_icb_rsp_valid        (arbt_icb_rsp_valid ),
-  .i_icb_rsp_ready        (arbt_icb_rsp_ready ),
-  .i_icb_rsp_err          (arbt_icb_rsp_err)   ,
-  .i_icb_rsp_rdata        (arbt_icb_rsp_rdata ),
-                                                
-  .o_icb_cmd_valid        (arbt_o_icb_cmd_valid ),  
-  .o_icb_cmd_ready        (arbt_o_icb_cmd_ready ),
-  .o_icb_cmd_read         (arbt_o_icb_cmd_read ) ,
-  .o_icb_cmd_addr         (arbt_o_icb_cmd_addr ) ,
-  .o_icb_cmd_wdata        (arbt_o_icb_cmd_wdata ),
-  .o_icb_cmd_wmask        (arbt_o_icb_cmd_wmask) ,
-   
-  .o_icb_rsp_valid        (arbt_o_icb_rsp_valid ),
-  .o_icb_rsp_ready        (arbt_o_icb_rsp_ready ),
-  .o_icb_rsp_err          (arbt_o_icb_rsp_err)   ,
-  .o_icb_rsp_rdata        (arbt_o_icb_rsp_rdata ) 
-  );
 
 
-
-
-  wire sram_ready2arbt = 1'b1
-                  ;
-
-
-  wire sram_sel_arbt = sram_ready2arbt & arbt_icb_cmd_valid;
 
   wire sram_icb_cmd_ready;
   wire sram_icb_cmd_valid;
-
-  assign arbt_o_icb_cmd_ready = sram_ready2arbt  & sram_icb_cmd_ready;
-
-
   wire [`E203_DTCM_ADDR_WIDTH-1:0] sram_icb_cmd_addr;
   wire sram_icb_cmd_read;
   wire [`E203_DTCM_DATA_WIDTH-1:0] sram_icb_cmd_wdata;
   wire [`E203_DTCM_WMSK_WIDTH-1:0] sram_icb_cmd_wmask;
 
-  assign sram_icb_cmd_valid = 1'b0
-                            | (sram_sel_arbt  & arbt_o_icb_cmd_valid);
+  assign arbt_icb_cmd_ready = sram_icb_cmd_ready;
+
+  assign sram_icb_cmd_valid = arbt_icb_cmd_valid;
+  assign sram_icb_cmd_addr  = arbt_icb_cmd_addr;
+  assign sram_icb_cmd_read  = arbt_icb_cmd_read;
+  assign sram_icb_cmd_wdata = arbt_icb_cmd_wdata;
+  assign sram_icb_cmd_wmask = arbt_icb_cmd_wmask;
+
+  wire sram_icb_rsp_valid;
+  wire sram_icb_rsp_ready;
+  wire [`E203_DTCM_DATA_WIDTH-1:0] sram_icb_rsp_rdata;
+  wire sram_icb_rsp_err;
 
 
-  assign sram_icb_cmd_addr  =  `E203_DTCM_ADDR_WIDTH'b0
-                            | ({`E203_DTCM_ADDR_WIDTH{sram_sel_arbt }} & arbt_o_icb_cmd_addr);
-  assign sram_icb_cmd_read  = 1'b0  
-                            | (sram_sel_arbt  & arbt_o_icb_cmd_read);
-  assign sram_icb_cmd_wdata = `E203_DTCM_DATA_WIDTH'b0
-                            | ({`E203_DTCM_DATA_WIDTH{sram_sel_arbt }} & arbt_o_icb_cmd_wdata);
-  assign sram_icb_cmd_wmask = `E203_DTCM_WMSK_WIDTH'b0 
-                            | ({`E203_DTCM_WMSK_WIDTH{sram_sel_arbt }} & arbt_o_icb_cmd_wmask);
-
- wire e1_icb_read_r;
- wire e2_icb_read_r;
-
- wire      e1_i_dat;
-
- wire      e1_o_vld;
- wire      e1_o_rdy;
- wire      e1_o_dat;
-
- wire      e2_i_vld;
- wire      e2_i_rdy;
- wire      e2_o_vld;
- wire      e2_o_rdy;
- wire[`E203_DTCM_DATA_WIDTH+1-1:0] e2_i_dat;
- wire[`E203_DTCM_DATA_WIDTH+1-1:0] e2_o_dat;
-
- wire  [`E203_DTCM_DATA_WIDTH-1:0] dtcm_ram_dout_r;
-
- assign e1_i_dat ={
-                       sram_icb_cmd_read
-                     };
- 
- assign {
-            e1_icb_read_r 
-         } = e1_o_dat;
-
- assign e2_i_dat = {
-             e1_icb_read_r 
-           , dtcm_ram_dout 
-        };
-
- assign {
-             e2_icb_read_r 
-           , dtcm_ram_dout_r 
-        } = e2_o_dat;
-
- sirv_gnrl_pipe_stage # (
-  .CUT_READY(0),
-  .DP(1),
-  .DW(1)
- ) u_dtcm_e1_stage (
-   .i_vld(sram_icb_cmd_valid), 
-   .i_rdy(sram_icb_cmd_ready), 
-   .i_dat(e1_i_dat),
-   .o_vld(e1_o_vld), 
-   .o_rdy(e1_o_rdy), 
-   .o_dat(e1_o_dat),
- 
-   .clk  (clk  ),
-   .rst_n(rst_n)  
-  );
-
- assign e2_i_vld = e1_o_vld;
- assign e1_o_rdy = e2_i_rdy;
-
- sirv_gnrl_pipe_stage # (
-  .CUT_READY(0),
-  .DP(0),
-  .DW(`E203_DTCM_DATA_WIDTH+1)
- ) u_dtcm_e2_stage (
-   .i_vld(e2_i_vld), 
-   .i_rdy(e2_i_rdy), 
-   .i_dat(e2_i_dat),
-   .o_vld(e2_o_vld), 
-   .o_rdy(e2_o_rdy), 
-   .o_dat(e2_o_dat),
- 
-   .clk  (clk  ),
-   .rst_n(rst_n)
-  );
+  wire dtcm_sram_ctrl_active;
 
 
-  wire chk_icb_rsp_valid;
-  wire chk_icb_rsp_ready;
-  wire chk_icb_rsp_err;
-  wire [`E203_DTCM_DATA_WIDTH-1:0] chk_icb_rsp_rdata;
+  wire sram_icb_rsp_read;
 
-  e203_dtcm_icb_chck u_dtcm_icb_chck (
-  .i_vld(e2_o_vld), 
-  .i_rdy(e2_o_rdy), 
-  .i_dat(dtcm_ram_dout_r[`E203_DTCM_DATA_WIDTH-1:0]), 
-  .i_icb_read(e2_icb_read_r), 
 
-  .o_icb_rsp_valid        (chk_icb_rsp_valid ),
-  .o_icb_rsp_ready        (chk_icb_rsp_ready ),
-  .o_icb_rsp_err          (chk_icb_rsp_err)   ,
-  .o_icb_rsp_rdata        (chk_icb_rsp_rdata ),
-                                                
-   
-  .clk                    (clk  ),
-  .rst_n                  (rst_n)                 
-  );
+ `ifndef E203_HAS_ECC //{
+  sirv_sram_icb_ctrl #(
+      .DW     (`E203_DTCM_DATA_WIDTH),
+      .AW     (`E203_DTCM_ADDR_WIDTH),
+      .MW     (`E203_DTCM_WMSK_WIDTH),
+      .AW_LSB (2),// DTCM is 32bits wide, so the LSB is 2
+      .USR_W  (1) 
+  ) u_sram_icb_ctrl (
+     .sram_ctrl_active (dtcm_sram_ctrl_active),
+     .tcm_cgstop       (tcm_cgstop),
+     
+     .i_icb_cmd_valid (sram_icb_cmd_valid),
+     .i_icb_cmd_ready (sram_icb_cmd_ready),
+     .i_icb_cmd_read  (sram_icb_cmd_read ),
+     .i_icb_cmd_addr  (sram_icb_cmd_addr ), 
+     .i_icb_cmd_wdata (sram_icb_cmd_wdata), 
+     .i_icb_cmd_wmask (sram_icb_cmd_wmask), 
+     .i_icb_cmd_usr   (sram_icb_cmd_read ),
+  
+     .i_icb_rsp_valid (sram_icb_rsp_valid),
+     .i_icb_rsp_ready (sram_icb_rsp_ready),
+     .i_icb_rsp_rdata (sram_icb_rsp_rdata),
+     .i_icb_rsp_usr   (sram_icb_rsp_read),
+  
+     .ram_cs   (dtcm_ram_cs  ),  
+     .ram_we   (dtcm_ram_we  ),  
+     .ram_addr (dtcm_ram_addr), 
+     .ram_wem  (dtcm_ram_wem ),
+     .ram_din  (dtcm_ram_din ),          
+     .ram_dout (dtcm_ram_dout),
+     .clk_ram  (clk_dtcm_ram ),
+  
+     .test_mode(test_mode  ),
+     .clk  (clk  ),
+     .rst_n(rst_n)  
+    );
 
-  // The E2 pass to ARBT RSP channel 
-  assign chk_icb_rsp_ready = arbt_o_icb_rsp_ready;
+  assign sram_icb_rsp_err = 1'b0;
+  `endif//}
 
-  assign arbt_o_icb_rsp_valid = chk_icb_rsp_valid;
-  assign arbt_o_icb_rsp_err   = chk_icb_rsp_err;
-  assign arbt_o_icb_rsp_rdata = chk_icb_rsp_rdata;
+    
 
-  assign dtcm_ram_cs = sram_icb_cmd_valid & sram_icb_cmd_ready;  
-  assign dtcm_ram_we = (~sram_icb_cmd_read);  
-  assign dtcm_ram_addr= sram_icb_cmd_addr [`E203_DTCM_ADDR_WIDTH-1:`E203_DTCM_ADDR_WIDTH-`E203_DTCM_RAM_AW];          
-  assign dtcm_ram_wem = sram_icb_cmd_wmask[`E203_DTCM_WMSK_WIDTH-1:0];          
-  assign dtcm_ram_din = sram_icb_cmd_wdata[`E203_DTCM_DATA_WIDTH-1:0];          
+  assign sram_icb_rsp_ready = arbt_icb_rsp_ready;
 
-  wire dtcm_sram_clk_en = dtcm_ram_cs | tcm_cgstop;
+  assign arbt_icb_rsp_valid = sram_icb_rsp_valid;
+  assign arbt_icb_rsp_err   = sram_icb_rsp_err;
+  assign arbt_icb_rsp_rdata = sram_icb_rsp_rdata;
 
-  e203_clkgate u_dtcm_clkgate(
-    .clk_in   (clk        ),
-    .test_mode(test_mode  ),
-    .clock_en (dtcm_sram_clk_en),
-    .clk_out  (clk_dtcm_ram)
-  );
 
-  assign dtcm_active = lsu2dtcm_icb_cmd_valid | e1_o_vld | e2_o_vld
+  assign dtcm_active = lsu2dtcm_icb_cmd_valid | dtcm_sram_ctrl_active
        `ifdef E203_HAS_DTCM_EXTITF //{
                      | ext2dtcm_icb_cmd_valid
        `endif//}
