@@ -19,7 +19,7 @@ SIM_TOOL      := iverilog # this is a free solution here to use iverilog to comp
 
 SIM_OPTIONS   := #To-ADD: to add the simulatoin tool options 
 
-SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -D DISABLE_SV_ASSERTION=1 -g2005 
+SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -D DISABLE_SV_ASSERTION=1 -g2005 
   # This is a free solution here to use iverilog to compile the code. Please NOTE!!!! 
   # 
   # Note: 
