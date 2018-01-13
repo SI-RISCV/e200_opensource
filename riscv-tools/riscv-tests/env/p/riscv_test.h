@@ -211,6 +211,7 @@ handle_exception:                                                       \
         la  a0, test_trap_data ;                                        \
         lw t5, 0(a0);                                                   \
         lw t6, 4(a0);                                                   \
+        csrr a0, mbadaddr;                                              \
         csrr a0, mscratch;                                              \
         /* we need to save-and-restore the registers: End */    \
         mret;                                         \
@@ -220,6 +221,7 @@ handle_exception:                                                       \
         la  a0, test_trap_data ;                                        \
         lw t5, 0(a0);                                                   \
         lw t6, 4(a0);                                                   \
+        csrr a0, mbadaddr;                                              \
         csrr a0, mscratch;                                              \
         /* we need to save-and-restore the registers: End */    \
         mret;                                         \
@@ -229,11 +231,16 @@ handle_exception:                                                       \
         la  a0, test_trap_data ;                                        \
         lw t5, 0(a0);                                                   \
         lw t6, 4(a0);                                                   \
+        csrr a0, mbadaddr;                                              \
         csrr a0, mscratch;                                              \
         /* we need to save-and-restore the registers: End */    \
         mret;                                         \
         /* Bob add bus-error handler here: End */                       \
 reset_vector:                                                           \
+        /* Bob Initialize t5 and t6 here: Begin */                       \
+        mv t5, x0;                                                  \
+        mv t6, x0;                                                  \
+        /* Bob Initialize t5 and t6 here: End */                       \
         RISCV_MULTICORE_DISABLE;                                        \
         /*INIT_SPTBR;*/                                                     \
         /*INIT_PMP;*/                                                       \
@@ -249,7 +256,7 @@ reset_vector:                                                           \
         csrw mtvec, t0;                                                 \
         /*CHECK_XLEN;*/                                                     \
         /* if an stvec_handler is defined, delegate exceptions to it */ \
-        la t0, stvec_handler;                                           \
+post_mtvec:  la t0, stvec_handler;                                           \
         beqz t0, 1f;                                                    \
         csrw stvec, t0;                                                 \
         li t0, (1 << CAUSE_LOAD_PAGE_FAULT) |                           \
@@ -265,7 +272,57 @@ reset_vector:                                                           \
         /*Bob added code to enable the interrupt enables: begin*/              \
         li a0, MSTATUS_MPIE;                                                   \
         csrs mstatus, a0;                                                     \
+        li a0, 0x0;/*We need to enable the ecc exception */                                                   \
+        csrw 0xbfc, a0;                                                     \
+        fence.i;                                                     \
         /*Bob added code to enable the interrupt enables: end*/              \
+        /*Bob added code to enable the PLL: begin{*/              \
+        li t0, 2560; /*Wait loops before switch to PLL*/  \
+waitloop1: addi t0, t0, -1;                                                     \
+        bnez t0, waitloop1;                                                     \
+        li t2, 0x10008008;/*Set the pll bypass to 0*/                                                     \
+        lw t0, 0(t2);                                                     \
+        li t1, (1<<18);                                                     \
+        xor t1, t1, -1;                                                     \
+        and t0, t0, t1;                                                     \
+        sw t0, 0(t2);                                                     \
+        li t0, 1024; /*Wait loops before change PLL param */  \
+waitloop2: addi t0, t0, -1;                                                     \
+        lw t3, 0(t2);/*Intentially add a strange inscturciton here*/                                                     \
+        bnez t0, waitloop2;                                                     \
+        lw t0, 0(t2);/*Set pll bypass to 1*/                                                     \
+        li t1, (1<<18);                                                     \
+        or t0, t0, t1;                                                     \
+        sw t0, 0(t2);                                                     \
+        lw t0, 0(t2);/*Change N from 2 to 3*/                                                     \
+        li t1, 1;                                                     \
+        or t0, t0, t1;                                                     \
+        sw t0, 0(t2);                                                     \
+        lw t0, 0(t2);/*Change M from 32 to 33*/                                                     \
+        li t1, (1<<5);                                                     \
+        or t0, t0, t1;                                                     \
+        sw t0, 0(t2);                                                     \
+        li t0, 2560; /*Wait loops before switch to PLL*/  \
+waitloop3: addi t0, t0, -1;                                                     \
+        bnez t0, waitloop3;                                                     \
+        lw t0, 0(t2);                                                     \
+        li t1, (1<<18);                                                     \
+        xor t1, t1, -1;                                                     \
+        and t0, t0, t1;                                                     \
+        sw t0, 0(t2);                                                     \
+        li t0, 256; /*Wait loops before div the PLL*/  \
+waitloop4: addi t0, t0, -1;                                                     \
+        bnez t0, waitloop4;                                                     \
+        li t2, 0x1000800C;/*Set the plloutdiv div1 to 0, and div ratio is 2*/                                                     \
+        lw t0, 0(t2);                                                     \
+        li t1, (1<<8);                                                     \
+        xor t1, t1, -1;                                                     \
+        and t0, t0, t1;                                                     \
+        li t1, 0x2;                                                     \
+        or t0, t0, t1;                                                     \
+        sw t0, 0(t2);                                                     \
+        li t0, 1024; /*Wait loops before change PLL param */  \
+        /*Bob added code to enable the PLL: end}*/              \
         init;                                                           \
         EXTRA_INIT;                                                     \
         EXTRA_INIT_TIMER;                                               \

@@ -3,7 +3,7 @@
 #-----------------------------------------------------------------------
 
 rv32uf_sc_tests = \
-	bpu_wait wfi fadd fdiv fclass fcmp fcvt fcvt_w fmadd fmin \
+	lockstep bus ecc bpu_wait wfi fadd fdiv fclass fcmp fcvt fcvt_w fmadd fmin \
 	ldst move recoding \
 
 rv32uf_p_tests = $(addprefix rv32uf-p-, $(rv32uf_sc_tests))

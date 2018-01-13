@@ -26,6 +26,7 @@ bmarks = \
 	vvadd \
 	multiply \
 	mm \
+	coremark \
 	dhrystone \
 	spmv \
 	mt-vvadd \

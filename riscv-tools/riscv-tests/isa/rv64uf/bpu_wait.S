@@ -1,10 +1,10 @@
 # See LICENSE for license details.
 
 #*****************************************************************************
-# breakpoint.S
+# bpu_wait.S
 #-----------------------------------------------------------------------------
 #
-# Test breakpoints, if they are implemented.
+# Test bpu, if they are implemented.
 #
 
 #include "riscv_test.h"

@@ -1,3 +1,9 @@
 generated/*.spike.rpt
 rv32imc_*
 Makefile_*
+*soc*
+*bus*
+*ecc*
+*lockstep*
+*i2c*
+
