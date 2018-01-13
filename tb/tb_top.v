@@ -7,10 +7,9 @@ module tb_top();
   reg  lfextclk;
   reg  rst_n;
 
-  wire hfclkrst;
-  wire hfclk = clk & (~hfclkrst);
+  wire hfclk = clk;
 
-  `define CPU_TOP u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.u_e200_cpu_top
+  `define CPU_TOP u_e200_soc_top.u_e200_subsys_top.u_e200_subsys_main.u_e200_cpu_top
   `define EXU `CPU_TOP.u_e200_cpu.u_e200_core.u_e200_exu
   `define ITCM `CPU_TOP.u_e200_srams.u_e200_itcm_ram.u_e200_itcm_gnrl_ram.u_sirv_sim_ram
 
@@ -18,7 +17,7 @@ module tb_top();
   `define PC_EXT_IRQ_BEFOR_MRET `E200_PC_SIZE'h800000a6
   `define PC_SFT_IRQ_BEFOR_MRET `E200_PC_SIZE'h800000be
   `define PC_TMR_IRQ_BEFOR_MRET `E200_PC_SIZE'h800000d6
-  `define PC_AFTER_SETMTVEC     `E200_PC_SIZE'h80000148
+  `define PC_AFTER_SETMTVEC     `E200_PC_SIZE'h8000015C
 
   wire [`E200_XLEN-1:0] x3 = `EXU.u_e200_exu_regfile.rf_r[3];
   wire [`E200_PC_SIZE-1:0] pc = `EXU.u_e200_exu_commit.alu_cmt_i_pc;
@@ -70,13 +69,13 @@ module tb_top();
 
 
   // Randomly force the external interrupt
-  `define EXT_IRQ u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.plic_ext_irq
-  `define SFT_IRQ u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.clint_sft_irq
-  `define TMR_IRQ u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.clint_tmr_irq
+  `define EXT_IRQ u_e200_soc_top.u_e200_subsys_top.u_e200_subsys_main.plic_ext_irq
+  `define SFT_IRQ u_e200_soc_top.u_e200_subsys_top.u_e200_subsys_main.clint_sft_irq
+  `define TMR_IRQ u_e200_soc_top.u_e200_subsys_top.u_e200_subsys_main.clint_tmr_irq
 
-  `define U_CPU u_e200_fpga_soc_top.u_e200_subsys_top.u_e200_subsys_main.u_e200_cpu_top.u_e200_cpu
-  `define ITCM_BUS_ERR `U_CPU.u_e200_itcm_ctrl.chk_icb_rsp_err
-  `define ITCM_BUS_READ `U_CPU.u_e200_itcm_ctrl.e2_icb_read_r
+  `define U_CPU u_e200_soc_top.u_e200_subsys_top.u_e200_subsys_main.u_e200_cpu_top.u_e200_cpu
+  `define ITCM_BUS_ERR `U_CPU.u_e200_itcm_ctrl.sram_icb_rsp_err
+  `define ITCM_BUS_READ `U_CPU.u_e200_itcm_ctrl.sram_icb_rsp_read
   `define STATUS_MIE   `U_CPU.u_e200_core.u_e200_exu.u_e200_exu_commit.u_e200_exu_excp.status_mie_r
 
   wire stop_assert_irq = (pc_write_to_host_cnt > 32);
@@ -125,7 +124,7 @@ module tb_top();
     #100
     @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
     forever begin
-      repeat ($urandom_range(1, 200)) @(posedge clk) tb_ext_irq = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 1000)) @(posedge clk) tb_ext_irq = 1'b0; // Wait random times
       tb_ext_irq = 1'b1; // assert the irq
       @((pc == `PC_EXT_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
       tb_ext_irq = 1'b0;
@@ -139,7 +138,7 @@ module tb_top();
     #100
     @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
     forever begin
-      repeat ($urandom_range(1, 200)) @(posedge clk) tb_sft_irq = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 1000)) @(posedge clk) tb_sft_irq = 1'b0; // Wait random times
       tb_sft_irq = 1'b1; // assert the irq
       @((pc == `PC_SFT_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
       tb_sft_irq = 1'b0;
@@ -153,7 +152,7 @@ module tb_top();
     #100
     @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
     forever begin
-      repeat ($urandom_range(1, 200)) @(posedge clk) tb_tmr_irq = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 1000)) @(posedge clk) tb_tmr_irq = 1'b0; // Wait random times
       tb_tmr_irq = 1'b1; // assert the irq
       @((pc == `PC_TMR_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
       tb_tmr_irq = 1'b0;
@@ -222,7 +221,7 @@ module tb_top();
   end
 
   initial begin
-    #10000000
+    #40000000
         $display("Time Out !!!");
      $finish;
   end
@@ -241,12 +240,12 @@ module tb_top();
 
   
   
-  //initial begin
-  //  $value$plusargs("DUMPWAVE=%d",dumpwave);
-  //  if(dumpwave != 0)begin
-  //       // To add your waveform generation function
-  //  end
-  //end
+  initial begin
+    $value$plusargs("DUMPWAVE=%d",dumpwave);
+    if(dumpwave != 0)begin
+         // To add your waveform generation function
+    end
+  end
 
 
 
@@ -293,237 +292,213 @@ module tb_top();
   wire jtag_DRV_TDO = 1'b0;
 
 
-e200_fpga_soc_top u_e200_fpga_soc_top(
-   .hfclk(hfclk),
-   .hfclkrst(hfclkrst),
+e200_soc_top u_e200_soc_top(
+   
+   .hfextclk(hfclk),
+   .hfxoscen(),
+
+   .lfextclk(lfextclk),
+   .lfxoscen(),
+
    .io_pads_jtag_TCK_i_ival (jtag_TCK),
-   .io_pads_jtag_TCK_o_oval (),
-   .io_pads_jtag_TCK_o_oe (),
-   .io_pads_jtag_TCK_o_ie (),
-   .io_pads_jtag_TCK_o_pue (),
-   .io_pads_jtag_TCK_o_ds (),
    .io_pads_jtag_TMS_i_ival (jtag_TMS),
-   .io_pads_jtag_TMS_o_oval (),
-   .io_pads_jtag_TMS_o_oe (),
-   .io_pads_jtag_TMS_o_ie (),
-   .io_pads_jtag_TMS_o_pue (),
-   .io_pads_jtag_TMS_o_ds (),
    .io_pads_jtag_TDI_i_ival (jtag_TDI),
-   .io_pads_jtag_TDI_o_oval (),
-   .io_pads_jtag_TDI_o_oe (),
-   .io_pads_jtag_TDI_o_ie (),
-   .io_pads_jtag_TDI_o_pue (),
-   .io_pads_jtag_TDI_o_ds (),
-   .io_pads_jtag_TDO_i_ival (1'b1),
    .io_pads_jtag_TDO_o_oval (jtag_TDO),
    .io_pads_jtag_TDO_o_oe (),
-   .io_pads_jtag_TDO_o_ie (),
-   .io_pads_jtag_TDO_o_pue (),
-   .io_pads_jtag_TDO_o_ds (),
-   .io_pads_jtag_TRST_n_i_ival (jtag_TRST),
-   .io_pads_jtag_TRST_n_o_oval (),
-   .io_pads_jtag_TRST_n_o_oe (),
-   .io_pads_jtag_TRST_n_o_ie (),
-   .io_pads_jtag_TRST_n_o_pue (),
-   .io_pads_jtag_TRST_n_o_ds (),
-   .io_pads_gpio_0_i_ival (1'b0),
+   .io_pads_gpio_0_i_ival (1'b1),
    .io_pads_gpio_0_o_oval (),
    .io_pads_gpio_0_o_oe (),
    .io_pads_gpio_0_o_ie (),
    .io_pads_gpio_0_o_pue (),
    .io_pads_gpio_0_o_ds (),
-   .io_pads_gpio_1_i_ival (1'b0),
+   .io_pads_gpio_1_i_ival (1'b1),
    .io_pads_gpio_1_o_oval (),
    .io_pads_gpio_1_o_oe (),
    .io_pads_gpio_1_o_ie (),
    .io_pads_gpio_1_o_pue (),
    .io_pads_gpio_1_o_ds (),
-   .io_pads_gpio_2_i_ival (1'b0),
+   .io_pads_gpio_2_i_ival (1'b1),
    .io_pads_gpio_2_o_oval (),
    .io_pads_gpio_2_o_oe (),
    .io_pads_gpio_2_o_ie (),
    .io_pads_gpio_2_o_pue (),
    .io_pads_gpio_2_o_ds (),
-   .io_pads_gpio_3_i_ival (1'b0),
+   .io_pads_gpio_3_i_ival (1'b1),
    .io_pads_gpio_3_o_oval (),
    .io_pads_gpio_3_o_oe (),
    .io_pads_gpio_3_o_ie (),
    .io_pads_gpio_3_o_pue (),
    .io_pads_gpio_3_o_ds (),
-   .io_pads_gpio_4_i_ival (1'b0),
+   .io_pads_gpio_4_i_ival (1'b1),
    .io_pads_gpio_4_o_oval (),
    .io_pads_gpio_4_o_oe (),
    .io_pads_gpio_4_o_ie (),
    .io_pads_gpio_4_o_pue (),
    .io_pads_gpio_4_o_ds (),
-   .io_pads_gpio_5_i_ival (1'b0),
+   .io_pads_gpio_5_i_ival (1'b1),
    .io_pads_gpio_5_o_oval (),
    .io_pads_gpio_5_o_oe (),
    .io_pads_gpio_5_o_ie (),
    .io_pads_gpio_5_o_pue (),
    .io_pads_gpio_5_o_ds (),
-   .io_pads_gpio_6_i_ival (1'b0),
+   .io_pads_gpio_6_i_ival (1'b1),
    .io_pads_gpio_6_o_oval (),
    .io_pads_gpio_6_o_oe (),
    .io_pads_gpio_6_o_ie (),
    .io_pads_gpio_6_o_pue (),
    .io_pads_gpio_6_o_ds (),
-   .io_pads_gpio_7_i_ival (1'b0),
+   .io_pads_gpio_7_i_ival (1'b1),
    .io_pads_gpio_7_o_oval (),
    .io_pads_gpio_7_o_oe (),
    .io_pads_gpio_7_o_ie (),
    .io_pads_gpio_7_o_pue (),
    .io_pads_gpio_7_o_ds (),
-   .io_pads_gpio_8_i_ival (1'b0),
+   .io_pads_gpio_8_i_ival (1'b1),
    .io_pads_gpio_8_o_oval (),
    .io_pads_gpio_8_o_oe (),
    .io_pads_gpio_8_o_ie (),
    .io_pads_gpio_8_o_pue (),
    .io_pads_gpio_8_o_ds (),
-   .io_pads_gpio_9_i_ival (1'b0),
+   .io_pads_gpio_9_i_ival (1'b1),
    .io_pads_gpio_9_o_oval (),
    .io_pads_gpio_9_o_oe (),
    .io_pads_gpio_9_o_ie (),
    .io_pads_gpio_9_o_pue (),
    .io_pads_gpio_9_o_ds (),
-   .io_pads_gpio_10_i_ival (1'b0),
+   .io_pads_gpio_10_i_ival (1'b1),
    .io_pads_gpio_10_o_oval (),
    .io_pads_gpio_10_o_oe (),
    .io_pads_gpio_10_o_ie (),
    .io_pads_gpio_10_o_pue (),
    .io_pads_gpio_10_o_ds (),
-   .io_pads_gpio_11_i_ival (1'b0),
+   .io_pads_gpio_11_i_ival (1'b1),
    .io_pads_gpio_11_o_oval (),
    .io_pads_gpio_11_o_oe (),
    .io_pads_gpio_11_o_ie (),
    .io_pads_gpio_11_o_pue (),
    .io_pads_gpio_11_o_ds (),
-   .io_pads_gpio_12_i_ival (1'b0),
+   .io_pads_gpio_12_i_ival (1'b1),
    .io_pads_gpio_12_o_oval (),
    .io_pads_gpio_12_o_oe (),
    .io_pads_gpio_12_o_ie (),
    .io_pads_gpio_12_o_pue (),
    .io_pads_gpio_12_o_ds (),
-   .io_pads_gpio_13_i_ival (1'b0),
+   .io_pads_gpio_13_i_ival (1'b1),
    .io_pads_gpio_13_o_oval (),
    .io_pads_gpio_13_o_oe (),
    .io_pads_gpio_13_o_ie (),
    .io_pads_gpio_13_o_pue (),
    .io_pads_gpio_13_o_ds (),
-   .io_pads_gpio_14_i_ival (1'b0),
+   .io_pads_gpio_14_i_ival (1'b1),
    .io_pads_gpio_14_o_oval (),
    .io_pads_gpio_14_o_oe (),
    .io_pads_gpio_14_o_ie (),
    .io_pads_gpio_14_o_pue (),
    .io_pads_gpio_14_o_ds (),
-   .io_pads_gpio_15_i_ival (1'b0),
+   .io_pads_gpio_15_i_ival (1'b1),
    .io_pads_gpio_15_o_oval (),
    .io_pads_gpio_15_o_oe (),
    .io_pads_gpio_15_o_ie (),
    .io_pads_gpio_15_o_pue (),
    .io_pads_gpio_15_o_ds (),
-   .io_pads_gpio_16_i_ival (1'b0),
+   .io_pads_gpio_16_i_ival (1'b1),
    .io_pads_gpio_16_o_oval (),
    .io_pads_gpio_16_o_oe (),
    .io_pads_gpio_16_o_ie (),
    .io_pads_gpio_16_o_pue (),
    .io_pads_gpio_16_o_ds (),
-   .io_pads_gpio_17_i_ival (1'b0),
+   .io_pads_gpio_17_i_ival (1'b1),
    .io_pads_gpio_17_o_oval (),
    .io_pads_gpio_17_o_oe (),
    .io_pads_gpio_17_o_ie (),
    .io_pads_gpio_17_o_pue (),
    .io_pads_gpio_17_o_ds (),
-   .io_pads_gpio_18_i_ival (1'b0),
+   .io_pads_gpio_18_i_ival (1'b1),
    .io_pads_gpio_18_o_oval (),
    .io_pads_gpio_18_o_oe (),
    .io_pads_gpio_18_o_ie (),
    .io_pads_gpio_18_o_pue (),
    .io_pads_gpio_18_o_ds (),
-   .io_pads_gpio_19_i_ival (1'b0),
+   .io_pads_gpio_19_i_ival (1'b1),
    .io_pads_gpio_19_o_oval (),
    .io_pads_gpio_19_o_oe (),
    .io_pads_gpio_19_o_ie (),
    .io_pads_gpio_19_o_pue (),
    .io_pads_gpio_19_o_ds (),
-   .io_pads_gpio_20_i_ival (1'b0),
+   .io_pads_gpio_20_i_ival (1'b1),
    .io_pads_gpio_20_o_oval (),
    .io_pads_gpio_20_o_oe (),
    .io_pads_gpio_20_o_ie (),
    .io_pads_gpio_20_o_pue (),
    .io_pads_gpio_20_o_ds (),
-   .io_pads_gpio_21_i_ival (1'b0),
+   .io_pads_gpio_21_i_ival (1'b1),
    .io_pads_gpio_21_o_oval (),
    .io_pads_gpio_21_o_oe (),
    .io_pads_gpio_21_o_ie (),
    .io_pads_gpio_21_o_pue (),
    .io_pads_gpio_21_o_ds (),
-   .io_pads_gpio_22_i_ival (1'b0),
+   .io_pads_gpio_22_i_ival (1'b1),
    .io_pads_gpio_22_o_oval (),
    .io_pads_gpio_22_o_oe (),
    .io_pads_gpio_22_o_ie (),
    .io_pads_gpio_22_o_pue (),
    .io_pads_gpio_22_o_ds (),
-   .io_pads_gpio_23_i_ival (1'b0),
+   .io_pads_gpio_23_i_ival (1'b1),
    .io_pads_gpio_23_o_oval (),
    .io_pads_gpio_23_o_oe (),
    .io_pads_gpio_23_o_ie (),
    .io_pads_gpio_23_o_pue (),
    .io_pads_gpio_23_o_ds (),
-   .io_pads_gpio_24_i_ival (1'b0),
+   .io_pads_gpio_24_i_ival (1'b1),
    .io_pads_gpio_24_o_oval (),
    .io_pads_gpio_24_o_oe (),
    .io_pads_gpio_24_o_ie (),
    .io_pads_gpio_24_o_pue (),
    .io_pads_gpio_24_o_ds (),
-   .io_pads_gpio_25_i_ival (1'b0),
+   .io_pads_gpio_25_i_ival (1'b1),
    .io_pads_gpio_25_o_oval (),
    .io_pads_gpio_25_o_oe (),
    .io_pads_gpio_25_o_ie (),
    .io_pads_gpio_25_o_pue (),
    .io_pads_gpio_25_o_ds (),
-   .io_pads_gpio_26_i_ival (1'b0),
+   .io_pads_gpio_26_i_ival (1'b1),
    .io_pads_gpio_26_o_oval (),
    .io_pads_gpio_26_o_oe (),
    .io_pads_gpio_26_o_ie (),
    .io_pads_gpio_26_o_pue (),
    .io_pads_gpio_26_o_ds (),
-   .io_pads_gpio_27_i_ival (1'b0),
+   .io_pads_gpio_27_i_ival (1'b1),
    .io_pads_gpio_27_o_oval (),
    .io_pads_gpio_27_o_oe (),
    .io_pads_gpio_27_o_ie (),
    .io_pads_gpio_27_o_pue (),
    .io_pads_gpio_27_o_ds (),
-   .io_pads_gpio_28_i_ival (1'b0),
+   .io_pads_gpio_28_i_ival (1'b1),
    .io_pads_gpio_28_o_oval (),
    .io_pads_gpio_28_o_oe (),
    .io_pads_gpio_28_o_ie (),
    .io_pads_gpio_28_o_pue (),
    .io_pads_gpio_28_o_ds (),
-   .io_pads_gpio_29_i_ival (1'b0),
+   .io_pads_gpio_29_i_ival (1'b1),
    .io_pads_gpio_29_o_oval (),
    .io_pads_gpio_29_o_oe (),
    .io_pads_gpio_29_o_ie (),
    .io_pads_gpio_29_o_pue (),
    .io_pads_gpio_29_o_ds (),
-   .io_pads_gpio_30_i_ival (1'b0),
+   .io_pads_gpio_30_i_ival (1'b1),
    .io_pads_gpio_30_o_oval (),
    .io_pads_gpio_30_o_oe (),
    .io_pads_gpio_30_o_ie (),
    .io_pads_gpio_30_o_pue (),
    .io_pads_gpio_30_o_ds (),
-   .io_pads_gpio_31_i_ival (1'b0),
+   .io_pads_gpio_31_i_ival (1'b1),
    .io_pads_gpio_31_o_oval (),
    .io_pads_gpio_31_o_oe (),
    .io_pads_gpio_31_o_ie (),
    .io_pads_gpio_31_o_pue (),
    .io_pads_gpio_31_o_ds (),
-   .io_pads_qspi_sck_i_ival (1'b1),
+
    .io_pads_qspi_sck_o_oval (),
-   .io_pads_qspi_sck_o_oe (),
-   .io_pads_qspi_sck_o_ie (),
-   .io_pads_qspi_sck_o_pue (),
-   .io_pads_qspi_sck_o_ds (),
    .io_pads_qspi_dq_0_i_ival (1'b1),
    .io_pads_qspi_dq_0_o_oval (),
    .io_pads_qspi_dq_0_o_oe (),
@@ -548,36 +523,17 @@ e200_fpga_soc_top u_e200_fpga_soc_top(
    .io_pads_qspi_dq_3_o_ie (),
    .io_pads_qspi_dq_3_o_pue (),
    .io_pads_qspi_dq_3_o_ds (),
-   .io_pads_qspi_cs_0_i_ival (1'b1),
    .io_pads_qspi_cs_0_o_oval (),
-   .io_pads_qspi_cs_0_o_oe (),
-   .io_pads_qspi_cs_0_o_ie (),
-   .io_pads_qspi_cs_0_o_pue (),
-   .io_pads_qspi_cs_0_o_ds (),
    .io_pads_aon_erst_n_i_ival (rst_n),//This is the real reset, active low
-   .io_pads_aon_erst_n_o_oval (),
-   .io_pads_aon_erst_n_o_oe (),
-   .io_pads_aon_erst_n_o_ie (),
-   .io_pads_aon_erst_n_o_pue (),
-   .io_pads_aon_erst_n_o_ds (),
-   .io_pads_aon_lfextclk_i_ival (lfextclk),
-   .io_pads_aon_lfextclk_o_oval (),
-   .io_pads_aon_lfextclk_o_oe (),
-   .io_pads_aon_lfextclk_o_ie (),
-   .io_pads_aon_lfextclk_o_pue (),
-   .io_pads_aon_lfextclk_o_ds (),
    .io_pads_aon_pmu_dwakeup_n_i_ival (1'b1),
-   .io_pads_aon_pmu_dwakeup_n_o_oval (),
-   .io_pads_aon_pmu_dwakeup_n_o_oe (),
-   .io_pads_aon_pmu_dwakeup_n_o_ie (),
-   .io_pads_aon_pmu_dwakeup_n_o_pue (),
-   .io_pads_aon_pmu_dwakeup_n_o_ds (),
-   .io_pads_aon_pmu_vddpaden_i_ival (1'b1),
+
    .io_pads_aon_pmu_vddpaden_o_oval (),
-   .io_pads_aon_pmu_vddpaden_o_oe (),
-   .io_pads_aon_pmu_vddpaden_o_ie (),
-   .io_pads_aon_pmu_vddpaden_o_pue (),
-   .io_pads_aon_pmu_vddpaden_o_ds () 
+    .io_pads_aon_pmu_padrst_o_oval    (),
+
+    .io_pads_bootrom_n_i_ival       (1'b0),// In Simulation we boot from ROM
+    .io_pads_dbgmode0_n_i_ival       (1'b1),
+    .io_pads_dbgmode1_n_i_ival       (1'b1),
+    .io_pads_dbgmode2_n_i_ival       (1'b1) 
 );
  
 
