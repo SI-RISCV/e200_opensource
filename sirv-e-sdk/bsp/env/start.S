@@ -2,6 +2,8 @@
 
 // See LICENSE for license details.
 
+#include "encoding.h"
+
 	.section .init
 	.globl _start
 	.type _start,@function
@@ -55,16 +57,16 @@ _start:
 	call atexit
 	call __libc_init_array
 
-#ifndef __riscv_float_abi_soft
 	/* Enable FPU */
 	li t0, MSTATUS_FS
 	csrs mstatus, t0
 	csrr t1, mstatus
 	and t1, t1, t0
 	beqz t1, 1f
+    /*
 	fssr x0
+    */
 1:
-#endif
 
 	/* argc = argv = 0 */
 	li a0, 0
