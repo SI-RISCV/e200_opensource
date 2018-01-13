@@ -33,6 +33,11 @@
 // ====================================================================
 
 module sirv_icb1to16_bus # (
+  parameter ICB_FIFO_DP = 0, // This is to optionally add the pipeline stage for ICB bus
+                             //   if the depth is 0, then means pass through, not add pipeline
+                             //   if the depth is 2, then means added one ping-pong buffer stage
+  parameter ICB_FIFO_CUT_READY = 1, // This is to cut the back-pressure signal if you set as 1
+
   parameter AW = 32,
   parameter DW = 32,
   parameter SPLT_FIFO_OUTS_NUM    = 1,
@@ -414,6 +419,81 @@ module sirv_icb1to16_bus # (
   input  rst_n
   );
 
+  wire                         buf_icb_cmd_valid;
+  wire                         buf_icb_cmd_ready;
+  wire [             AW-1:0]   buf_icb_cmd_addr; 
+  wire                         buf_icb_cmd_read; 
+  wire [2-1:0]                 buf_icb_cmd_burst;
+  wire [2-1:0]                 buf_icb_cmd_beat;
+  wire [        DW-1:0]        buf_icb_cmd_wdata;
+  wire [        DW/8-1:0]      buf_icb_cmd_wmask;
+  wire                         buf_icb_cmd_lock;
+  wire                         buf_icb_cmd_excl;
+  wire [1:0]                   buf_icb_cmd_size;
+  
+  wire                         buf_icb_rsp_valid;
+  wire                         buf_icb_rsp_ready;
+  wire                         buf_icb_rsp_err  ;
+  wire                         buf_icb_rsp_excl_ok;
+  wire [        DW-1:0]        buf_icb_rsp_rdata;
+
+
+
+  sirv_gnrl_icb_buffer # (
+    .OUTS_CNT_W   (SPLT_FIFO_OUTS_NUM),
+    .AW    (AW),
+    .DW    (DW), 
+    .CMD_DP(ICB_FIFO_DP),
+    .RSP_DP(ICB_FIFO_DP),
+    .CMD_CUT_READY (ICB_FIFO_CUT_READY),
+    .RSP_CUT_READY (ICB_FIFO_CUT_READY),
+    .USR_W (1)
+  )u_sirv_gnrl_icb_buffer(
+    .icb_buffer_active      (),
+    .i_icb_cmd_valid        (i_icb_cmd_valid),
+    .i_icb_cmd_ready        (i_icb_cmd_ready),
+    .i_icb_cmd_read         (i_icb_cmd_read ),
+    .i_icb_cmd_addr         (i_icb_cmd_addr ),
+    .i_icb_cmd_wdata        (i_icb_cmd_wdata),
+    .i_icb_cmd_wmask        (i_icb_cmd_wmask),
+    .i_icb_cmd_lock         (i_icb_cmd_lock ),
+    .i_icb_cmd_excl         (i_icb_cmd_excl ),
+    .i_icb_cmd_size         (i_icb_cmd_size ),
+    .i_icb_cmd_burst        (i_icb_cmd_burst),
+    .i_icb_cmd_beat         (i_icb_cmd_beat ),
+    .i_icb_cmd_usr          (1'b0  ),
+                     
+    .i_icb_rsp_valid        (i_icb_rsp_valid),
+    .i_icb_rsp_ready        (i_icb_rsp_ready),
+    .i_icb_rsp_err          (i_icb_rsp_err  ),
+    .i_icb_rsp_excl_ok      (i_icb_rsp_excl_ok),
+    .i_icb_rsp_rdata        (i_icb_rsp_rdata),
+    .i_icb_rsp_usr          (),
+    
+    .o_icb_cmd_valid        (buf_icb_cmd_valid),
+    .o_icb_cmd_ready        (buf_icb_cmd_ready),
+    .o_icb_cmd_read         (buf_icb_cmd_read ),
+    .o_icb_cmd_addr         (buf_icb_cmd_addr ),
+    .o_icb_cmd_wdata        (buf_icb_cmd_wdata),
+    .o_icb_cmd_wmask        (buf_icb_cmd_wmask),
+    .o_icb_cmd_lock         (buf_icb_cmd_lock ),
+    .o_icb_cmd_excl         (buf_icb_cmd_excl ),
+    .o_icb_cmd_size         (buf_icb_cmd_size ),
+    .o_icb_cmd_burst        (buf_icb_cmd_burst),
+    .o_icb_cmd_beat         (buf_icb_cmd_beat ),
+    .o_icb_cmd_usr          (),
+                         
+    .o_icb_rsp_valid        (buf_icb_rsp_valid),
+    .o_icb_rsp_ready        (buf_icb_rsp_ready),
+    .o_icb_rsp_err          (buf_icb_rsp_err  ),
+    .o_icb_rsp_excl_ok      (buf_icb_rsp_excl_ok),
+    .o_icb_rsp_rdata        (buf_icb_rsp_rdata),
+    .o_icb_rsp_usr          (1'b0  ),
+
+    .clk                    (clk  ),
+    .rst_n                  (rst_n)
+  );
+
   localparam BASE_REGION_MSB = (AW-1);
   localparam SPLT_I_NUM = 17;
 
@@ -775,67 +855,67 @@ module sirv_icb1to16_bus # (
                            , deft_icb_rsp_ready
                            } = splt_bus_icb_rsp_ready;
 
-  wire icb_cmd_o0 = (i_icb_cmd_addr     [BASE_REGION_MSB:O0_BASE_REGION_LSB] 
+  wire icb_cmd_o0 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O0_BASE_REGION_LSB] 
                      ==  O0_BASE_ADDR [BASE_REGION_MSB:O0_BASE_REGION_LSB] 
                     ) & o0_icb_enable;
 
-  wire icb_cmd_o1 = (i_icb_cmd_addr     [BASE_REGION_MSB:O1_BASE_REGION_LSB]
+  wire icb_cmd_o1 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O1_BASE_REGION_LSB]
                      ==  O1_BASE_ADDR [BASE_REGION_MSB:O1_BASE_REGION_LSB] 
                     ) & o1_icb_enable; 
                      
-  wire icb_cmd_o2 = (i_icb_cmd_addr     [BASE_REGION_MSB:O2_BASE_REGION_LSB]
+  wire icb_cmd_o2 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O2_BASE_REGION_LSB]
                      ==  O2_BASE_ADDR [BASE_REGION_MSB:O2_BASE_REGION_LSB] 
                     ) & o2_icb_enable;
 
-  wire icb_cmd_o3 = (i_icb_cmd_addr     [BASE_REGION_MSB:O3_BASE_REGION_LSB]
+  wire icb_cmd_o3 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O3_BASE_REGION_LSB]
                      ==  O3_BASE_ADDR [BASE_REGION_MSB:O3_BASE_REGION_LSB] 
                     ) & o3_icb_enable;
 
-  wire icb_cmd_o4 = (i_icb_cmd_addr     [BASE_REGION_MSB:O4_BASE_REGION_LSB]
+  wire icb_cmd_o4 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O4_BASE_REGION_LSB]
                      ==  O4_BASE_ADDR [BASE_REGION_MSB:O4_BASE_REGION_LSB] 
                     ) & o4_icb_enable;
 
-  wire icb_cmd_o5 = (i_icb_cmd_addr     [BASE_REGION_MSB:O5_BASE_REGION_LSB]
+  wire icb_cmd_o5 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O5_BASE_REGION_LSB]
                      ==  O5_BASE_ADDR [BASE_REGION_MSB:O5_BASE_REGION_LSB] 
                     ) & o5_icb_enable;
 
-  wire icb_cmd_o6 = (i_icb_cmd_addr     [BASE_REGION_MSB:O6_BASE_REGION_LSB]
+  wire icb_cmd_o6 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O6_BASE_REGION_LSB]
                      ==  O6_BASE_ADDR [BASE_REGION_MSB:O6_BASE_REGION_LSB] 
                     ) & o6_icb_enable;
 
-  wire icb_cmd_o7 = (i_icb_cmd_addr     [BASE_REGION_MSB:O7_BASE_REGION_LSB]
+  wire icb_cmd_o7 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O7_BASE_REGION_LSB]
                      ==  O7_BASE_ADDR [BASE_REGION_MSB:O7_BASE_REGION_LSB] 
                     ) & o7_icb_enable;
 
-  wire icb_cmd_o8 = (i_icb_cmd_addr     [BASE_REGION_MSB:O8_BASE_REGION_LSB]
+  wire icb_cmd_o8 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O8_BASE_REGION_LSB]
                      ==  O8_BASE_ADDR [BASE_REGION_MSB:O8_BASE_REGION_LSB] 
                     ) & o8_icb_enable;
 
-  wire icb_cmd_o9 = (i_icb_cmd_addr     [BASE_REGION_MSB:O9_BASE_REGION_LSB]
+  wire icb_cmd_o9 = buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O9_BASE_REGION_LSB]
                      ==  O9_BASE_ADDR [BASE_REGION_MSB:O9_BASE_REGION_LSB] 
                     ) & o9_icb_enable;
 
-  wire icb_cmd_o10= (i_icb_cmd_addr     [BASE_REGION_MSB:O10_BASE_REGION_LSB]
+  wire icb_cmd_o10= buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O10_BASE_REGION_LSB]
                      ==  O10_BASE_ADDR [BASE_REGION_MSB:O10_BASE_REGION_LSB] 
                     ) & o10_icb_enable;
 
-  wire icb_cmd_o11= (i_icb_cmd_addr     [BASE_REGION_MSB:O11_BASE_REGION_LSB]
+  wire icb_cmd_o11= buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O11_BASE_REGION_LSB]
                      ==  O11_BASE_ADDR [BASE_REGION_MSB:O11_BASE_REGION_LSB] 
                     ) & o11_icb_enable;
 
-  wire icb_cmd_o12= (i_icb_cmd_addr     [BASE_REGION_MSB:O12_BASE_REGION_LSB]
+  wire icb_cmd_o12= buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O12_BASE_REGION_LSB]
                      ==  O12_BASE_ADDR [BASE_REGION_MSB:O12_BASE_REGION_LSB] 
                     ) & o12_icb_enable;
 
-  wire icb_cmd_o13= (i_icb_cmd_addr     [BASE_REGION_MSB:O13_BASE_REGION_LSB]
+  wire icb_cmd_o13= buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O13_BASE_REGION_LSB]
                      ==  O13_BASE_ADDR [BASE_REGION_MSB:O13_BASE_REGION_LSB] 
                     ) & o13_icb_enable;
 
-  wire icb_cmd_o14= (i_icb_cmd_addr     [BASE_REGION_MSB:O14_BASE_REGION_LSB]
+  wire icb_cmd_o14= buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O14_BASE_REGION_LSB]
                      ==  O14_BASE_ADDR [BASE_REGION_MSB:O14_BASE_REGION_LSB] 
                     ) & o14_icb_enable;
 
-  wire icb_cmd_o15= (i_icb_cmd_addr     [BASE_REGION_MSB:O15_BASE_REGION_LSB]
+  wire icb_cmd_o15= buf_icb_cmd_valid & (buf_icb_cmd_addr     [BASE_REGION_MSB:O15_BASE_REGION_LSB]
                      ==  O15_BASE_ADDR [BASE_REGION_MSB:O15_BASE_REGION_LSB] 
                     ) & o15_icb_enable;
 
@@ -857,7 +937,7 @@ module sirv_icb1to16_bus # (
                     & (~icb_cmd_o15)
                     ;
 
-  wire [SPLT_I_NUM-1:0] i_icb_splt_indic = 
+  wire [SPLT_I_NUM-1:0] buf_icb_splt_indic = 
       {
                       icb_cmd_o0
                     , icb_cmd_o1
@@ -888,30 +968,31 @@ module sirv_icb1to16_bus # (
   .SPLT_NUM   (SPLT_I_NUM),
   .SPLT_PTR_W (SPLT_I_NUM),
   .SPLT_PTR_1HOT (1),
+  .VLD_MSK_PAYLOAD(1),
   .USR_W      (1),
   .AW         (AW),
   .DW         (DW) 
-  ) u_i_icb_splt(
-  .i_icb_splt_indic       (i_icb_splt_indic),        
+  ) u_buf_icb_splt(
+  .i_icb_splt_indic       (buf_icb_splt_indic),        
 
-  .i_icb_cmd_valid        (i_icb_cmd_valid )     ,
-  .i_icb_cmd_ready        (i_icb_cmd_ready )     ,
-  .i_icb_cmd_read         (i_icb_cmd_read )      ,
-  .i_icb_cmd_addr         (i_icb_cmd_addr )      ,
-  .i_icb_cmd_wdata        (i_icb_cmd_wdata )     ,
-  .i_icb_cmd_wmask        (i_icb_cmd_wmask)      ,
-  .i_icb_cmd_burst        (i_icb_cmd_burst)     ,
-  .i_icb_cmd_beat         (i_icb_cmd_beat )     ,
-  .i_icb_cmd_excl         (i_icb_cmd_excl )     ,
-  .i_icb_cmd_lock         (i_icb_cmd_lock )     ,
-  .i_icb_cmd_size         (i_icb_cmd_size )     ,
+  .i_icb_cmd_valid        (buf_icb_cmd_valid )     ,
+  .i_icb_cmd_ready        (buf_icb_cmd_ready )     ,
+  .i_icb_cmd_read         (buf_icb_cmd_read )      ,
+  .i_icb_cmd_addr         (buf_icb_cmd_addr )      ,
+  .i_icb_cmd_wdata        (buf_icb_cmd_wdata )     ,
+  .i_icb_cmd_wmask        (buf_icb_cmd_wmask)      ,
+  .i_icb_cmd_burst        (buf_icb_cmd_burst)     ,
+  .i_icb_cmd_beat         (buf_icb_cmd_beat )     ,
+  .i_icb_cmd_excl         (buf_icb_cmd_excl )     ,
+  .i_icb_cmd_lock         (buf_icb_cmd_lock )     ,
+  .i_icb_cmd_size         (buf_icb_cmd_size )     ,
   .i_icb_cmd_usr          (1'b0)     ,
  
-  .i_icb_rsp_valid        (i_icb_rsp_valid )     ,
-  .i_icb_rsp_ready        (i_icb_rsp_ready )     ,
-  .i_icb_rsp_err          (i_icb_rsp_err)        ,
-  .i_icb_rsp_excl_ok      (i_icb_rsp_excl_ok)    ,
-  .i_icb_rsp_rdata        (i_icb_rsp_rdata )     ,
+  .i_icb_rsp_valid        (buf_icb_rsp_valid )     ,
+  .i_icb_rsp_ready        (buf_icb_rsp_ready )     ,
+  .i_icb_rsp_err          (buf_icb_rsp_err)        ,
+  .i_icb_rsp_excl_ok      (buf_icb_rsp_excl_ok)    ,
+  .i_icb_rsp_rdata        (buf_icb_rsp_rdata )     ,
   .i_icb_rsp_usr          ( )     ,
                                
   .o_bus_icb_cmd_ready    (splt_bus_icb_cmd_ready ) ,

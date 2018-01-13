@@ -36,10 +36,27 @@
 `include "e203_defines.v"
 
 module e203_subsys_top(
-  input  hfclk, 
-  output hfclkrst,
+  // This clock should comes from the crystal pad generated high speed clock (16MHz)
+  input  hfextclk,
+  output hfxoscen,// The signal to enable the crystal pad generated clock
 
-  input  [`E203_PC_SIZE-1:0] pc_rtvec,
+  // This clock should comes from the crystal pad generated low speed clock (32.768KHz)
+  input  lfextclk,
+  output lfxoscen,// The signal to enable the crystal pad generated clock
+
+  input  io_pads_dbgmode0_n_i_ival,
+
+  input  io_pads_dbgmode1_n_i_ival,
+
+  input  io_pads_dbgmode2_n_i_ival,
+
+
+  input  io_pads_bootrom_n_i_ival,
+  output io_pads_bootrom_n_o_oval,
+  output io_pads_bootrom_n_o_oe,
+  output io_pads_bootrom_n_o_ie,
+  output io_pads_bootrom_n_o_pue,
+  output io_pads_bootrom_n_o_ds,
 
   input  io_pads_aon_erst_n_i_ival,
   output io_pads_aon_erst_n_o_oval,
@@ -47,12 +64,7 @@ module e203_subsys_top(
   output io_pads_aon_erst_n_o_ie,
   output io_pads_aon_erst_n_o_pue,
   output io_pads_aon_erst_n_o_ds,
-  input  io_pads_aon_lfextclk_i_ival,
-  output io_pads_aon_lfextclk_o_oval,
-  output io_pads_aon_lfextclk_o_oe,
-  output io_pads_aon_lfextclk_o_ie,
-  output io_pads_aon_lfextclk_o_pue,
-  output io_pads_aon_lfextclk_o_ds,
+
   input  io_pads_aon_pmu_dwakeup_n_i_ival,
   output io_pads_aon_pmu_dwakeup_n_o_oval,
   output io_pads_aon_pmu_dwakeup_n_o_oe,
@@ -65,6 +77,13 @@ module e203_subsys_top(
   output io_pads_aon_pmu_vddpaden_o_ie,
   output io_pads_aon_pmu_vddpaden_o_pue,
   output io_pads_aon_pmu_vddpaden_o_ds,
+  input  io_pads_aon_pmu_padrst_i_ival,
+  output io_pads_aon_pmu_padrst_o_oval,
+  output io_pads_aon_pmu_padrst_o_oe,
+  output io_pads_aon_pmu_padrst_o_ie,
+  output io_pads_aon_pmu_padrst_o_pue,
+  output io_pads_aon_pmu_padrst_o_ds,
+
 
   input  [`E203_HART_ID_W-1:0] core_mhartid,  
     
@@ -430,8 +449,9 @@ module e203_subsys_top(
   input  test_mode 
   );
 
-  wire  aon_pmu_tcmretion;
-  wire  aon_pmu_tcmshutdw;
+  wire hfclk;// The PLL generated high-speed clock 
+  wire hfclkrst;// The reset signal to disable PLL
+  wire corerst;
 
   ///////////////////////////////////////
   wire [`E203_HART_NUM-1:0] dbg_irq;
@@ -462,9 +482,13 @@ module e203_subsys_top(
   wire  dbg_ebreakm_r;
   wire  dbg_stopcycle;
 
-
-  wire  tcm_ds = aon_pmu_tcmretion;
-  wire  tcm_sd = aon_pmu_tcmshutdw;
+  wire  inspect_mode; 
+  wire  inspect_por_rst; 
+  wire  inspect_32k_clk; 
+  wire  inspect_pc_29b; 
+  wire  inspect_dbg_irq;
+  wire  inspect_jtag_clk;
+  wire  core_csr_clk;
 
 
   wire                          dm_icb_cmd_valid;
@@ -480,7 +504,6 @@ module e203_subsys_top(
   wire  aon_wdg_irq_a   ;
   wire  aon_rtc_irq_a   ;
   wire  aon_rtcToggle_a ;
-  wire  aon_pmu_moff_isolate;
 
   wire                          aon_icb_cmd_valid;
   wire                          aon_icb_cmd_ready;
@@ -492,17 +515,26 @@ module e203_subsys_top(
   wire                          aon_icb_rsp_ready;
   wire  [`E203_XLEN-1:0]        aon_icb_rsp_rdata;
 
-  wire main_reset;
-  wire jtag_reset;
-  wire core_wfi;
+
+
+  wire  [`E203_PC_SIZE-1:0] pc_rtvec;
+
+
 
   e203_subsys_main  u_e203_subsys_main(
     .pc_rtvec        (pc_rtvec),
 
-    .tcm_ds          (tcm_ds),
-    .tcm_sd          (tcm_sd),
+    .inspect_mode    (inspect_mode    ), 
+    .inspect_por_rst (inspect_por_rst), 
+    .inspect_32k_clk (inspect_32k_clk), 
+    .inspect_pc_29b  (inspect_pc_29b  ), 
+    .inspect_dbg_irq (inspect_dbg_irq ),
+    .inspect_jtag_clk(inspect_jtag_clk),
+    .core_csr_clk    (core_csr_clk    ),
 
-    .core_wfi        (core_wfi),
+    .hfextclk        (hfextclk),
+    .hfxoscen        (hfxoscen),
+
 
     .dbg_irq_r       (dbg_irq_r      ),
 
@@ -856,14 +888,12 @@ module e203_subsys_top(
     .sysmem_icb_rsp_rdata  (sysmem_icb_rsp_rdata),
 
     .test_mode     (test_mode), 
-    .clk           (hfclk  ),
-    .rst_n         (~main_reset)
+    .hfclk           (hfclk   ),
+    .hfclkrst        (hfclkrst),
+    .corerst       (corerst)
   );
 
-  //We need to add DM individual power domain, hence need power up reset for it individually
-  wire dm_pu_reset = 1'b0;
-  wire dm_reset = test_mode ? io_pads_aon_erst_n_i_ival : 
-                  (main_reset | dm_pu_reset); 
+
 
   sirv_debug_module # (
     `ifdef E203_DEBUG_HAS_JTAG //{
@@ -876,6 +906,10 @@ module e203_subsys_top(
       .PC_SIZE  (`E203_PC_SIZE),
       .HART_ID_W(`E203_HART_ID_W) 
     ) u_sirv_debug_module(
+    .inspect_jtag_clk    (inspect_jtag_clk),
+
+    .test_mode       (test_mode ),
+    .core_csr_clk    (core_csr_clk),
 
     .dbg_irq_r       (dbg_irq_r      ),
 
@@ -932,8 +966,6 @@ module e203_subsys_top(
     .io_pads_jtag_TRST_n_o_pue   (io_pads_jtag_TRST_n_o_pue  ),
     .io_pads_jtag_TRST_n_o_ds    (io_pads_jtag_TRST_n_o_ds   ),
 
-    .jtag_reset              (jtag_reset),
-
     .i_icb_cmd_valid         (dm_icb_cmd_valid),
     .i_icb_cmd_ready         (dm_icb_cmd_ready),
     .i_icb_cmd_addr          (dm_icb_cmd_addr[11:0] ),
@@ -948,15 +980,20 @@ module e203_subsys_top(
     .o_ndreset               (),
     .o_fullreset             (),
 
-    .core_clk        (hfclk),
-    .dm_clk          (hfclk),
-    .dm_rst_n        (~dm_reset) 
+    .hfclk           (hfclk),
+    .corerst         (corerst) 
   );
 
-  wire corerst;
 
   sirv_aon_top u_sirv_aon_top(
-    .core_wfi                (core_wfi),
+    .pc_rtvec                (pc_rtvec),
+
+    .jtagpwd_iso             (),// Currently not used
+    .inspect_mode            (inspect_mode     ), 
+    .inspect_pc_29b          (inspect_pc_29b   ), 
+    .inspect_por_rst         (inspect_por_rst  ), 
+    .inspect_32k_clk         (inspect_32k_clk  ), 
+    .inspect_dbg_irq         (inspect_dbg_irq  ),
 
     .i_icb_cmd_valid         (aon_icb_cmd_valid),
     .i_icb_cmd_ready         (aon_icb_cmd_ready),
@@ -972,9 +1009,11 @@ module e203_subsys_top(
     .aon_rtc_irq             (aon_rtc_irq_a     ),
     .aon_rtcToggle           (aon_rtcToggle_a   ),
 
-    .aon_pmu_moff_isolate    (aon_pmu_moff_isolate),
     .test_mode               (test_mode           ),
     .test_iso_override       (test_iso_override   ),
+
+    .lfextclk        (lfextclk),
+    .lfxoscen        (lfxoscen),
 
     .io_pads_aon_erst_n_i_ival        (io_pads_aon_erst_n_i_ival       ), 
     .io_pads_aon_erst_n_o_oval        (io_pads_aon_erst_n_o_oval       ),
@@ -982,46 +1021,46 @@ module e203_subsys_top(
     .io_pads_aon_erst_n_o_ie          (io_pads_aon_erst_n_o_ie         ),
     .io_pads_aon_erst_n_o_pue         (io_pads_aon_erst_n_o_pue        ),
     .io_pads_aon_erst_n_o_ds          (io_pads_aon_erst_n_o_ds         ),
-    .io_pads_aon_lfextclk_i_ival      (io_pads_aon_lfextclk_i_ival     ),
-    .io_pads_aon_lfextclk_o_oval      (io_pads_aon_lfextclk_o_oval     ),
-    .io_pads_aon_lfextclk_o_oe        (io_pads_aon_lfextclk_o_oe       ),
-    .io_pads_aon_lfextclk_o_ie        (io_pads_aon_lfextclk_o_ie       ),
-    .io_pads_aon_lfextclk_o_pue       (io_pads_aon_lfextclk_o_pue      ),
-    .io_pads_aon_lfextclk_o_ds        (io_pads_aon_lfextclk_o_ds       ),
-    .io_pads_aon_pmu_dwakeup_n_i_ival (io_pads_aon_pmu_dwakeup_n_i_ival),
-    .io_pads_aon_pmu_dwakeup_n_o_oval (io_pads_aon_pmu_dwakeup_n_o_oval),
-    .io_pads_aon_pmu_dwakeup_n_o_oe   (io_pads_aon_pmu_dwakeup_n_o_oe  ),
-    .io_pads_aon_pmu_dwakeup_n_o_ie   (io_pads_aon_pmu_dwakeup_n_o_ie  ),
-    .io_pads_aon_pmu_dwakeup_n_o_pue  (io_pads_aon_pmu_dwakeup_n_o_pue ),
-    .io_pads_aon_pmu_dwakeup_n_o_ds   (io_pads_aon_pmu_dwakeup_n_o_ds  ),
     .io_pads_aon_pmu_vddpaden_i_ival  (io_pads_aon_pmu_vddpaden_i_ival ),
     .io_pads_aon_pmu_vddpaden_o_oval  (io_pads_aon_pmu_vddpaden_o_oval ),
     .io_pads_aon_pmu_vddpaden_o_oe    (io_pads_aon_pmu_vddpaden_o_oe   ),
     .io_pads_aon_pmu_vddpaden_o_ie    (io_pads_aon_pmu_vddpaden_o_ie   ),
     .io_pads_aon_pmu_vddpaden_o_pue   (io_pads_aon_pmu_vddpaden_o_pue  ),
     .io_pads_aon_pmu_vddpaden_o_ds    (io_pads_aon_pmu_vddpaden_o_ds   ),
-    .aon_pmu_tcmretion                (aon_pmu_tcmretion),
-    .aon_pmu_tcmshutdw                (aon_pmu_tcmshutdw),
+    .io_pads_aon_pmu_dwakeup_n_i_ival (io_pads_aon_pmu_dwakeup_n_i_ival),
+    .io_pads_aon_pmu_dwakeup_n_o_oval (io_pads_aon_pmu_dwakeup_n_o_oval),
+    .io_pads_aon_pmu_dwakeup_n_o_oe   (io_pads_aon_pmu_dwakeup_n_o_oe  ),
+    .io_pads_aon_pmu_dwakeup_n_o_ie   (io_pads_aon_pmu_dwakeup_n_o_ie  ),
+    .io_pads_aon_pmu_dwakeup_n_o_pue  (io_pads_aon_pmu_dwakeup_n_o_pue ),
+    .io_pads_aon_pmu_dwakeup_n_o_ds   (io_pads_aon_pmu_dwakeup_n_o_ds  ),
 
+    .io_pads_aon_pmu_padrst_i_ival    (io_pads_aon_pmu_padrst_i_ival ),
+    .io_pads_aon_pmu_padrst_o_oval    (io_pads_aon_pmu_padrst_o_oval ),
+    .io_pads_aon_pmu_padrst_o_oe      (io_pads_aon_pmu_padrst_o_oe   ),
+    .io_pads_aon_pmu_padrst_o_ie      (io_pads_aon_pmu_padrst_o_ie   ),
+    .io_pads_aon_pmu_padrst_o_pue     (io_pads_aon_pmu_padrst_o_pue  ),
+    .io_pads_aon_pmu_padrst_o_ds      (io_pads_aon_pmu_padrst_o_ds   ),
+
+    .io_pads_jtagpwd_n_i_ival       (1'b1),// Currently not used
+    .io_pads_jtagpwd_n_o_oval       (),
+    .io_pads_jtagpwd_n_o_oe         (),
+    .io_pads_jtagpwd_n_o_ie         (),
+    .io_pads_jtagpwd_n_o_pue        (),
+    .io_pads_jtagpwd_n_o_ds         (),
+
+    .io_pads_bootrom_n_i_ival       (io_pads_bootrom_n_i_ival),
+    .io_pads_bootrom_n_o_oval       (io_pads_bootrom_n_o_oval),
+    .io_pads_bootrom_n_o_oe         (io_pads_bootrom_n_o_oe  ),
+    .io_pads_bootrom_n_o_ie         (io_pads_bootrom_n_o_ie  ),
+    .io_pads_bootrom_n_o_pue        (io_pads_bootrom_n_o_pue ),
+    .io_pads_bootrom_n_o_ds         (io_pads_bootrom_n_o_ds  ),
+
+    .io_pads_dbgmode0_n_i_ival       (io_pads_dbgmode0_n_i_ival),
+    .io_pads_dbgmode1_n_i_ival       (io_pads_dbgmode1_n_i_ival),
+    .io_pads_dbgmode2_n_i_ival       (io_pads_dbgmode2_n_i_ival),
 
     .hfclkrst      (hfclkrst),
     .corerst       (corerst)
-  );
-
- sirv_ResetCatchAndSync_2 u_main_ResetCatchAndSync_2_1 (
-    .test_mode(test_mode),
-    .clock(hfclk),
-    .reset(corerst),
-    .io_sync_reset(main_reset)
-  );
-
- wire jtag_TCK = io_pads_jtag_TCK_i_ival;
-
- sirv_ResetCatchAndSync u_jtag_ResetCatchAndSync_3_1 (
-    .test_mode(test_mode),
-    .clock(jtag_TCK),
-    .reset(corerst),
-    .io_sync_reset(jtag_reset)
   );
 
 

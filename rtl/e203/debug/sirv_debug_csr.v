@@ -31,6 +31,7 @@
 //  The module to implement the core's debug control and relevant CSRs
 //
 // ===========================================================================
+`include "e203_defines.v"
 
 module sirv_debug_csr 
 #(

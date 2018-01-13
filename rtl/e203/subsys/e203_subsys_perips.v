@@ -347,6 +347,8 @@ module e203_subsys_perips(
   output pwm2_irq_2,
   output pwm2_irq_3,
 
+  output i2c_mst_irq,
+
   output gpio_irq_0,
   output gpio_irq_1,
   output gpio_irq_2,
@@ -380,7 +382,21 @@ module e203_subsys_perips(
   output gpio_irq_30,
   output gpio_irq_31,
 
+  output pllbypass ,
+  output pll_RESET ,
+  output pll_ASLEEP ,
+  output [1:0]  pll_OD,
+  output [7:0]  pll_M,
+  output [4:0]  pll_N,
+  output plloutdivby1,
+  output [5:0] plloutdiv,
+
+  output hfxoscen,
+
+
+
   input  clk,
+  input  bus_rst_n,
   input  rst_n
   );
 
@@ -395,6 +411,13 @@ module e203_subsys_perips(
   wire                         i_aon_icb_rsp_ready;
   wire                         i_aon_icb_rsp_err;
   wire [`E203_XLEN-1:0]        i_aon_icb_rsp_rdata;
+
+  wire i2c_scl_pad_i   ;
+  wire i2c_scl_pad_o   ;
+  wire i2c_scl_padoen_o;
+  wire i2c_sda_pad_i   ;
+  wire i2c_sda_pad_o   ;
+  wire i2c_sda_padoen_o;
 
   wire pwm0_gpio_0;
   wire pwm0_gpio_1;
@@ -785,13 +808,13 @@ module e203_subsys_perips(
 
   wire  uart0_txd;
   wire  uart0_rxd;
-  wire  uart_pins_0_io_pins_rxd_i_ival = 1'b0;
+  wire  uart_pins_0_io_pins_rxd_i_ival;
   wire  uart_pins_0_io_pins_rxd_o_oval;
   wire  uart_pins_0_io_pins_rxd_o_oe;
   wire  uart_pins_0_io_pins_rxd_o_ie;
   wire  uart_pins_0_io_pins_rxd_o_pue;
   wire  uart_pins_0_io_pins_rxd_o_ds;
-  wire  uart_pins_0_io_pins_txd_i_ival = 1'b0;
+  wire  uart_pins_0_io_pins_txd_i_ival;
   wire  uart_pins_0_io_pins_txd_o_oval;
   wire  uart_pins_0_io_pins_txd_o_oe;
   wire  uart_pins_0_io_pins_txd_o_ie;
@@ -799,175 +822,175 @@ module e203_subsys_perips(
   wire  uart_pins_0_io_pins_txd_o_ds;
   wire  uart1_txd;
   wire  uart1_rxd;
-  wire  uart_pins_1_io_pins_rxd_i_ival = 1'b0;
+  wire  uart_pins_1_io_pins_rxd_i_ival;
   wire  uart_pins_1_io_pins_rxd_o_oval;
   wire  uart_pins_1_io_pins_rxd_o_oe;
   wire  uart_pins_1_io_pins_rxd_o_ie;
   wire  uart_pins_1_io_pins_rxd_o_pue;
   wire  uart_pins_1_io_pins_rxd_o_ds;
-  wire  uart_pins_1_io_pins_txd_i_ival = 1'b0;
+  wire  uart_pins_1_io_pins_txd_i_ival;
   wire  uart_pins_1_io_pins_txd_o_oval;
   wire  uart_pins_1_io_pins_txd_o_oe;
   wire  uart_pins_1_io_pins_txd_o_ie;
   wire  uart_pins_1_io_pins_txd_o_pue;
   wire  uart_pins_1_io_pins_txd_o_ds;
-  wire  pwm_pins_0_io_pins_pwm_0_i_ival = 1'b0;
+  wire  pwm_pins_0_io_pins_pwm_0_i_ival;
   wire  pwm_pins_0_io_pins_pwm_0_o_oval;
   wire  pwm_pins_0_io_pins_pwm_0_o_oe;
   wire  pwm_pins_0_io_pins_pwm_0_o_ie;
   wire  pwm_pins_0_io_pins_pwm_0_o_pue;
   wire  pwm_pins_0_io_pins_pwm_0_o_ds;
-  wire  pwm_pins_0_io_pins_pwm_1_i_ival = 1'b0;
+  wire  pwm_pins_0_io_pins_pwm_1_i_ival;
   wire  pwm_pins_0_io_pins_pwm_1_o_oval;
   wire  pwm_pins_0_io_pins_pwm_1_o_oe;
   wire  pwm_pins_0_io_pins_pwm_1_o_ie;
   wire  pwm_pins_0_io_pins_pwm_1_o_pue;
   wire  pwm_pins_0_io_pins_pwm_1_o_ds;
-  wire  pwm_pins_0_io_pins_pwm_2_i_ival = 1'b0;
+  wire  pwm_pins_0_io_pins_pwm_2_i_ival;
   wire  pwm_pins_0_io_pins_pwm_2_o_oval;
   wire  pwm_pins_0_io_pins_pwm_2_o_oe;
   wire  pwm_pins_0_io_pins_pwm_2_o_ie;
   wire  pwm_pins_0_io_pins_pwm_2_o_pue;
   wire  pwm_pins_0_io_pins_pwm_2_o_ds;
-  wire  pwm_pins_0_io_pins_pwm_3_i_ival = 1'b0;
+  wire  pwm_pins_0_io_pins_pwm_3_i_ival;
   wire  pwm_pins_0_io_pins_pwm_3_o_oval;
   wire  pwm_pins_0_io_pins_pwm_3_o_oe;
   wire  pwm_pins_0_io_pins_pwm_3_o_ie;
   wire  pwm_pins_0_io_pins_pwm_3_o_pue;
   wire  pwm_pins_0_io_pins_pwm_3_o_ds;
-  wire  pwm_pins_1_io_pins_pwm_0_i_ival = 1'b0;
+  wire  pwm_pins_1_io_pins_pwm_0_i_ival;
   wire  pwm_pins_1_io_pins_pwm_0_o_oval;
   wire  pwm_pins_1_io_pins_pwm_0_o_oe;
   wire  pwm_pins_1_io_pins_pwm_0_o_ie;
   wire  pwm_pins_1_io_pins_pwm_0_o_pue;
   wire  pwm_pins_1_io_pins_pwm_0_o_ds;
-  wire  pwm_pins_1_io_pins_pwm_1_i_ival = 1'b0;
+  wire  pwm_pins_1_io_pins_pwm_1_i_ival;
   wire  pwm_pins_1_io_pins_pwm_1_o_oval;
   wire  pwm_pins_1_io_pins_pwm_1_o_oe;
   wire  pwm_pins_1_io_pins_pwm_1_o_ie;
   wire  pwm_pins_1_io_pins_pwm_1_o_pue;
   wire  pwm_pins_1_io_pins_pwm_1_o_ds;
-  wire  pwm_pins_1_io_pins_pwm_2_i_ival = 1'b0;
+  wire  pwm_pins_1_io_pins_pwm_2_i_ival;
   wire  pwm_pins_1_io_pins_pwm_2_o_oval;
   wire  pwm_pins_1_io_pins_pwm_2_o_oe;
   wire  pwm_pins_1_io_pins_pwm_2_o_ie;
   wire  pwm_pins_1_io_pins_pwm_2_o_pue;
   wire  pwm_pins_1_io_pins_pwm_2_o_ds;
-  wire  pwm_pins_1_io_pins_pwm_3_i_ival = 1'b0;
+  wire  pwm_pins_1_io_pins_pwm_3_i_ival;
   wire  pwm_pins_1_io_pins_pwm_3_o_oval;
   wire  pwm_pins_1_io_pins_pwm_3_o_oe;
   wire  pwm_pins_1_io_pins_pwm_3_o_ie;
   wire  pwm_pins_1_io_pins_pwm_3_o_pue;
   wire  pwm_pins_1_io_pins_pwm_3_o_ds;
-  wire  pwm_pins_2_io_pins_pwm_0_i_ival = 1'b0;
+  wire  pwm_pins_2_io_pins_pwm_0_i_ival;
   wire  pwm_pins_2_io_pins_pwm_0_o_oval;
   wire  pwm_pins_2_io_pins_pwm_0_o_oe;
   wire  pwm_pins_2_io_pins_pwm_0_o_ie;
   wire  pwm_pins_2_io_pins_pwm_0_o_pue;
   wire  pwm_pins_2_io_pins_pwm_0_o_ds;
-  wire  pwm_pins_2_io_pins_pwm_1_i_ival = 1'b0;
+  wire  pwm_pins_2_io_pins_pwm_1_i_ival;
   wire  pwm_pins_2_io_pins_pwm_1_o_oval;
   wire  pwm_pins_2_io_pins_pwm_1_o_oe;
   wire  pwm_pins_2_io_pins_pwm_1_o_ie;
   wire  pwm_pins_2_io_pins_pwm_1_o_pue;
   wire  pwm_pins_2_io_pins_pwm_1_o_ds;
-  wire  pwm_pins_2_io_pins_pwm_2_i_ival = 1'b0;
+  wire  pwm_pins_2_io_pins_pwm_2_i_ival;
   wire  pwm_pins_2_io_pins_pwm_2_o_oval;
   wire  pwm_pins_2_io_pins_pwm_2_o_oe;
   wire  pwm_pins_2_io_pins_pwm_2_o_ie;
   wire  pwm_pins_2_io_pins_pwm_2_o_pue;
   wire  pwm_pins_2_io_pins_pwm_2_o_ds;
-  wire  pwm_pins_2_io_pins_pwm_3_i_ival = 1'b0;
+  wire  pwm_pins_2_io_pins_pwm_3_i_ival;
   wire  pwm_pins_2_io_pins_pwm_3_o_oval;
   wire  pwm_pins_2_io_pins_pwm_3_o_oe;
   wire  pwm_pins_2_io_pins_pwm_3_o_ie;
   wire  pwm_pins_2_io_pins_pwm_3_o_pue;
   wire  pwm_pins_2_io_pins_pwm_3_o_ds;
-  wire  spi_pins_0_io_pins_sck_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_sck_i_ival;
   wire  spi_pins_0_io_pins_sck_o_oval;
   wire  spi_pins_0_io_pins_sck_o_oe;
   wire  spi_pins_0_io_pins_sck_o_ie;
   wire  spi_pins_0_io_pins_sck_o_pue;
   wire  spi_pins_0_io_pins_sck_o_ds;
-  wire  spi_pins_0_io_pins_dq_0_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_dq_0_i_ival;
   wire  spi_pins_0_io_pins_dq_0_o_oval;
   wire  spi_pins_0_io_pins_dq_0_o_oe;
   wire  spi_pins_0_io_pins_dq_0_o_ie;
   wire  spi_pins_0_io_pins_dq_0_o_pue;
   wire  spi_pins_0_io_pins_dq_0_o_ds;
-  wire  spi_pins_0_io_pins_dq_1_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_dq_1_i_ival;
   wire  spi_pins_0_io_pins_dq_1_o_oval;
   wire  spi_pins_0_io_pins_dq_1_o_oe;
   wire  spi_pins_0_io_pins_dq_1_o_ie;
   wire  spi_pins_0_io_pins_dq_1_o_pue;
   wire  spi_pins_0_io_pins_dq_1_o_ds;
-  wire  spi_pins_0_io_pins_dq_2_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_dq_2_i_ival;
   wire  spi_pins_0_io_pins_dq_2_o_oval;
   wire  spi_pins_0_io_pins_dq_2_o_oe;
   wire  spi_pins_0_io_pins_dq_2_o_ie;
   wire  spi_pins_0_io_pins_dq_2_o_pue;
   wire  spi_pins_0_io_pins_dq_2_o_ds;
-  wire  spi_pins_0_io_pins_dq_3_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_dq_3_i_ival;
   wire  spi_pins_0_io_pins_dq_3_o_oval;
   wire  spi_pins_0_io_pins_dq_3_o_oe;
   wire  spi_pins_0_io_pins_dq_3_o_ie;
   wire  spi_pins_0_io_pins_dq_3_o_pue;
   wire  spi_pins_0_io_pins_dq_3_o_ds;
-  wire  spi_pins_0_io_pins_cs_0_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_cs_0_i_ival;
   wire  spi_pins_0_io_pins_cs_0_o_oval;
   wire  spi_pins_0_io_pins_cs_0_o_oe;
   wire  spi_pins_0_io_pins_cs_0_o_ie;
   wire  spi_pins_0_io_pins_cs_0_o_pue;
   wire  spi_pins_0_io_pins_cs_0_o_ds;
-  wire  spi_pins_0_io_pins_cs_1_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_cs_1_i_ival;
   wire  spi_pins_0_io_pins_cs_1_o_oval;
   wire  spi_pins_0_io_pins_cs_1_o_oe;
   wire  spi_pins_0_io_pins_cs_1_o_ie;
   wire  spi_pins_0_io_pins_cs_1_o_pue;
   wire  spi_pins_0_io_pins_cs_1_o_ds;
-  wire  spi_pins_0_io_pins_cs_2_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_cs_2_i_ival;
   wire  spi_pins_0_io_pins_cs_2_o_oval;
   wire  spi_pins_0_io_pins_cs_2_o_oe;
   wire  spi_pins_0_io_pins_cs_2_o_ie;
   wire  spi_pins_0_io_pins_cs_2_o_pue;
   wire  spi_pins_0_io_pins_cs_2_o_ds;
-  wire  spi_pins_0_io_pins_cs_3_i_ival = 1'b0;
+  wire  spi_pins_0_io_pins_cs_3_i_ival;
   wire  spi_pins_0_io_pins_cs_3_o_oval;
   wire  spi_pins_0_io_pins_cs_3_o_oe;
   wire  spi_pins_0_io_pins_cs_3_o_ie;
   wire  spi_pins_0_io_pins_cs_3_o_pue;
   wire  spi_pins_0_io_pins_cs_3_o_ds;
-  wire  spi_pins_1_io_pins_sck_i_ival = 1'b0;
+  wire  spi_pins_1_io_pins_sck_i_ival;
   wire  spi_pins_1_io_pins_sck_o_oval;
   wire  spi_pins_1_io_pins_sck_o_oe;
   wire  spi_pins_1_io_pins_sck_o_ie;
   wire  spi_pins_1_io_pins_sck_o_pue;
   wire  spi_pins_1_io_pins_sck_o_ds;
-  wire  spi_pins_1_io_pins_dq_0_i_ival = 1'b0;
+  wire  spi_pins_1_io_pins_dq_0_i_ival;
   wire  spi_pins_1_io_pins_dq_0_o_oval;
   wire  spi_pins_1_io_pins_dq_0_o_oe;
   wire  spi_pins_1_io_pins_dq_0_o_ie;
   wire  spi_pins_1_io_pins_dq_0_o_pue;
   wire  spi_pins_1_io_pins_dq_0_o_ds;
-  wire  spi_pins_1_io_pins_dq_1_i_ival = 1'b0;
+  wire  spi_pins_1_io_pins_dq_1_i_ival;
   wire  spi_pins_1_io_pins_dq_1_o_oval;
   wire  spi_pins_1_io_pins_dq_1_o_oe;
   wire  spi_pins_1_io_pins_dq_1_o_ie;
   wire  spi_pins_1_io_pins_dq_1_o_pue;
   wire  spi_pins_1_io_pins_dq_1_o_ds;
-  wire  spi_pins_1_io_pins_dq_2_i_ival = 1'b0;
+  wire  spi_pins_1_io_pins_dq_2_i_ival;
   wire  spi_pins_1_io_pins_dq_2_o_oval;
   wire  spi_pins_1_io_pins_dq_2_o_oe;
   wire  spi_pins_1_io_pins_dq_2_o_ie;
   wire  spi_pins_1_io_pins_dq_2_o_pue;
   wire  spi_pins_1_io_pins_dq_2_o_ds;
-  wire  spi_pins_1_io_pins_dq_3_i_ival = 1'b0;
+  wire  spi_pins_1_io_pins_dq_3_i_ival;
   wire  spi_pins_1_io_pins_dq_3_o_oval;
   wire  spi_pins_1_io_pins_dq_3_o_oe;
   wire  spi_pins_1_io_pins_dq_3_o_ie;
   wire  spi_pins_1_io_pins_dq_3_o_pue;
   wire  spi_pins_1_io_pins_dq_3_o_ds;
-  wire  spi_pins_1_io_pins_cs_0_i_ival = 1'b0;
+  wire  spi_pins_1_io_pins_cs_0_i_ival;
   wire  spi_pins_1_io_pins_cs_0_o_oval;
   wire  spi_pins_1_io_pins_cs_0_o_oe;
   wire  spi_pins_1_io_pins_cs_0_o_ie;
@@ -978,269 +1001,354 @@ module e203_subsys_perips(
   assign gpio_iof_0_0_o_oe         = 1'b0;
   assign gpio_iof_0_0_o_ie         = 1'b0;
   assign gpio_iof_0_0_o_valid      = 1'b0;
+
   assign gpio_iof_0_1_o_oval       = 1'b0;
   assign gpio_iof_0_1_o_oe         = 1'b0;
   assign gpio_iof_0_1_o_ie         = 1'b0;
   assign gpio_iof_0_1_o_valid      = 1'b0;
+
+  assign spi_pins_0_io_pins_cs_0_i_ival = gpio_iof_0_2_i_ival;
   assign gpio_iof_0_2_o_oval       = spi_pins_0_io_pins_cs_0_o_oval;
   assign gpio_iof_0_2_o_oe         = spi_pins_0_io_pins_cs_0_o_oe;
   assign gpio_iof_0_2_o_ie         = spi_pins_0_io_pins_cs_0_o_ie;
   assign gpio_iof_0_2_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_dq_0_i_ival = gpio_iof_0_3_i_ival;
   assign gpio_iof_0_3_o_oval       = spi_pins_0_io_pins_dq_0_o_oval;
   assign gpio_iof_0_3_o_oe         = spi_pins_0_io_pins_dq_0_o_oe;
   assign gpio_iof_0_3_o_ie         = spi_pins_0_io_pins_dq_0_o_ie;
   assign gpio_iof_0_3_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_dq_1_i_ival = gpio_iof_0_4_i_ival;
   assign gpio_iof_0_4_o_oval       = spi_pins_0_io_pins_dq_1_o_oval;
   assign gpio_iof_0_4_o_oe         = spi_pins_0_io_pins_dq_1_o_oe;
   assign gpio_iof_0_4_o_ie         = spi_pins_0_io_pins_dq_1_o_ie;
   assign gpio_iof_0_4_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_sck_i_ival = gpio_iof_0_5_i_ival;
   assign gpio_iof_0_5_o_oval       = spi_pins_0_io_pins_sck_o_oval;
   assign gpio_iof_0_5_o_oe         = spi_pins_0_io_pins_sck_o_oe;
   assign gpio_iof_0_5_o_ie         = spi_pins_0_io_pins_sck_o_ie;
   assign gpio_iof_0_5_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_dq_2_i_ival = gpio_iof_0_6_i_ival;
   assign gpio_iof_0_6_o_oval       = spi_pins_0_io_pins_dq_2_o_oval;
   assign gpio_iof_0_6_o_oe         = spi_pins_0_io_pins_dq_2_o_oe;
   assign gpio_iof_0_6_o_ie         = spi_pins_0_io_pins_dq_2_o_ie;
   assign gpio_iof_0_6_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_dq_3_i_ival = gpio_iof_0_7_i_ival;
   assign gpio_iof_0_7_o_oval       = spi_pins_0_io_pins_dq_3_o_oval;
   assign gpio_iof_0_7_o_oe         = spi_pins_0_io_pins_dq_3_o_oe;
   assign gpio_iof_0_7_o_ie         = spi_pins_0_io_pins_dq_3_o_ie;
   assign gpio_iof_0_7_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_cs_1_i_ival = gpio_iof_0_8_i_ival;
   assign gpio_iof_0_8_o_oval       = spi_pins_0_io_pins_cs_1_o_oval;
   assign gpio_iof_0_8_o_oe         = spi_pins_0_io_pins_cs_1_o_oe;
   assign gpio_iof_0_8_o_ie         = spi_pins_0_io_pins_cs_1_o_ie;
   assign gpio_iof_0_8_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_cs_2_i_ival = gpio_iof_0_9_i_ival;
   assign gpio_iof_0_9_o_oval       = spi_pins_0_io_pins_cs_2_o_oval;
   assign gpio_iof_0_9_o_oe         = spi_pins_0_io_pins_cs_2_o_oe;
   assign gpio_iof_0_9_o_ie         = spi_pins_0_io_pins_cs_2_o_ie;
   assign gpio_iof_0_9_o_valid      = 1'h1;
+
+  assign spi_pins_0_io_pins_cs_3_i_ival = gpio_iof_0_10_i_ival;
   assign gpio_iof_0_10_o_oval      = spi_pins_0_io_pins_cs_3_o_oval;
   assign gpio_iof_0_10_o_oe        = spi_pins_0_io_pins_cs_3_o_oe;
   assign gpio_iof_0_10_o_ie        = spi_pins_0_io_pins_cs_3_o_ie;
   assign gpio_iof_0_10_o_valid     = 1'h1;
+
   assign gpio_iof_0_11_o_oval      = 1'b0;
   assign gpio_iof_0_11_o_oe        = 1'b0;
   assign gpio_iof_0_11_o_ie        = 1'b0;
   assign gpio_iof_0_11_o_valid     = 1'b0;
+
   assign gpio_iof_0_12_o_oval      = 1'b0;
   assign gpio_iof_0_12_o_oe        = 1'b0;
   assign gpio_iof_0_12_o_ie        = 1'b0;
   assign gpio_iof_0_12_o_valid     = 1'b0;
+
   assign gpio_iof_0_13_o_oval      = 1'b0;
   assign gpio_iof_0_13_o_oe        = 1'b0;
   assign gpio_iof_0_13_o_ie        = 1'b0;
   assign gpio_iof_0_13_o_valid     = 1'b0;
-  assign gpio_iof_0_14_o_oval      = 1'b0;
-  assign gpio_iof_0_14_o_oe        = 1'b0;
-  assign gpio_iof_0_14_o_ie        = 1'b0;
-  assign gpio_iof_0_14_o_valid     = 1'b0;
-  assign gpio_iof_0_15_o_oval      = 1'b0;
-  assign gpio_iof_0_15_o_oe        = 1'b0;
-  assign gpio_iof_0_15_o_ie        = 1'b0;
-  assign gpio_iof_0_15_o_valid     = 1'b0;
+
+  assign i2c_sda_pad_i             = gpio_iof_0_14_i_ival;
+  assign gpio_iof_0_14_o_oval      = i2c_sda_pad_o;
+  assign gpio_iof_0_14_o_oe        = (~i2c_sda_padoen_o);// Note this padoen is active low
+  assign gpio_iof_0_14_o_ie        = i2c_sda_padoen_o;
+  assign gpio_iof_0_14_o_valid     = 1'b1;
+
+  assign i2c_scl_pad_i             = gpio_iof_0_15_i_ival;
+  assign gpio_iof_0_15_o_oval      = i2c_scl_pad_o;
+  assign gpio_iof_0_15_o_oe        = (~i2c_scl_padoen_o);// Note this padoen is active low
+  assign gpio_iof_0_15_o_ie        = i2c_scl_padoen_o;
+  assign gpio_iof_0_15_o_valid     = 1'b1;
+
+  assign uart_pins_0_io_pins_rxd_i_ival = gpio_iof_0_16_i_ival;
   assign gpio_iof_0_16_o_oval      = uart_pins_0_io_pins_rxd_o_oval;
   assign gpio_iof_0_16_o_oe        = uart_pins_0_io_pins_rxd_o_oe;
   assign gpio_iof_0_16_o_ie        = uart_pins_0_io_pins_rxd_o_ie;
   assign gpio_iof_0_16_o_valid     = 1'h1;
+
+  assign uart_pins_0_io_pins_txd_i_ival = gpio_iof_0_17_i_ival;
   assign gpio_iof_0_17_o_oval      = uart_pins_0_io_pins_txd_o_oval;
   assign gpio_iof_0_17_o_oe        = uart_pins_0_io_pins_txd_o_oe;
   assign gpio_iof_0_17_o_ie        = uart_pins_0_io_pins_txd_o_ie;
   assign gpio_iof_0_17_o_valid     = 1'h1;
+
   assign gpio_iof_0_18_o_oval      = 1'b0;
   assign gpio_iof_0_18_o_oe        = 1'b0;
   assign gpio_iof_0_18_o_ie        = 1'b0;
   assign gpio_iof_0_18_o_valid     = 1'b0;
+
   assign gpio_iof_0_19_o_oval      = 1'b0;
   assign gpio_iof_0_19_o_oe        = 1'b0;
   assign gpio_iof_0_19_o_ie        = 1'b0;
   assign gpio_iof_0_19_o_valid     = 1'b0;
+
   assign gpio_iof_0_20_o_oval      = 1'b0;
   assign gpio_iof_0_20_o_oe        = 1'b0;
   assign gpio_iof_0_20_o_ie        = 1'b0;
   assign gpio_iof_0_20_o_valid     = 1'b0;
+
   assign gpio_iof_0_21_o_oval      = 1'b0;
   assign gpio_iof_0_21_o_oe        = 1'b0;
   assign gpio_iof_0_21_o_ie        = 1'b0;
   assign gpio_iof_0_21_o_valid     = 1'b0;
+
   assign gpio_iof_0_22_o_oval      = 1'b0;
   assign gpio_iof_0_22_o_oe        = 1'b0;
   assign gpio_iof_0_22_o_ie        = 1'b0;
   assign gpio_iof_0_22_o_valid     = 1'b0;
+
   assign gpio_iof_0_23_o_oval      = 1'b0;
   assign gpio_iof_0_23_o_oe        = 1'b0;
   assign gpio_iof_0_23_o_ie        = 1'b0;
   assign gpio_iof_0_23_o_valid     = 1'b0;
+
+  assign uart_pins_1_io_pins_rxd_i_ival = gpio_iof_0_24_i_ival;
   assign gpio_iof_0_24_o_oval      = uart_pins_1_io_pins_rxd_o_oval;
   assign gpio_iof_0_24_o_oe        = uart_pins_1_io_pins_rxd_o_oe;
   assign gpio_iof_0_24_o_ie        = uart_pins_1_io_pins_rxd_o_ie;
   assign gpio_iof_0_24_o_valid     = 1'h1;
+
+  assign uart_pins_1_io_pins_txd_i_ival = gpio_iof_0_25_i_ival;
   assign gpio_iof_0_25_o_oval      = uart_pins_1_io_pins_txd_o_oval;
   assign gpio_iof_0_25_o_oe        = uart_pins_1_io_pins_txd_o_oe;
   assign gpio_iof_0_25_o_ie        = uart_pins_1_io_pins_txd_o_ie;
   assign gpio_iof_0_25_o_valid     = 1'h1;
+
+  assign spi_pins_1_io_pins_cs_0_i_ival = gpio_iof_0_26_i_ival;
   assign gpio_iof_0_26_o_oval      = spi_pins_1_io_pins_cs_0_o_oval;
   assign gpio_iof_0_26_o_oe        = spi_pins_1_io_pins_cs_0_o_oe;
   assign gpio_iof_0_26_o_ie        = spi_pins_1_io_pins_cs_0_o_ie;
   assign gpio_iof_0_26_o_valid     = 1'h1;
+
+  assign spi_pins_1_io_pins_dq_0_i_ival = gpio_iof_0_27_i_ival;
   assign gpio_iof_0_27_o_oval      = spi_pins_1_io_pins_dq_0_o_oval;
   assign gpio_iof_0_27_o_oe        = spi_pins_1_io_pins_dq_0_o_oe;
   assign gpio_iof_0_27_o_ie        = spi_pins_1_io_pins_dq_0_o_ie;
   assign gpio_iof_0_27_o_valid     = 1'h1;
+
+  assign spi_pins_1_io_pins_dq_1_i_ival = gpio_iof_0_28_i_ival;
   assign gpio_iof_0_28_o_oval      = spi_pins_1_io_pins_dq_1_o_oval;
   assign gpio_iof_0_28_o_oe        = spi_pins_1_io_pins_dq_1_o_oe;
   assign gpio_iof_0_28_o_ie        = spi_pins_1_io_pins_dq_1_o_ie;
   assign gpio_iof_0_28_o_valid     = 1'h1;
+
+  assign spi_pins_1_io_pins_sck_i_ival = gpio_iof_0_29_i_ival;
   assign gpio_iof_0_29_o_oval      = spi_pins_1_io_pins_sck_o_oval;
   assign gpio_iof_0_29_o_oe        = spi_pins_1_io_pins_sck_o_oe;
   assign gpio_iof_0_29_o_ie        = spi_pins_1_io_pins_sck_o_ie;
   assign gpio_iof_0_29_o_valid     = 1'h1;
+
+  assign spi_pins_1_io_pins_dq_2_i_ival = gpio_iof_0_30_i_ival;
   assign gpio_iof_0_30_o_oval      = spi_pins_1_io_pins_dq_2_o_oval;
   assign gpio_iof_0_30_o_oe        = spi_pins_1_io_pins_dq_2_o_oe;
   assign gpio_iof_0_30_o_ie        = spi_pins_1_io_pins_dq_2_o_ie;
   assign gpio_iof_0_30_o_valid     = 1'h1;
+
+  assign spi_pins_1_io_pins_dq_3_i_ival = gpio_iof_0_31_i_ival;
   assign gpio_iof_0_31_o_oval      = spi_pins_1_io_pins_dq_3_o_oval;
   assign gpio_iof_0_31_o_oe        = spi_pins_1_io_pins_dq_3_o_oe;
   assign gpio_iof_0_31_o_ie        = spi_pins_1_io_pins_dq_3_o_ie;
   assign gpio_iof_0_31_o_valid     = 1'h1;
 
+  assign pwm_pins_0_io_pins_pwm_0_i_ival = gpio_iof_1_0_i_ival;
   assign gpio_iof_1_0_o_oval       = pwm_pins_0_io_pins_pwm_0_o_oval;
   assign gpio_iof_1_0_o_oe         = pwm_pins_0_io_pins_pwm_0_o_oe;
   assign gpio_iof_1_0_o_ie         = pwm_pins_0_io_pins_pwm_0_o_ie;
   assign gpio_iof_1_0_o_valid      = 1'h1;
+
+  assign pwm_pins_0_io_pins_pwm_1_i_ival = gpio_iof_1_1_i_ival;
   assign gpio_iof_1_1_o_oval       = pwm_pins_0_io_pins_pwm_1_o_oval;
   assign gpio_iof_1_1_o_oe         = pwm_pins_0_io_pins_pwm_1_o_oe;
   assign gpio_iof_1_1_o_ie         = pwm_pins_0_io_pins_pwm_1_o_ie;
   assign gpio_iof_1_1_o_valid      = 1'h1;
+
+  assign pwm_pins_0_io_pins_pwm_2_i_ival = gpio_iof_1_2_i_ival;
   assign gpio_iof_1_2_o_oval       = pwm_pins_0_io_pins_pwm_2_o_oval;
   assign gpio_iof_1_2_o_oe         = pwm_pins_0_io_pins_pwm_2_o_oe;
   assign gpio_iof_1_2_o_ie         = pwm_pins_0_io_pins_pwm_2_o_ie;
   assign gpio_iof_1_2_o_valid      = 1'h1;
+
+  assign pwm_pins_0_io_pins_pwm_3_i_ival = gpio_iof_1_3_i_ival;
   assign gpio_iof_1_3_o_oval       = pwm_pins_0_io_pins_pwm_3_o_oval;
   assign gpio_iof_1_3_o_oe         = pwm_pins_0_io_pins_pwm_3_o_oe;
   assign gpio_iof_1_3_o_ie         = pwm_pins_0_io_pins_pwm_3_o_ie;
   assign gpio_iof_1_3_o_valid      = 1'h1;
+
   assign gpio_iof_1_4_o_oval       = 1'b0;
   assign gpio_iof_1_4_o_oe         = 1'b0;
   assign gpio_iof_1_4_o_ie         = 1'b0;
   assign gpio_iof_1_4_o_valid      = 1'b0;
+
   assign gpio_iof_1_5_o_oval       = 1'b0;
   assign gpio_iof_1_5_o_oe         = 1'b0;
   assign gpio_iof_1_5_o_ie         = 1'b0;
   assign gpio_iof_1_5_o_valid      = 1'b0;
+
   assign gpio_iof_1_6_o_oval       = 1'b0;
   assign gpio_iof_1_6_o_oe         = 1'b0;
   assign gpio_iof_1_6_o_ie         = 1'b0;
   assign gpio_iof_1_6_o_valid      = 1'b0;
+
   assign gpio_iof_1_7_o_oval       = 1'b0;
   assign gpio_iof_1_7_o_oe         = 1'b0;
   assign gpio_iof_1_7_o_ie         = 1'b0;
   assign gpio_iof_1_7_o_valid      = 1'b0;
+
   assign gpio_iof_1_8_o_oval       = 1'b0;
   assign gpio_iof_1_8_o_oe         = 1'b0;
   assign gpio_iof_1_8_o_ie         = 1'b0;
   assign gpio_iof_1_8_o_valid      = 1'b0;
+
   assign gpio_iof_1_9_o_oval       = 1'b0;
   assign gpio_iof_1_9_o_oe         = 1'b0;
   assign gpio_iof_1_9_o_ie         = 1'b0;
   assign gpio_iof_1_9_o_valid      = 1'b0;
+
+  assign pwm_pins_2_io_pins_pwm_0_i_ival = gpio_iof_1_10_i_ival;
   assign gpio_iof_1_10_o_oval      = pwm_pins_2_io_pins_pwm_0_o_oval;
   assign gpio_iof_1_10_o_oe        = pwm_pins_2_io_pins_pwm_0_o_oe;
   assign gpio_iof_1_10_o_ie        = pwm_pins_2_io_pins_pwm_0_o_ie;
   assign gpio_iof_1_10_o_valid     = 1'h1;
+
+  assign pwm_pins_2_io_pins_pwm_1_i_ival = gpio_iof_1_11_i_ival;
   assign gpio_iof_1_11_o_oval      = pwm_pins_2_io_pins_pwm_1_o_oval;
   assign gpio_iof_1_11_o_oe        = pwm_pins_2_io_pins_pwm_1_o_oe;
   assign gpio_iof_1_11_o_ie        = pwm_pins_2_io_pins_pwm_1_o_ie;
   assign gpio_iof_1_11_o_valid     = 1'h1;
+
+  assign pwm_pins_2_io_pins_pwm_2_i_ival = gpio_iof_1_12_i_ival;
   assign gpio_iof_1_12_o_oval      = pwm_pins_2_io_pins_pwm_2_o_oval;
   assign gpio_iof_1_12_o_oe        = pwm_pins_2_io_pins_pwm_2_o_oe;
   assign gpio_iof_1_12_o_ie        = pwm_pins_2_io_pins_pwm_2_o_ie;
   assign gpio_iof_1_12_o_valid     = 1'h1;
+
+  assign pwm_pins_2_io_pins_pwm_3_i_ival = gpio_iof_1_13_i_ival;
   assign gpio_iof_1_13_o_oval      = pwm_pins_2_io_pins_pwm_3_o_oval;
   assign gpio_iof_1_13_o_oe        = pwm_pins_2_io_pins_pwm_3_o_oe;
   assign gpio_iof_1_13_o_ie        = pwm_pins_2_io_pins_pwm_3_o_ie;
   assign gpio_iof_1_13_o_valid     = 1'h1;
+
   assign gpio_iof_1_14_o_oval      = 1'b0;
   assign gpio_iof_1_14_o_oe        = 1'b0;
   assign gpio_iof_1_14_o_ie        = 1'b0;
   assign gpio_iof_1_14_o_valid     = 1'b0;
+
   assign gpio_iof_1_15_o_oval      = 1'b0;
   assign gpio_iof_1_15_o_oe        = 1'b0;
   assign gpio_iof_1_15_o_ie        = 1'b0;
   assign gpio_iof_1_15_o_valid     = 1'b0;
+
   assign gpio_iof_1_16_o_oval      = 1'b0;
   assign gpio_iof_1_16_o_oe        = 1'b0;
   assign gpio_iof_1_16_o_ie        = 1'b0;
   assign gpio_iof_1_16_o_valid     = 1'b0;
+
   assign gpio_iof_1_17_o_oval      = 1'b0;
   assign gpio_iof_1_17_o_oe        = 1'b0;
   assign gpio_iof_1_17_o_ie        = 1'b0;
   assign gpio_iof_1_17_o_valid     = 1'b0;
+
   assign gpio_iof_1_18_o_oval      = 1'b0;
   assign gpio_iof_1_18_o_oe        = 1'b0;
   assign gpio_iof_1_18_o_ie        = 1'b0;
   assign gpio_iof_1_18_o_valid     = 1'b0;
+
+  assign pwm_pins_1_io_pins_pwm_1_i_ival = gpio_iof_1_19_i_ival;
   assign gpio_iof_1_19_o_oval      = pwm_pins_1_io_pins_pwm_1_o_oval;
   assign gpio_iof_1_19_o_oe        = pwm_pins_1_io_pins_pwm_1_o_oe;
   assign gpio_iof_1_19_o_ie        = pwm_pins_1_io_pins_pwm_1_o_ie;
   assign gpio_iof_1_19_o_valid     = 1'h1;
+
+  assign pwm_pins_1_io_pins_pwm_0_i_ival = gpio_iof_1_20_i_ival;
   assign gpio_iof_1_20_o_oval      = pwm_pins_1_io_pins_pwm_0_o_oval;
   assign gpio_iof_1_20_o_oe        = pwm_pins_1_io_pins_pwm_0_o_oe;
   assign gpio_iof_1_20_o_ie        = pwm_pins_1_io_pins_pwm_0_o_ie;
   assign gpio_iof_1_20_o_valid     = 1'h1;
+
+  assign pwm_pins_1_io_pins_pwm_2_i_ival = gpio_iof_1_21_i_ival;
   assign gpio_iof_1_21_o_oval      = pwm_pins_1_io_pins_pwm_2_o_oval;
   assign gpio_iof_1_21_o_oe        = pwm_pins_1_io_pins_pwm_2_o_oe;
   assign gpio_iof_1_21_o_ie        = pwm_pins_1_io_pins_pwm_2_o_ie;
   assign gpio_iof_1_21_o_valid     = 1'h1;
+
+  assign pwm_pins_1_io_pins_pwm_3_i_ival = gpio_iof_1_22_i_ival;
   assign gpio_iof_1_22_o_oval      = pwm_pins_1_io_pins_pwm_3_o_oval;
   assign gpio_iof_1_22_o_oe        = pwm_pins_1_io_pins_pwm_3_o_oe;
   assign gpio_iof_1_22_o_ie        = pwm_pins_1_io_pins_pwm_3_o_ie;
   assign gpio_iof_1_22_o_valid     = 1'h1;
+
   assign gpio_iof_1_23_o_oval      = 1'b0;
   assign gpio_iof_1_23_o_oe        = 1'b0;
   assign gpio_iof_1_23_o_ie        = 1'b0;
   assign gpio_iof_1_23_o_valid     = 1'b0;
+
   assign gpio_iof_1_24_o_oval      = 1'b0;
   assign gpio_iof_1_24_o_oe        = 1'b0;
   assign gpio_iof_1_24_o_ie        = 1'b0;
   assign gpio_iof_1_24_o_valid     = 1'b0;
+
   assign gpio_iof_1_25_o_oval      = 1'b0;
   assign gpio_iof_1_25_o_oe        = 1'b0;
   assign gpio_iof_1_25_o_ie        = 1'b0;
   assign gpio_iof_1_25_o_valid     = 1'b0;
+
   assign gpio_iof_1_26_o_oval      = 1'b0;
   assign gpio_iof_1_26_o_oe        = 1'b0;
   assign gpio_iof_1_26_o_ie        = 1'b0;
   assign gpio_iof_1_26_o_valid     = 1'b0;
+
   assign gpio_iof_1_27_o_oval      = 1'b0;
   assign gpio_iof_1_27_o_oe        = 1'b0;
   assign gpio_iof_1_27_o_ie        = 1'b0;
   assign gpio_iof_1_27_o_valid     = 1'b0;
+
   assign gpio_iof_1_28_o_oval      = 1'b0;
   assign gpio_iof_1_28_o_oe        = 1'b0;
   assign gpio_iof_1_28_o_ie        = 1'b0;
   assign gpio_iof_1_28_o_valid     = 1'b0;
+
   assign gpio_iof_1_29_o_oval      = 1'b0;
   assign gpio_iof_1_29_o_oe        = 1'b0;
   assign gpio_iof_1_29_o_ie        = 1'b0;
   assign gpio_iof_1_29_o_valid     = 1'b0;
+
   assign gpio_iof_1_30_o_oval      = 1'b0;
   assign gpio_iof_1_30_o_oe        = 1'b0;
   assign gpio_iof_1_30_o_ie        = 1'b0;
   assign gpio_iof_1_30_o_valid     = 1'b0;
+
   assign gpio_iof_1_31_o_oval      = 1'b0;
   assign gpio_iof_1_31_o_oe        = 1'b0;
   assign gpio_iof_1_31_o_ie        = 1'b0;
   assign gpio_iof_1_31_o_valid     = 1'b0;
-
-  wire                     prci_icb_cmd_valid;
-  wire                     prci_icb_cmd_ready;
-  wire [32-1:0]            prci_icb_cmd_addr; 
-  wire                     prci_icb_cmd_read; 
-  wire [32-1:0]            prci_icb_cmd_wdata;
-  
-  wire                     prci_icb_rsp_valid;
-  wire                     prci_icb_rsp_ready;
-  wire [32-1:0]            prci_icb_rsp_rdata;
 
   wire                     otp_icb_cmd_valid;
   wire                     otp_icb_cmd_ready;
@@ -1342,12 +1450,59 @@ module e203_subsys_perips(
   wire                     pwm2_icb_rsp_ready;
   wire [32-1:0]            pwm2_icb_rsp_rdata;
 
+  wire                     expl_axi_icb_cmd_valid;
+  wire                     expl_axi_icb_cmd_ready;
+  wire [32-1:0]            expl_axi_icb_cmd_addr; 
+  wire                     expl_axi_icb_cmd_read; 
+  wire [32-1:0]            expl_axi_icb_cmd_wdata;
+  wire [4 -1:0]            expl_axi_icb_cmd_wmask;
+  
+  wire                     expl_axi_icb_rsp_valid;
+  wire                     expl_axi_icb_rsp_ready;
+  wire [32-1:0]            expl_axi_icb_rsp_rdata;
+  wire                     expl_axi_icb_rsp_err;
+
+  wire                     expl_apb_icb_cmd_valid;
+  wire                     expl_apb_icb_cmd_ready;
+  wire [32-1:0]            expl_apb_icb_cmd_addr; 
+  wire                     expl_apb_icb_cmd_read; 
+  wire [32-1:0]            expl_apb_icb_cmd_wdata;
+  wire [4 -1:0]            expl_apb_icb_cmd_wmask;
+  
+  wire                     expl_apb_icb_rsp_valid;
+  wire                     expl_apb_icb_rsp_ready;
+  wire [32-1:0]            expl_apb_icb_rsp_rdata;
+  wire                     expl_apb_icb_rsp_err;
+
+  wire                     i2c_wishb_icb_cmd_valid;
+  wire                     i2c_wishb_icb_cmd_ready;
+  wire [32-1:0]            i2c_wishb_icb_cmd_addr; 
+  wire                     i2c_wishb_icb_cmd_read; 
+  wire [32-1:0]            i2c_wishb_icb_cmd_wdata;
+  wire [4 -1:0]            i2c_wishb_icb_cmd_wmask;
+  
+  wire                     i2c_wishb_icb_rsp_valid;
+  wire                     i2c_wishb_icb_rsp_ready;
+  wire [32-1:0]            i2c_wishb_icb_rsp_rdata;
+  wire                     i2c_wishb_icb_rsp_err;
+
+  wire                     hclkgen_icb_cmd_valid;
+  wire                     hclkgen_icb_cmd_ready;
+  wire [32-1:0]            hclkgen_icb_cmd_addr; 
+  wire                     hclkgen_icb_cmd_read; 
+  wire [32-1:0]            hclkgen_icb_cmd_wdata;
+  wire [4 -1:0]            hclkgen_icb_cmd_wmask;
+  
+  wire                     hclkgen_icb_rsp_valid;
+  wire                     hclkgen_icb_rsp_ready;
+  wire [32-1:0]            hclkgen_icb_rsp_rdata;
+  wire                     hclkgen_icb_rsp_err;
 
   // The total address range for the PPI is from/to
   //  **************0x1000 0000 -- 0x1FFF FFFF
   // There are several slaves for PPI bus, including:
   //  * AON       : 0x1000 0000 -- 0x1000 7FFF
-  //  * PRCI      : 0x1000 8000 -- 0x1000 8FFF
+  //  * HCLKGEN   : 0x1000 8000 -- 0x1000 8FFF
   //  * OTP       : 0x1001 0000 -- 0x1001 0FFF
   //  * GPIO      : 0x1001 2000 -- 0x1001 2FFF
   //  * UART0     : 0x1001 3000 -- 0x1001 3FFF
@@ -1358,9 +1513,15 @@ module e203_subsys_perips(
   //  * PWM1      : 0x1002 5000 -- 0x1002 5FFF
   //  * QSPI2     : 0x1003 4000 -- 0x1003 4FFF
   //  * PWM2      : 0x1003 5000 -- 0x1003 5FFF
+  //  * Example-AXI      : 0x1004 0000 -- 0x1004 0FFF
+  //  * Example-APB      : 0x1004 1000 -- 0x1004 1FFF
+  //  * Example-WishBone : 0x1004 2000 -- 0x1004 2FFF
   //  * SysPer    : 0x1100 0000 -- 0x11FF FFFF
 
   sirv_icb1to16_bus # (
+  .ICB_FIFO_DP        (2),// We add a ping-pong buffer here to cut down the timing path
+  .ICB_FIFO_CUT_READY (1),// We configure it to cut down the back-pressure ready signal
+
   .AW                   (32),
   .DW                   (`E203_XLEN),
   .SPLT_FIFO_OUTS_NUM   (1),// The peirpherals only allow 1 oustanding
@@ -1368,7 +1529,7 @@ module e203_subsys_perips(
   //  * AON       : 0x1000 0000 -- 0x1000 7FFF
   .O0_BASE_ADDR       (32'h1000_0000),       
   .O0_BASE_REGION_LSB (15),
-  //  * PRCI      : 0x1000 8000 -- 0x1000 8FFF
+  //  * HCLKGEN   : 0x1000 8000 -- 0x1000 8FFF
   .O1_BASE_ADDR       (32'h1000_8000),       
   .O1_BASE_REGION_LSB (12),
   //  * OTP       : 0x1001 0000 -- 0x1001 0FFF
@@ -1405,17 +1566,17 @@ module e203_subsys_perips(
   .O12_BASE_ADDR       (32'h1100_0000),       
   .O12_BASE_REGION_LSB (24),
 
-      // Not used
-  .O13_BASE_ADDR       (32'h0000_0000),       
-  .O13_BASE_REGION_LSB (0),
+      // * Here is an example AXI Peripheral
+  .O13_BASE_ADDR       (32'h1004_0000),       
+  .O13_BASE_REGION_LSB (12),
   
-      // Not used
-  .O14_BASE_ADDR       (32'h0000_0000),       
-  .O14_BASE_REGION_LSB (0),
+      // * Here is an example APB Peripheral
+  .O14_BASE_ADDR       (32'h1004_1000),       
+  .O14_BASE_REGION_LSB (12),
   
-      // Not used
-  .O15_BASE_ADDR       (32'h0000_0000),       
-  .O15_BASE_REGION_LSB (0)
+      // * Here is an I2C WishBone Peripheral
+  .O15_BASE_ADDR       (32'h1004_2000),       
+  .O15_BASE_REGION_LSB (3)// I2C only have 3 bits address width
 
   )u_sirv_ppi_fab(
 
@@ -1459,14 +1620,14 @@ module e203_subsys_perips(
     .o0_icb_rsp_excl_ok(1'b0  ),
     .o0_icb_rsp_rdata  (i_aon_icb_rsp_rdata),
 
-  //  * PRCI      
+  //  * HCLKGEN      
     .o1_icb_enable     (1'b1),
 
-    .o1_icb_cmd_valid  (prci_icb_cmd_valid),
-    .o1_icb_cmd_ready  (prci_icb_cmd_ready),
-    .o1_icb_cmd_addr   (prci_icb_cmd_addr ),
-    .o1_icb_cmd_read   (prci_icb_cmd_read ),
-    .o1_icb_cmd_wdata  (prci_icb_cmd_wdata),
+    .o1_icb_cmd_valid  (hclkgen_icb_cmd_valid),
+    .o1_icb_cmd_ready  (hclkgen_icb_cmd_ready),
+    .o1_icb_cmd_addr   (hclkgen_icb_cmd_addr ),
+    .o1_icb_cmd_read   (hclkgen_icb_cmd_read ),
+    .o1_icb_cmd_wdata  (hclkgen_icb_cmd_wdata),
     .o1_icb_cmd_wmask  (),
     .o1_icb_cmd_lock   (),
     .o1_icb_cmd_excl   (),
@@ -1474,11 +1635,11 @@ module e203_subsys_perips(
     .o1_icb_cmd_burst  (),
     .o1_icb_cmd_beat   (),
     
-    .o1_icb_rsp_valid  (prci_icb_rsp_valid),
-    .o1_icb_rsp_ready  (prci_icb_rsp_ready),
+    .o1_icb_rsp_valid  (hclkgen_icb_rsp_valid),
+    .o1_icb_rsp_ready  (hclkgen_icb_rsp_ready),
     .o1_icb_rsp_err    (1'b0  ),
     .o1_icb_rsp_excl_ok(1'b0  ),
-    .o1_icb_rsp_rdata  (prci_icb_rsp_rdata),
+    .o1_icb_rsp_rdata  (hclkgen_icb_rsp_rdata),
 
   //  * OTP       
     .o2_icb_enable     (1'b1),
@@ -1721,89 +1882,73 @@ module e203_subsys_perips(
     .o12_icb_rsp_excl_ok(1'b0  ),
     .o12_icb_rsp_rdata  (sysper_icb_rsp_rdata),
 
+   //  * Example AXI    
+    .o13_icb_enable     (1'b1),
 
-    //  * Not used
-    .o13_icb_enable     (1'b0),
-
-    .o13_icb_cmd_valid  (),
-    .o13_icb_cmd_ready  (1'b0),
-    .o13_icb_cmd_addr   (),
-    .o13_icb_cmd_read   (),
-    .o13_icb_cmd_wdata  (),
-    .o13_icb_cmd_wmask  (),
+    .o13_icb_cmd_valid  (expl_axi_icb_cmd_valid),
+    .o13_icb_cmd_ready  (expl_axi_icb_cmd_ready),
+    .o13_icb_cmd_addr   (expl_axi_icb_cmd_addr ),
+    .o13_icb_cmd_read   (expl_axi_icb_cmd_read ),
+    .o13_icb_cmd_wdata  (expl_axi_icb_cmd_wdata),
+    .o13_icb_cmd_wmask  (expl_axi_icb_cmd_wmask),
     .o13_icb_cmd_lock   (),
     .o13_icb_cmd_excl   (),
     .o13_icb_cmd_size   (),
     .o13_icb_cmd_burst  (),
     .o13_icb_cmd_beat   (),
     
-    .o13_icb_rsp_valid  (1'b0),
-    .o13_icb_rsp_ready  (),
-    .o13_icb_rsp_err    (1'b0  ),
+    .o13_icb_rsp_valid  (expl_axi_icb_rsp_valid),
+    .o13_icb_rsp_ready  (expl_axi_icb_rsp_ready),
+    .o13_icb_rsp_err    (expl_axi_icb_rsp_err),
     .o13_icb_rsp_excl_ok(1'b0  ),
-    .o13_icb_rsp_rdata  (`E203_XLEN'b0),
+    .o13_icb_rsp_rdata  (expl_axi_icb_rsp_rdata),
 
-        //  * Not used
-    .o14_icb_enable     (1'b0),
+   //  * Example APB    
+    .o14_icb_enable     (1'b1),
 
-    .o14_icb_cmd_valid  (),
-    .o14_icb_cmd_ready  (1'b0),
-    .o14_icb_cmd_addr   (),
-    .o14_icb_cmd_read   (),
-    .o14_icb_cmd_wdata  (),
-    .o14_icb_cmd_wmask  (),
+    .o14_icb_cmd_valid  (expl_apb_icb_cmd_valid),
+    .o14_icb_cmd_ready  (expl_apb_icb_cmd_ready),
+    .o14_icb_cmd_addr   (expl_apb_icb_cmd_addr ),
+    .o14_icb_cmd_read   (expl_apb_icb_cmd_read ),
+    .o14_icb_cmd_wdata  (expl_apb_icb_cmd_wdata),
+    .o14_icb_cmd_wmask  (expl_apb_icb_cmd_wmask),
     .o14_icb_cmd_lock   (),
     .o14_icb_cmd_excl   (),
     .o14_icb_cmd_size   (),
     .o14_icb_cmd_burst  (),
     .o14_icb_cmd_beat   (),
     
-    .o14_icb_rsp_valid  (1'b0),
-    .o14_icb_rsp_ready  (),
-    .o14_icb_rsp_err    (1'b0  ),
+    .o14_icb_rsp_valid  (expl_apb_icb_rsp_valid),
+    .o14_icb_rsp_ready  (expl_apb_icb_rsp_ready),
+    .o14_icb_rsp_err    (expl_apb_icb_rsp_err),
     .o14_icb_rsp_excl_ok(1'b0  ),
-    .o14_icb_rsp_rdata  (`E203_XLEN'b0),
+    .o14_icb_rsp_rdata  (expl_apb_icb_rsp_rdata),
 
-        //  * Not used
-    .o15_icb_enable     (1'b0),
+   //  * I2C WishBone    
+    .o15_icb_enable     (1'b1),
 
-    .o15_icb_cmd_valid  (),
-    .o15_icb_cmd_ready  (1'b0),
-    .o15_icb_cmd_addr   (),
-    .o15_icb_cmd_read   (),
-    .o15_icb_cmd_wdata  (),
-    .o15_icb_cmd_wmask  (),
+    .o15_icb_cmd_valid  (i2c_wishb_icb_cmd_valid),
+    .o15_icb_cmd_ready  (i2c_wishb_icb_cmd_ready),
+    .o15_icb_cmd_addr   (i2c_wishb_icb_cmd_addr ),
+    .o15_icb_cmd_read   (i2c_wishb_icb_cmd_read ),
+    .o15_icb_cmd_wdata  (i2c_wishb_icb_cmd_wdata),
+    .o15_icb_cmd_wmask  (i2c_wishb_icb_cmd_wmask),
     .o15_icb_cmd_lock   (),
     .o15_icb_cmd_excl   (),
     .o15_icb_cmd_size   (),
     .o15_icb_cmd_burst  (),
     .o15_icb_cmd_beat   (),
     
-    .o15_icb_rsp_valid  (1'b0),
-    .o15_icb_rsp_ready  (),
-    .o15_icb_rsp_err    (1'b0  ),
+    .o15_icb_rsp_valid  (i2c_wishb_icb_rsp_valid),
+    .o15_icb_rsp_ready  (i2c_wishb_icb_rsp_ready),
+    .o15_icb_rsp_err    (i2c_wishb_icb_rsp_err),
     .o15_icb_rsp_excl_ok(1'b0  ),
-    .o15_icb_rsp_rdata  (`E203_XLEN'b0),
+    .o15_icb_rsp_rdata  (i2c_wishb_icb_rsp_rdata),
 
     .clk           (clk  ),
-    .rst_n         (rst_n) 
+    .rst_n         (bus_rst_n) 
   );
 
-  //  * PRCI      
-  sirv_prci_top u_sirv_prci_top( 
-    .clk           (clk  ),
-    .rst_n         (rst_n), 
-
-    .i_icb_cmd_valid (prci_icb_cmd_valid),
-    .i_icb_cmd_ready (prci_icb_cmd_ready),
-    .i_icb_cmd_addr  (prci_icb_cmd_addr ),
-    .i_icb_cmd_read  (prci_icb_cmd_read ),
-    .i_icb_cmd_wdata (prci_icb_cmd_wdata),
-    
-    .i_icb_rsp_valid (prci_icb_rsp_valid),
-    .i_icb_rsp_ready (prci_icb_rsp_ready),
-    .i_icb_rsp_rdata (prci_icb_rsp_rdata) 
-);
 
   //  * OTP       
   sirv_otp_top u_sirv_otp_top( 
@@ -3001,5 +3146,293 @@ sirv_pwm16_top u_sirv_pwm2_top(
      .rst_n  (rst_n)
    );
 
+
+      // * Here is an example AXI Peripheral
+  wire expl_axi_arvalid;
+  wire expl_axi_arready;
+  wire [`E203_ADDR_SIZE-1:0] expl_axi_araddr;
+  wire [3:0] expl_axi_arcache;
+  wire [2:0] expl_axi_arprot;
+  wire [1:0] expl_axi_arlock;
+  wire [1:0] expl_axi_arburst;
+  wire [3:0] expl_axi_arlen;
+  wire [2:0] expl_axi_arsize;
+
+  wire expl_axi_awvalid;
+  wire expl_axi_awready;
+  wire [`E203_ADDR_SIZE-1:0] expl_axi_awaddr;
+  wire [3:0] expl_axi_awcache;
+  wire [2:0] expl_axi_awprot;
+  wire [1:0] expl_axi_awlock;
+  wire [1:0] expl_axi_awburst;
+  wire [3:0] expl_axi_awlen;
+  wire [2:0] expl_axi_awsize;
+
+  wire expl_axi_rvalid;
+  wire expl_axi_rready;
+  wire [`E203_XLEN-1:0] expl_axi_rdata;
+  wire [1:0] expl_axi_rresp;
+  wire expl_axi_rlast;
+
+  wire expl_axi_wvalid;
+  wire expl_axi_wready;
+  wire [`E203_XLEN-1:0] expl_axi_wdata;
+  wire [(`E203_XLEN/8)-1:0] expl_axi_wstrb;
+  wire expl_axi_wlast;
+
+  wire expl_axi_bvalid;
+  wire expl_axi_bready;
+  wire [1:0] expl_axi_bresp;
+   
+sirv_gnrl_icb2axi # (
+  .AXI_FIFO_DP (2), // We just add ping-pong buffer here to avoid any potential timing loops
+                    //   User can change it to 0 if dont care
+  .AXI_FIFO_CUT_READY (1), // This is to cut the back-pressure signal if you set as 1
+  .AW   (32),
+  .FIFO_OUTS_NUM (1),// We only allow 1 oustandings at most for peripheral, user can configure it to any value
+  .FIFO_CUT_READY(1),
+  .DW   (`E203_XLEN) 
+) u_expl_axi_icb2axi(
+    .i_icb_cmd_valid (expl_axi_icb_cmd_valid),
+    .i_icb_cmd_ready (expl_axi_icb_cmd_ready),
+    .i_icb_cmd_addr  (expl_axi_icb_cmd_addr ),
+    .i_icb_cmd_read  (expl_axi_icb_cmd_read ),
+    .i_icb_cmd_wdata (expl_axi_icb_cmd_wdata),
+    .i_icb_cmd_wmask (expl_axi_icb_cmd_wmask),
+    .i_icb_cmd_size  (),
+    
+    .i_icb_rsp_valid (expl_axi_icb_rsp_valid),
+    .i_icb_rsp_ready (expl_axi_icb_rsp_ready),
+    .i_icb_rsp_rdata (expl_axi_icb_rsp_rdata),
+    .i_icb_rsp_err   (expl_axi_icb_rsp_err),
+
+    .o_axi_arvalid   (expl_axi_arvalid),
+    .o_axi_arready   (expl_axi_arready),
+    .o_axi_araddr    (expl_axi_araddr ),
+    .o_axi_arcache   (expl_axi_arcache),
+    .o_axi_arprot    (expl_axi_arprot ),
+    .o_axi_arlock    (expl_axi_arlock ),
+    .o_axi_arburst   (expl_axi_arburst),
+    .o_axi_arlen     (expl_axi_arlen  ),
+    .o_axi_arsize    (expl_axi_arsize ),
+                      
+    .o_axi_awvalid   (expl_axi_awvalid),
+    .o_axi_awready   (expl_axi_awready),
+    .o_axi_awaddr    (expl_axi_awaddr ),
+    .o_axi_awcache   (expl_axi_awcache),
+    .o_axi_awprot    (expl_axi_awprot ),
+    .o_axi_awlock    (expl_axi_awlock ),
+    .o_axi_awburst   (expl_axi_awburst),
+    .o_axi_awlen     (expl_axi_awlen  ),
+    .o_axi_awsize    (expl_axi_awsize ),
+                     
+    .o_axi_rvalid    (expl_axi_rvalid ),
+    .o_axi_rready    (expl_axi_rready ),
+    .o_axi_rdata     (expl_axi_rdata  ),
+    .o_axi_rresp     (expl_axi_rresp  ),
+    .o_axi_rlast     (expl_axi_rlast  ),
+                    
+    .o_axi_wvalid    (expl_axi_wvalid ),
+    .o_axi_wready    (expl_axi_wready ),
+    .o_axi_wdata     (expl_axi_wdata  ),
+    .o_axi_wstrb     (expl_axi_wstrb  ),
+    .o_axi_wlast     (expl_axi_wlast  ),
+                   
+    .o_axi_bvalid    (expl_axi_bvalid ),
+    .o_axi_bready    (expl_axi_bready ),
+    .o_axi_bresp     (expl_axi_bresp  ),
+
+    .clk           (clk  ),
+    .rst_n         (bus_rst_n) 
+  );
+
+sirv_expl_axi_slv # (
+  .AW   (32),
+  .DW   (`E203_XLEN) 
+) u_perips_expl_axi_slv (
+    .axi_arvalid   (expl_axi_arvalid),
+    .axi_arready   (expl_axi_arready),
+    .axi_araddr    (expl_axi_araddr ),
+    .axi_arcache   (expl_axi_arcache),
+    .axi_arprot    (expl_axi_arprot ),
+    .axi_arlock    (expl_axi_arlock ),
+    .axi_arburst   (expl_axi_arburst),
+    .axi_arlen     (expl_axi_arlen  ),
+    .axi_arsize    (expl_axi_arsize ),
+     
+    .axi_awvalid   (expl_axi_awvalid),
+    .axi_awready   (expl_axi_awready),
+    .axi_awaddr    (expl_axi_awaddr ),
+    .axi_awcache   (expl_axi_awcache),
+    .axi_awprot    (expl_axi_awprot ),
+    .axi_awlock    (expl_axi_awlock ),
+    .axi_awburst   (expl_axi_awburst),
+    .axi_awlen     (expl_axi_awlen  ),
+    .axi_awsize    (expl_axi_awsize ),
+    
+    .axi_rvalid    (expl_axi_rvalid ),
+    .axi_rready    (expl_axi_rready ),
+    .axi_rdata     (expl_axi_rdata  ),
+    .axi_rresp     (expl_axi_rresp  ),
+    .axi_rlast     (expl_axi_rlast  ),
+   
+    .axi_wvalid    (expl_axi_wvalid ),
+    .axi_wready    (expl_axi_wready ),
+    .axi_wdata     (expl_axi_wdata  ),
+    .axi_wstrb     (expl_axi_wstrb  ),
+    .axi_wlast     (expl_axi_wlast  ),
+  
+    .axi_bvalid    (expl_axi_bvalid ),
+    .axi_bready    (expl_axi_bready ),
+    .axi_bresp     (expl_axi_bresp  ),
+
+    .clk           (clk  ),
+    .rst_n         (rst_n) 
+  );
+
+
+      // * Here is an example APB Peripheral
+  wire [`E203_ADDR_SIZE-1:0] expl_apb_paddr;
+  wire expl_apb_pwrite;
+  wire expl_apb_pselx;
+  wire expl_apb_penable;
+  wire [`E203_XLEN-1:0] expl_apb_pwdata;
+  wire [`E203_XLEN-1:0] expl_apb_prdata;
+   
+sirv_gnrl_icb2apb # (
+  .AW   (32),
+  .DW   (`E203_XLEN) 
+) u_expl_apb_icb2apb(
+    .i_icb_cmd_valid (expl_apb_icb_cmd_valid),
+    .i_icb_cmd_ready (expl_apb_icb_cmd_ready),
+    .i_icb_cmd_addr  (expl_apb_icb_cmd_addr ),
+    .i_icb_cmd_read  (expl_apb_icb_cmd_read ),
+    .i_icb_cmd_wdata (expl_apb_icb_cmd_wdata),
+    .i_icb_cmd_wmask (expl_apb_icb_cmd_wmask),
+    .i_icb_cmd_size  (),
+    
+    .i_icb_rsp_valid (expl_apb_icb_rsp_valid),
+    .i_icb_rsp_ready (expl_apb_icb_rsp_ready),
+    .i_icb_rsp_rdata (expl_apb_icb_rsp_rdata),
+    .i_icb_rsp_err   (expl_apb_icb_rsp_err),
+
+    .apb_paddr     (expl_apb_paddr  ),
+    .apb_pwrite    (expl_apb_pwrite ),
+    .apb_pselx     (expl_apb_pselx  ),
+    .apb_penable   (expl_apb_penable), 
+    .apb_pwdata    (expl_apb_pwdata ),
+    .apb_prdata    (expl_apb_prdata ),
+
+    .clk           (clk  ),
+    .rst_n         (bus_rst_n) 
+  );
+
+sirv_expl_apb_slv # (
+  .AW   (32),
+  .DW   (`E203_XLEN) 
+) u_perips_expl_apb_slv (
+
+    .apb_paddr     (expl_apb_paddr  ),
+    .apb_pwrite    (expl_apb_pwrite ),
+    .apb_pselx     (expl_apb_pselx  ),
+    .apb_penable   (expl_apb_penable), 
+    .apb_pwdata    (expl_apb_pwdata ),
+    .apb_prdata    (expl_apb_prdata ),
+
+    .clk           (clk  ),
+    .rst_n         (rst_n) 
+  );
+
+
+  
+
+      // * Here is an example WishBone Peripheral
+  wire  [`E203_ADDR_SIZE-1:0] i2c_wishb_adr;     // lower address bits
+  wire  [8-1:0] i2c_wishb_dat_w;   // databus input
+  wire  [8-1:0] i2c_wishb_dat_r;   // databus output
+  wire           i2c_wishb_we;      // write enable input
+  wire           i2c_wishb_stb;     // stobe/core select signal
+  wire           i2c_wishb_cyc;     // valid bus cycle input
+  wire           i2c_wishb_ack;     // bus cycle acknowledge output
+
+sirv_gnrl_icb32towishb8 # (
+  .AW   (`E203_ADDR_SIZE) 
+) u_i2c_wishb_icb32towishb8(
+    .i_icb_cmd_valid (i2c_wishb_icb_cmd_valid),
+    .i_icb_cmd_ready (i2c_wishb_icb_cmd_ready),
+    .i_icb_cmd_addr  (i2c_wishb_icb_cmd_addr ),
+    .i_icb_cmd_read  (i2c_wishb_icb_cmd_read ),
+    .i_icb_cmd_wdata (i2c_wishb_icb_cmd_wdata),
+    .i_icb_cmd_wmask (i2c_wishb_icb_cmd_wmask),
+    .i_icb_cmd_size  (2'b0),
+    
+    .i_icb_rsp_valid (i2c_wishb_icb_rsp_valid),
+    .i_icb_rsp_ready (i2c_wishb_icb_rsp_ready),
+    .i_icb_rsp_rdata (i2c_wishb_icb_rsp_rdata),
+    .i_icb_rsp_err   (i2c_wishb_icb_rsp_err),
+
+    .wb_adr   (i2c_wishb_adr),
+    .wb_dat_w (i2c_wishb_dat_w[7:0]),
+    .wb_dat_r (i2c_wishb_dat_r[7:0]),
+    .wb_we    (i2c_wishb_we   ),
+    .wb_stb   (i2c_wishb_stb  ),
+    .wb_cyc   (i2c_wishb_cyc  ),
+    .wb_ack   (i2c_wishb_ack  ),
+
+    .clk           (clk  ),
+    .rst_n         (bus_rst_n) 
+  );
+
+
+  i2c_master_top u_i2c_master_top (
+	.wb_clk_i (clk),
+	.wb_rst_i (1'b0),
+	.arst_i   (rst_n),
+	.wb_adr_i (i2c_wishb_adr[2:0]),
+	.wb_dat_i (i2c_wishb_dat_w[7:0]),
+	.wb_dat_o (i2c_wishb_dat_r[7:0]),
+	.wb_we_i  (i2c_wishb_we),
+	.wb_stb_i (i2c_wishb_stb),
+	.wb_cyc_i (i2c_wishb_cyc),
+	.wb_ack_o (i2c_wishb_ack),
+
+	.scl_pad_i   (i2c_scl_pad_i),
+	.scl_pad_o   (i2c_scl_pad_o   ),
+	.scl_padoen_o(i2c_scl_padoen_o),
+                              
+	.sda_pad_i   (i2c_sda_pad_i),
+	.sda_pad_o   (i2c_sda_pad_o   ),
+	.sda_padoen_o(i2c_sda_padoen_o),
+
+	.wb_inta_o(i2c_mst_irq) 
+  );
+
+
+  sirv_hclkgen_regs u_sirv_hclkgen_regs(
+    .clk  (clk),
+    .rst_n(rst_n),
+
+    .pllbypass   (pllbypass   ),
+    .pll_RESET(pll_RESET),
+    .pll_ASLEEP(pll_ASLEEP),
+    .pll_OD(pll_OD),
+    .pll_M (pll_M ),
+    .pll_N (pll_N ),
+    .plloutdivby1(plloutdivby1),
+    .plloutdiv   (plloutdiv   ),
+                              
+    .hfxoscen    (hfxoscen    ),
+
+
+    .i_icb_cmd_valid(hclkgen_icb_cmd_valid),
+    .i_icb_cmd_ready(hclkgen_icb_cmd_ready),
+    .i_icb_cmd_addr (hclkgen_icb_cmd_addr[11:0]), 
+    .i_icb_cmd_read (hclkgen_icb_cmd_read ), 
+    .i_icb_cmd_wdata(hclkgen_icb_cmd_wdata),
+                     
+    .i_icb_rsp_valid(hclkgen_icb_rsp_valid),
+    .i_icb_rsp_ready(hclkgen_icb_rsp_ready),
+    .i_icb_rsp_rdata(hclkgen_icb_rsp_rdata)
+  );
 
 endmodule

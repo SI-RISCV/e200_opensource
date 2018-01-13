@@ -21,8 +21,6 @@ module sirv_pmu(
   input   clock,
   input   reset,
 
-  input   core_wfi,// The CPU can only be powerred down when it is idle
-
   input   io_wakeup_awakeup,
   input   io_wakeup_dwakeup,
   input   io_wakeup_rtc,
@@ -31,8 +29,6 @@ module sirv_pmu(
   output  io_control_corerst,
   output  io_control_reserved1,
   output  io_control_vddpaden,
-  output  io_control_tcmretion,
-  output  io_control_tcmshutdw,
   output  io_control_reserved0,
   input   io_regs_ie_write_valid,
   input  [3:0] io_regs_ie_write_bits,
@@ -99,10 +95,6 @@ module sirv_pmu(
   input   io_resetCauses_porrst
 );
 
-  wire  core_io_control_bits_tcm_ret;
-  //Bob: we introduced one bits from the pmu_core to control tcm retention or shutdown
-  assign io_control_tcmretion =   core_io_control_bits_tcm_ret  & (~io_control_vddpaden);
-  assign io_control_tcmshutdw = (~core_io_control_bits_tcm_ret) & (~io_control_vddpaden);
   reg  T_355;
   reg [31:0] GEN_1;
   reg  T_356;
@@ -205,20 +197,21 @@ module sirv_pmu(
   wire  T_379;
   wire [1:0] T_380;
   wire [2:0] T_381;
-  wire  SRLatch_3_q;
-  wire  SRLatch_3_reset;
-  wire  SRLatch_3_set;
+  //Bob: Name as Latch is not good, give it new name here
+  //wire  SRLatch_3_q;
+  //wire  SRLatch_3_reset;
+  //wire  SRLatch_3_set;
   wire  T_382;
   wire  T_383;
   wire  T_384;
   wire  T_385;
-  wire  SRLatch_1_1_q;
-  wire  SRLatch_1_1_reset;
-  wire  SRLatch_1_1_set;
+  //wire  SRLatch_1_1_q;
+  //wire  SRLatch_1_1_reset;
+  //wire  SRLatch_1_1_set;
   wire  T_389;
-  wire  SRLatch_2_1_q;
-  wire  SRLatch_2_1_reset;
-  wire  SRLatch_2_1_set;
+  //wire  SRLatch_2_1_q;
+  //wire  SRLatch_2_1_reset;
+  //wire  SRLatch_2_1_set;
   wire  T_393;
   wire [1:0] T_394;
   wire [2:0] T_395;
@@ -231,7 +224,6 @@ module sirv_pmu(
   sirv_pmu_core u_pmu_core (
     .clock(core_clock),
     .reset(core_reset),
-    .core_wfi(core_wfi),
     .io_wakeup_awakeup(core_io_wakeup_awakeup),
     .io_wakeup_dwakeup(core_io_wakeup_dwakeup),
     .io_wakeup_rtc(core_io_wakeup_rtc),
@@ -241,7 +233,6 @@ module sirv_pmu(
     .io_control_bits_corerst(core_io_control_bits_corerst),
     .io_control_bits_reserved1(core_io_control_bits_reserved1),
     .io_control_bits_vddpaden(core_io_control_bits_vddpaden),
-    .io_control_bits_tcm_ret (core_io_control_bits_tcm_ret),
     .io_control_bits_reserved0(core_io_control_bits_reserved0),
     .io_resetCause(core_io_resetCause),
     .io_regs_ie_write_valid(core_io_regs_ie_write_valid),
@@ -312,21 +303,119 @@ module sirv_pmu(
     .io_q(AsyncResetRegVec_1_1_io_q),
     .io_en(AsyncResetRegVec_1_1_io_en)
   );
-  sirv_SRLatch SRLatch_3 (
-    .q(SRLatch_3_q),
-    .reset(SRLatch_3_reset),
-    .set(SRLatch_3_set)
-  );
-  sirv_SRLatch SRLatch_1_1 (
-    .q(SRLatch_1_1_q),
-    .reset(SRLatch_1_1_reset),
-    .set(SRLatch_1_1_set)
-  );
-  sirv_SRLatch SRLatch_2_1 (
-    .q(SRLatch_2_1_q),
-    .reset(SRLatch_2_1_reset),
-    .set(SRLatch_2_1_set)
-  );
+  //Bob: Since the SR Latch is not friend to the ASIC flow, so I just replace it to the DFF
+  // And the name as Latch is not good, so give it a new name here
+
+  wire por_reset  = T_382;// POR
+  wire erst_reset = T_383;// ERST
+  wire wdog_reset = T_384;// WDOG
+
+  // In case we lost the reset, we need to just use two-dff syncer to catch up the reset, and until the clock
+  //   is there to clear it
+  reg por_reset_r;
+  reg por_reset_r_r;
+  always @(posedge clock or posedge por_reset) begin
+    if(por_reset) begin
+      por_reset_r   <= 1'b1;
+      por_reset_r_r <= 1'b1;
+    end
+    else begin
+      por_reset_r   <= 1'b0;
+      por_reset_r_r <= por_reset_r;
+    end
+  end
+
+  reg erst_reset_r;
+  reg erst_reset_r_r;
+  always @(posedge clock or posedge erst_reset) begin
+    if(erst_reset) begin
+      erst_reset_r   <= 1'b1;
+      erst_reset_r_r <= 1'b1;
+    end
+    else begin
+      erst_reset_r   <= 1'b0;
+      erst_reset_r_r <= erst_reset_r;
+    end
+  end
+
+  reg wdog_reset_r;
+  reg wdog_reset_r_r;
+  always @(posedge clock or posedge wdog_reset) begin
+    if(wdog_reset) begin
+      wdog_reset_r   <= 1'b1;
+      wdog_reset_r_r <= 1'b1;
+    end
+    else begin
+      wdog_reset_r   <= 1'b0;
+      wdog_reset_r_r <= wdog_reset_r;
+    end
+  end
+
+  // Reset cause priority if they are coming at same time:
+      // POR
+      // Erst
+      // Wdog
+  wire rstcause_por_set  = por_reset_r_r; 
+  wire rstcause_erst_set = erst_reset_r_r & (~por_reset_r_r); 
+  wire rstcause_wdog_set = wdog_reset_r_r & (~erst_reset_r_r) & (~por_reset_r_r); 
+
+    // The POR only clear if:
+        // there is no POR reset,
+        // And there are other two resets 
+  wire rstcause_por_clr  = (~por_reset_r_r) & (erst_reset_r_r | wdog_reset_r_r); 
+    // The Erst only clear if:
+        // there is POR reset,
+        // or, there is no erst reset and there is wdog reset
+  wire rstcause_erst_clr = por_reset_r_r | ((~erst_reset_r_r) & wdog_reset_r_r); 
+    // The Wdog only clear if:
+        // there is POR or Erst reset,
+  wire rstcause_wdog_clr = por_reset_r_r | erst_reset_r_r;
+
+  wire rstcause_por_ena  = rstcause_por_set  | rstcause_por_clr ;   
+  wire rstcause_erst_ena = rstcause_erst_set | rstcause_erst_clr; 
+  wire rstcause_wdog_ena = rstcause_wdog_set | rstcause_wdog_clr; 
+
+  wire rstcause_por_nxt  = rstcause_por_set  | (~rstcause_por_clr );   
+  wire rstcause_erst_nxt = rstcause_erst_set | (~rstcause_erst_clr); 
+  wire rstcause_wdog_nxt = rstcause_wdog_set | (~rstcause_wdog_clr); 
+
+  reg rstcause_por_r;
+  reg rstcause_wdog_r;
+  reg rstcause_erst_r;
+
+  // The reset cause itself cannot have reset signal
+  always @(posedge clock) begin
+    if(rstcause_por_ena) begin
+      rstcause_por_r <= rstcause_por_nxt;
+    end
+  end
+
+  always @(posedge clock) begin
+    if(rstcause_erst_ena) begin
+      rstcause_erst_r <= rstcause_erst_nxt;
+    end
+  end
+
+  always @(posedge clock) begin
+    if(rstcause_wdog_ena) begin
+      rstcause_wdog_r <= rstcause_wdog_nxt;
+    end
+  end
+  //sirv_SRLatch SRLatch_3 ( // POR
+  //  .q(SRLatch_3_q),
+  //  .reset(SRLatch_3_reset),
+  //  .set(SRLatch_3_set)
+  //);
+  //sirv_SRLatch SRLatch_1_1 (// ERST
+  //  .q(SRLatch_1_1_q),
+  //  .reset(SRLatch_1_1_reset),
+  //  .set(SRLatch_1_1_set)
+  //);
+  //sirv_SRLatch SRLatch_2_1 (//WDOG
+  //  .q(SRLatch_2_1_q),
+  //  .reset(SRLatch_2_1_reset),
+  //  .set(SRLatch_2_1_set)
+  //);
   assign io_control_hfclkrst = T_369_hfclkrst;
   assign io_control_corerst = T_369_corerst;
   assign io_control_reserved1 = T_369_reserved1;
@@ -421,20 +510,22 @@ module sirv_pmu(
   assign T_379 = core_io_control_bits[4];
   assign T_380 = {io_resetCauses_wdogrst,io_resetCauses_erst};
   assign T_381 = {T_380,io_resetCauses_porrst};
-  assign SRLatch_3_reset = T_385;
-  assign SRLatch_3_set = T_382;
-  assign T_382 = T_381[0];
-  assign T_383 = T_381[1];
-  assign T_384 = T_381[2];
+  //assign SRLatch_3_reset = T_385;
+  //assign SRLatch_3_set = T_382;// POR
+  assign T_382 = T_381[0];// The POR
+  assign T_383 = T_381[1];// The ERST
+  assign T_384 = T_381[2];// The WDOG
   assign T_385 = T_383 | T_384;
-  assign SRLatch_1_1_reset = T_389;
-  assign SRLatch_1_1_set = T_383;
+  //assign SRLatch_1_1_reset = T_389;
+  //assign SRLatch_1_1_set = T_383;// ERST
   assign T_389 = T_382 | T_384;
-  assign SRLatch_2_1_reset = T_393;
-  assign SRLatch_2_1_set = T_384;
+  //assign SRLatch_2_1_reset = T_393;
+  //assign SRLatch_2_1_set = T_384;// WDOG
   assign T_393 = T_382 | T_383;
-  assign T_394 = {SRLatch_2_1_q,SRLatch_1_1_q};
-  assign T_395 = {T_394,SRLatch_3_q};
+  //assign T_394 = {SRLatch_2_1_q,SRLatch_1_1_q};
+  //Bob assign T_395 = {T_394,SRLatch_3_q};
+  assign T_394 = {rstcause_wdog_r,rstcause_erst_r};
+  assign T_395 = {T_394,rstcause_por_r};
   assign T_396 = T_395[2];
   assign T_397 = T_395[1:0];
   assign GEN_0 = {{1'd0}, T_396};

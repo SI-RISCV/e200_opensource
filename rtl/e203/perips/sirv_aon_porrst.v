@@ -16,24 +16,33 @@
                                                                          
                                                                          
                                                                          
-module sirv_SRLatch (
-  input set,
-  input reset,
-  output q
+//=====================================================================
+//--        _______   ___
+//--       (   ____/ /__/
+//--        \ \     __
+//--     ____\ \   / /
+//--    /_______\ /_/   MICROELECTRONICS
+//--
+//=====================================================================
+//
+// Designer   : Bob Hu
+//
+// Description:
+//  The PORRST circuit
+//
+// ====================================================================
+
+module sirv_aon_porrst(
+  output porrst_n
 );
 
-  reg latch;
+  `ifdef FPGA_SOURCE//{
+      // In FPGA, we have no PORRST circult
+      assign porrst_n = 1'b1;
+  `else //}{
+      assign porrst_n = 1'b1;
 
-  // synopsys async_set_reset "set"
-  // synopsys one_hot "set, reset"
-  always @(set or reset)
-  begin
-    if (set)
-      latch <= 1'b1;
-    else if (reset)
-      latch <= 1'b0;
-  end
+  `endif//}
 
-  assign q = latch;
 
 endmodule

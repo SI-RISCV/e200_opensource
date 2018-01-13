@@ -20,7 +20,6 @@
 module sirv_pmu_core(
   input   clock,
   input   reset,
-  input   core_wfi,// The CPU can only be powerred down when it is idle
   input   io_wakeup_awakeup,
   input   io_wakeup_dwakeup,
   input   io_wakeup_rtc,
@@ -30,7 +29,6 @@ module sirv_pmu_core(
   output  io_control_bits_corerst,
   output  io_control_bits_reserved1,
   output  io_control_bits_vddpaden,
-  output  io_control_bits_tcm_ret,
   output  io_control_bits_reserved0,
   input  [1:0] io_resetCause,
   input   io_regs_ie_write_valid,
@@ -95,10 +93,7 @@ module sirv_pmu_core(
   output [31:0] io_regs_sleepProgram_7_read
 );
 
-  reg [1:0] wantSleep;
-
-  assign io_control_bits_tcm_ret = wantSleep[1];
-
+  reg  wantSleep;
   reg  run;
   reg [31:0] GEN_37;
   reg  awake;
@@ -291,7 +286,7 @@ module sirv_pmu_core(
   assign io_control_bits_reserved0 = insn_sigs_reserved0;
   assign io_regs_ie_read = ie;
   assign io_regs_cause_read = {{22'd0}, T_568};
-  assign io_regs_sleep_read = {30'h0,wantSleep};
+  assign io_regs_sleep_read = {31'h0,wantSleep};
   assign io_regs_key_read = {{31'd0}, unlocked};
   assign io_regs_wakeupProgram_0_read = {{23'd0}, wakeupProgram_0};
   assign io_regs_wakeupProgram_1_read = {{23'd0}, wakeupProgram_1};
@@ -333,7 +328,7 @@ module sirv_pmu_core(
   assign T_388 = io_regs_key_write_valid | T_381;
   assign GEN_0 = T_388 ? T_386 : unlocked;
   assign T_391 = io_regs_sleep_write_valid & unlocked;
-  assign GEN_1 = T_391 ? 1'h1 : wantSleep[0];
+  assign GEN_1 = T_391 ? 1'h1 : wantSleep;
   assign T_394 = io_regs_ie_write_valid & unlocked;
   assign GEN_2 = T_394 ? io_regs_ie_write_bits : T_396;
   assign ie = T_396 | 4'h1;
@@ -402,10 +397,10 @@ module sirv_pmu_core(
   assign GEN_9 = T_549 ? 1'h1 : GEN_7;
   assign GEN_10 = T_549 ? 1'h1 : awake;
   assign GEN_11 = T_549 ? T_562 : wakeupCause;
-  //assign T_563 = awake & wantSleep;
   //Bob: here we introduce a core_wfi signal to make sure when the PMU is
   //     going to power down MOFF, the core is really idle (executed wfi)
-  assign T_563 = awake & wantSleep[0] & core_wfi;
+  //assign T_563 = awake & wantSleep & core_wfi;
+  assign T_563 = awake & wantSleep;// Current we dont add it
   assign GEN_12 = T_563 ? 1'h1 : GEN_9;
   assign GEN_13 = T_563 ? 1'h0 : GEN_10;
   assign GEN_14 = T_563 ? 1'h0 : GEN_1;
@@ -502,21 +497,20 @@ module sirv_pmu_core(
     end
 
   always @(posedge clock or posedge reset)
-    //Bob have changed the wantSleep from 1 bit to 2bits, and use bit[1] to indicate if the TCMs should be retentioned
     if (reset) begin
-      wantSleep <= 2'h0;
+      wantSleep <= 1'h0;
     end else begin
       if (T_540) begin
         if (T_563) begin
-          wantSleep <= 2'h0;
+          wantSleep <= 1'h0;
         end else begin
           if (T_391) begin
-            wantSleep <= io_regs_sleep_write_bits[1:0];
+            wantSleep <= io_regs_sleep_write_bits[0];
           end
         end
       end else begin
         if (T_391) begin
-          wantSleep <= io_regs_sleep_write_bits[1:0];
+          wantSleep <= io_regs_sleep_write_bits[0];
         end
       end
     end

@@ -76,6 +76,8 @@ module e203_subsys_plic(
   input  pwm2_irq_2,
   input  pwm2_irq_3,
 
+  input  i2c_mst_irq,
+
   input  gpio_irq_0,
   input  gpio_irq_1,
   input  gpio_irq_2,
@@ -189,6 +191,7 @@ module e203_subsys_plic(
   wire plic_irq_i_48 = pwm2_irq_1;
   wire plic_irq_i_49 = pwm2_irq_2;
   wire plic_irq_i_50 = pwm2_irq_3;
+  wire plic_irq_i_51 = i2c_mst_irq;
                          
 
   sirv_plic_top u_sirv_plic_top(
@@ -256,6 +259,7 @@ module e203_subsys_plic(
     .io_devices_0_48 (plic_irq_i_48),
     .io_devices_0_49 (plic_irq_i_49),
     .io_devices_0_50 (plic_irq_i_50),
+    .io_devices_0_51 (plic_irq_i_51),
     .io_harts_0_0    (plic_ext_irq ) 
   );
 

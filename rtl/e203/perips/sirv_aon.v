@@ -22,8 +22,6 @@ module sirv_aon(
   input   reset,
   input   erst,
   input   test_mode,
-  input   test_iso_override,
-  input   core_wfi,// The CPU can only be powerred down when it is idle
   output  io_interrupts_0_0,
   output  io_interrupts_0_1,
   output  io_in_0_a_ready,
@@ -71,9 +69,7 @@ module sirv_aon(
   output  io_wdog_rst,
   output  io_lfclk,
   output  io_pmu_vddpaden,
-  output  io_pmu_tcmretion,
-  output  io_pmu_tcmshutdw,
-  output  io_pmu_moff_isolate,
+  output  io_pmu_padrst,
   input   io_pmu_dwakeup,
   input   io_lfextclk,
   input   io_resetCauses_wdogrst,
@@ -114,8 +110,6 @@ module sirv_aon(
   wire  pmu_io_control_corerst;
   wire  pmu_io_control_reserved1;
   wire  pmu_io_control_vddpaden;
-  wire  pmu_io_control_tcmshutdw;
-  wire  pmu_io_control_tcmretion;
   wire  pmu_io_control_reserved0;
   wire  pmu_io_regs_ie_write_valid;
   wire [3:0] pmu_io_regs_ie_write_bits;
@@ -3463,7 +3457,6 @@ module sirv_aon(
   sirv_pmu u_sirv_pmu (
     .clock(pmu_clock),
     .reset(pmu_reset),
-    .core_wfi (core_wfi),
     .io_wakeup_awakeup(pmu_io_wakeup_awakeup),
     .io_wakeup_dwakeup(pmu_io_wakeup_dwakeup),
     .io_wakeup_rtc(pmu_io_wakeup_rtc),
@@ -3472,8 +3465,6 @@ module sirv_aon(
     .io_control_corerst(pmu_io_control_corerst),
     .io_control_reserved1(pmu_io_control_reserved1),
     .io_control_vddpaden(pmu_io_control_vddpaden),
-    .io_control_tcmshutdw(pmu_io_control_tcmshutdw),
-    .io_control_tcmretion(pmu_io_control_tcmretion),
     .io_control_reserved0(pmu_io_control_reserved0),
     .io_regs_ie_write_valid(pmu_io_regs_ie_write_valid),
     .io_regs_ie_write_bits(pmu_io_regs_ie_write_bits),
@@ -3615,14 +3606,11 @@ module sirv_aon(
   assign io_moff_corerst  = test_mode ? erst : pmu_io_control_corerst;
   assign io_wdog_rst      = test_mode ? erst : wdog_io_rst;
 
-        //Bob: We can reuse this reserved0 signal as the isolation control signal
-  // In DFT mode the isolate control siganls should be disabled
-  assign io_pmu_moff_isolate = test_mode ? test_iso_override : pmu_io_control_reserved0;
+        //Bob: This reserved1 signal is actually the padrst signal used in hifive board
+  assign io_pmu_padrst = test_mode ? 1'b1 : pmu_io_control_reserved1;
 
   // In DFT mode the power control siganls should be disabled
   assign io_pmu_vddpaden  = test_mode ? 1'b1 : pmu_io_control_vddpaden;
-  assign io_pmu_tcmretion = test_mode ? 1'b0 : pmu_io_control_tcmretion;
-  assign io_pmu_tcmshutdw = test_mode ? 1'b0 : pmu_io_control_tcmshutdw;
 
   assign rtc_clock = clock;
   assign rtc_reset = reset;
