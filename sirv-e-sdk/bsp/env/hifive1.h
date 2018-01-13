@@ -14,9 +14,13 @@
 // FPGA
 // Dev Kit.
 
-#define RED_LED_OFFSET   22
-#define GREEN_LED_OFFSET 19
-#define BLUE_LED_OFFSET  21
+//#define RED_LED_OFFSET   22
+//#define GREEN_LED_OFFSET 19
+//#define BLUE_LED_OFFSET  21
+
+#define RED_LED_OFFSET   19
+#define GREEN_LED_OFFSET 21
+#define BLUE_LED_OFFSET  22
 
 // These are the GPIO bit offsets for the differen digital pins
 // on the headers for both the HiFive1 Board and the Freedom E300 Arty FPGA Dev Kit.
@@ -34,7 +38,7 @@
 #define PIN_11_OFFSET 3
 #define PIN_12_OFFSET 4
 #define PIN_13_OFFSET 5
-//#define PIN_14_OFFSET 8 //This pin is not connected on either board.
+#define PIN_14_OFFSET 8 //This pin is not connected on either board.
 #define PIN_15_OFFSET 9
 #define PIN_16_OFFSET 10
 #define PIN_17_OFFSET 11
