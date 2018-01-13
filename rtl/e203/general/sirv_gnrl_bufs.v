@@ -420,7 +420,7 @@ generate //{
      assign o_dat = i_dat;
 
   end//}
-  else begin: dp_gt1//{
+  else begin: dp_gt0//{
 
     // FIFO registers
     wire [DW-1:0] fifo_rf_r [DP-1:0];
