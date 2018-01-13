@@ -142,7 +142,7 @@ module sirv_debug_module
     .io_sync_reset(dm_rst)
   );
   
-  assign dm_rst_n = ~dm_rst;;
+  assign dm_rst_n = ~dm_rst;
 
   //This is to reset the JTAG_CLK relevant logics, since the chip does not 
   //  have the JTAG_RST used really, so we need to use the global chip reset to reset
