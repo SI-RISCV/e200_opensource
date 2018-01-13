@@ -660,10 +660,12 @@ module sirv_gnrl_icb_splt # (
   parameter FIFO_CUT_READY = 0,
   // SPLT_NUM=4 ports, so 2 bits for port id
   parameter SPLT_NUM = 4,
-  parameter SPLT_PTR_1HOT = 0,
-  parameter SPLT_PTR_W = 2,
+  parameter SPLT_PTR_1HOT = 1,// Currently we always use 1HOT (i.e., this is configured as 1)
+                                // do not try to configure it as 0, becuase we never use it and verify it
+  parameter SPLT_PTR_W = 4,
   parameter ALLOW_DIFF = 1,
   parameter ALLOW_0CYCL_RSP = 1,
+  parameter VLD_MSK_PAYLOAD = 0,
   parameter USR_W = 1 
 ) (
   input  [SPLT_NUM-1:0] i_icb_splt_indic,        
@@ -917,16 +919,30 @@ generate //{
     for(i = 0; i < SPLT_NUM; i = i+1)//{
     begin:o_icb_cmd_valid_gen
       assign o_icb_cmd_valid[i] = i_icb_splt_indic[i] & i_icb_cmd_valid_pre;         
-      assign o_icb_cmd_read [i] = i_icb_cmd_read ;
-      assign o_icb_cmd_addr [i] = i_icb_cmd_addr ;
-      assign o_icb_cmd_wdata[i] = i_icb_cmd_wdata;
-      assign o_icb_cmd_wmask[i] = i_icb_cmd_wmask;
-      assign o_icb_cmd_burst[i] = i_icb_cmd_burst;
-      assign o_icb_cmd_beat [i] = i_icb_cmd_beat ;
-      assign o_icb_cmd_lock [i] = i_icb_cmd_lock ;
-      assign o_icb_cmd_excl [i] = i_icb_cmd_excl ;
-      assign o_icb_cmd_size [i] = i_icb_cmd_size ;
-      assign o_icb_cmd_usr  [i] = i_icb_cmd_usr  ;
+      if(VLD_MSK_PAYLOAD == 0) begin: no_vld_msk_payload
+          assign o_icb_cmd_read [i] = i_icb_cmd_read ;
+          assign o_icb_cmd_addr [i] = i_icb_cmd_addr ;
+          assign o_icb_cmd_wdata[i] = i_icb_cmd_wdata;
+          assign o_icb_cmd_wmask[i] = i_icb_cmd_wmask;
+          assign o_icb_cmd_burst[i] = i_icb_cmd_burst;
+          assign o_icb_cmd_beat [i] = i_icb_cmd_beat ;
+          assign o_icb_cmd_lock [i] = i_icb_cmd_lock ;
+          assign o_icb_cmd_excl [i] = i_icb_cmd_excl ;
+          assign o_icb_cmd_size [i] = i_icb_cmd_size ;
+          assign o_icb_cmd_usr  [i] = i_icb_cmd_usr  ;
+      end
+      else begin: vld_msk_payload
+          assign o_icb_cmd_read [i] = {1    {o_icb_cmd_valid[i]}} & i_icb_cmd_read ;
+          assign o_icb_cmd_addr [i] = {AW   {o_icb_cmd_valid[i]}} & i_icb_cmd_addr ;
+          assign o_icb_cmd_wdata[i] = {DW   {o_icb_cmd_valid[i]}} & i_icb_cmd_wdata;
+          assign o_icb_cmd_wmask[i] = {DW/8 {o_icb_cmd_valid[i]}} & i_icb_cmd_wmask;
+          assign o_icb_cmd_burst[i] = {2    {o_icb_cmd_valid[i]}} & i_icb_cmd_burst;
+          assign o_icb_cmd_beat [i] = {2    {o_icb_cmd_valid[i]}} & i_icb_cmd_beat ;
+          assign o_icb_cmd_lock [i] = {1    {o_icb_cmd_valid[i]}} & i_icb_cmd_lock ;
+          assign o_icb_cmd_excl [i] = {1    {o_icb_cmd_valid[i]}} & i_icb_cmd_excl ;
+          assign o_icb_cmd_size [i] = {2    {o_icb_cmd_valid[i]}} & i_icb_cmd_size ;
+          assign o_icb_cmd_usr  [i] = {USR_W{o_icb_cmd_valid[i]}} & i_icb_cmd_usr  ;
+      end
     end//}
     //
     
@@ -987,4 +1003,739 @@ generate //{
   endgenerate //}
 
 endmodule
+
+// ===========================================================================
+//
+// Description:
+//  The module to handle the simple-ICB bus to AXI bus conversion 
+//
+// ===========================================================================
+
+module sirv_gnrl_icb2axi # (
+  parameter AXI_FIFO_DP = 0, // This is to optionally add the pipeline stage for AXI bus
+                             //   if the depth is 0, then means pass through, not add pipeline
+                             //   if the depth is 2, then means added one ping-pong buffer stage
+  parameter AXI_FIFO_CUT_READY = 1, // This is to cut the back-pressure signal if you set as 1
+  parameter AW = 32,
+  parameter FIFO_OUTS_NUM = 8,
+  parameter FIFO_CUT_READY = 0,
+  parameter DW = 64 // 64 or 32 bits
+) (
+  input              i_icb_cmd_valid, 
+  output             i_icb_cmd_ready, 
+  input  [1-1:0]     i_icb_cmd_read, 
+  input  [AW-1:0]    i_icb_cmd_addr, 
+  input  [DW-1:0]    i_icb_cmd_wdata, 
+  input  [DW/8-1:0]  i_icb_cmd_wmask,
+  input  [1:0]       i_icb_cmd_size,
+
+  output             i_icb_rsp_valid, 
+  input              i_icb_rsp_ready, 
+  output             i_icb_rsp_err,
+  output [DW-1:0]    i_icb_rsp_rdata, 
+  
+  output o_axi_arvalid,
+  input  o_axi_arready,
+  output [AW-1:0] o_axi_araddr,
+  output [3:0] o_axi_arcache,
+  output [2:0] o_axi_arprot,
+  output [1:0] o_axi_arlock,
+  output [1:0] o_axi_arburst,
+  output [3:0] o_axi_arlen,
+  output [2:0] o_axi_arsize,
+
+  output o_axi_awvalid,
+  input  o_axi_awready,
+  output [AW-1:0] o_axi_awaddr,
+  output [3:0] o_axi_awcache,
+  output [2:0] o_axi_awprot,
+  output [1:0] o_axi_awlock,
+  output [1:0] o_axi_awburst,
+  output [3:0] o_axi_awlen,
+  output [2:0] o_axi_awsize,
+
+  input  o_axi_rvalid,
+  output o_axi_rready,
+  input  [DW-1:0] o_axi_rdata,
+  input  [1:0] o_axi_rresp,
+  input  o_axi_rlast,
+
+  output o_axi_wvalid,
+  input  o_axi_wready,
+  output [DW-1:0] o_axi_wdata,
+  output [(DW/8)-1:0] o_axi_wstrb,
+  output o_axi_wlast,
+
+  input  o_axi_bvalid,
+  output o_axi_bready,
+  input  [1:0] o_axi_bresp,
+
+  input  clk,  
+  input  rst_n
+  );
+
+  wire i_axi_arvalid;
+  wire i_axi_arready;
+  wire [AW-1:0] i_axi_araddr;
+  wire [3:0] i_axi_arcache;
+  wire [2:0] i_axi_arprot;
+  wire [1:0] i_axi_arlock;
+  wire [1:0] i_axi_arburst;
+  wire [3:0] i_axi_arlen;
+  wire [2:0] i_axi_arsize;
+
+  wire i_axi_awvalid;
+  wire i_axi_awready;
+  wire [AW-1:0] i_axi_awaddr;
+  wire [3:0] i_axi_awcache;
+  wire [2:0] i_axi_awprot;
+  wire [1:0] i_axi_awlock;
+  wire [1:0] i_axi_awburst;
+  wire [3:0] i_axi_awlen;
+  wire [2:0] i_axi_awsize;
+
+  wire i_axi_rvalid;
+  wire i_axi_rready;
+  wire [DW-1:0] i_axi_rdata;
+  wire [1:0] i_axi_rresp;
+  wire i_axi_rlast;
+
+  wire i_axi_wvalid;
+  wire i_axi_wready;
+  wire [DW-1:0] i_axi_wdata;
+  wire [(DW/8)-1:0] i_axi_wstrb;
+  wire i_axi_wlast;
+
+  wire i_axi_bvalid;
+  wire i_axi_bready;
+  wire [1:0] i_axi_bresp;
+
+
+  //////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  // Convert the ICB to AXI Read/Write address and Wdata channel
+  //
+  //   Generate the AXI address channel valid which is direct got 
+  //     from ICB command channel
+  assign i_axi_arvalid = i_icb_cmd_valid & i_icb_cmd_read;
+  
+  // If it is the read transaction, need to pass to AR channel only
+  // If it is the write transaction, need to pass to AW and W channel both
+      // But in all case, need to check FIFO is not ful
+  wire rw_fifo_full;
+  assign i_icb_cmd_ready = (~rw_fifo_full) & 
+             (i_icb_cmd_read ? i_axi_arready : (i_axi_awready & i_axi_wready));
+  assign i_axi_awvalid = i_icb_cmd_valid & (~i_icb_cmd_read) & i_axi_wready  & (~rw_fifo_full);
+  assign i_axi_wvalid  = i_icb_cmd_valid & (~i_icb_cmd_read) & i_axi_awready & (~rw_fifo_full); 
+  //
+  
+  //   Generate the AXI address channel address which is direct got 
+  //     from ICB command channel
+  assign i_axi_araddr = i_icb_cmd_addr;
+  assign i_axi_awaddr = i_icb_cmd_addr;
+  
+  //
+  // For these attribute signals we just make it tied to zero
+  assign i_axi_arcache = 4'b0;
+  assign i_axi_awcache = 4'b0;
+  assign i_axi_arprot =  3'b0;
+  assign i_axi_awprot =  3'b0;
+  assign i_axi_arlock = 2'b0;
+  assign i_axi_awlock = 2'b0;
+  //
+  // The ICB does not support burst now, so just make it fixed
+  assign i_axi_arburst = 2'b0;
+  assign i_axi_awburst = 2'b0;
+  assign i_axi_arlen = 4'b0;
+  assign i_axi_awlen = 4'b0;
+  
+  generate 
+    if(DW==32) begin:dw_32
+      assign i_axi_arsize = 3'b10;
+      assign i_axi_awsize = 3'b10;
+    end
+    if(DW==64) begin:dw_64
+      assign i_axi_arsize = 3'b11;
+      assign i_axi_awsize = 3'b11;
+    end
+  endgenerate
+  
+  // Generate the Write data channel
+  assign i_axi_wdata = i_icb_cmd_wdata;
+  assign i_axi_wstrb = i_icb_cmd_wmask;
+  assign i_axi_wlast = 1'b1;
+
+  wire rw_fifo_wen = i_icb_cmd_valid & i_icb_cmd_ready;
+  wire rw_fifo_ren = i_icb_rsp_valid & i_icb_rsp_ready;
+
+  wire rw_fifo_i_ready;
+  wire rw_fifo_i_valid = rw_fifo_wen;
+  wire rw_fifo_o_valid ;
+  wire rw_fifo_o_ready = rw_fifo_ren;
+
+  assign rw_fifo_full    = (~rw_fifo_i_ready);
+  wire rw_fifo_empty   = (~rw_fifo_o_valid);
+
+  wire i_icb_rsp_read;
+
+  sirv_gnrl_fifo # (
+    .CUT_READY (FIFO_CUT_READY),
+    .MSKO      (1),
+    .DP  (FIFO_OUTS_NUM),
+    .DW  (1)
+  ) u_sirv_gnrl_rw_fifo (
+    .i_vld(rw_fifo_i_valid),
+    .i_rdy(rw_fifo_i_ready),
+    .i_dat(i_icb_cmd_read ),
+    .o_vld(rw_fifo_o_valid),
+    .o_rdy(rw_fifo_o_ready),  
+    .o_dat(i_icb_rsp_read ),  
+  
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+// Generate the response channel
+  assign i_icb_rsp_valid = i_icb_rsp_read ? i_axi_rvalid : i_axi_bvalid;
+  assign i_axi_rready = i_icb_rsp_read & i_icb_rsp_ready;
+  assign i_axi_bready = (~i_icb_rsp_read) & i_icb_rsp_ready;
+
+  assign i_icb_rsp_err = i_icb_rsp_read ? i_axi_rresp[1] //SLVERR or DECERR 
+                                        : i_axi_bresp[1];
+  assign i_icb_rsp_rdata = i_icb_rsp_read ? i_axi_rdata : {DW{1'b0}}; 
+  
+
+  sirv_gnrl_axi_buffer #(
+     .CHNL_FIFO_DP         (AXI_FIFO_DP       ), 
+     .CHNL_FIFO_CUT_READY  (AXI_FIFO_CUT_READY),
+     .AW                   (AW),
+     .DW                   (DW) 
+    ) u_sirv_gnrl_axi_buffer (
+    .i_axi_arvalid   (i_axi_arvalid),
+    .i_axi_arready   (i_axi_arready),
+    .i_axi_araddr    (i_axi_araddr ),
+    .i_axi_arcache   (i_axi_arcache),
+    .i_axi_arprot    (i_axi_arprot ),
+    .i_axi_arlock    (i_axi_arlock ),
+    .i_axi_arburst   (i_axi_arburst),
+    .i_axi_arlen     (i_axi_arlen  ),
+    .i_axi_arsize    (i_axi_arsize ),
+                                   
+    .i_axi_awvalid   (i_axi_awvalid),
+    .i_axi_awready   (i_axi_awready),
+    .i_axi_awaddr    (i_axi_awaddr ),
+    .i_axi_awcache   (i_axi_awcache),
+    .i_axi_awprot    (i_axi_awprot ),
+    .i_axi_awlock    (i_axi_awlock ),
+    .i_axi_awburst   (i_axi_awburst),
+    .i_axi_awlen     (i_axi_awlen  ),
+    .i_axi_awsize    (i_axi_awsize ),
+                                   
+    .i_axi_rvalid    (i_axi_rvalid ),
+    .i_axi_rready    (i_axi_rready ),
+    .i_axi_rdata     (i_axi_rdata  ),
+    .i_axi_rresp     (i_axi_rresp  ),
+    .i_axi_rlast     (i_axi_rlast  ),
+                                   
+    .i_axi_wvalid    (i_axi_wvalid ),
+    .i_axi_wready    (i_axi_wready ),
+    .i_axi_wdata     (i_axi_wdata  ),
+    .i_axi_wstrb     (i_axi_wstrb  ),
+    .i_axi_wlast     (i_axi_wlast  ),
+                                   
+    .i_axi_bvalid    (i_axi_bvalid ),
+    .i_axi_bready    (i_axi_bready ),
+    .i_axi_bresp     (i_axi_bresp  ),
+                                   
+    .o_axi_arvalid   (o_axi_arvalid),
+    .o_axi_arready   (o_axi_arready),
+    .o_axi_araddr    (o_axi_araddr ),
+    .o_axi_arcache   (o_axi_arcache),
+    .o_axi_arprot    (o_axi_arprot ),
+    .o_axi_arlock    (o_axi_arlock ),
+    .o_axi_arburst   (o_axi_arburst),
+    .o_axi_arlen     (o_axi_arlen  ),
+    .o_axi_arsize    (o_axi_arsize ),
+                      
+    .o_axi_awvalid   (o_axi_awvalid),
+    .o_axi_awready   (o_axi_awready),
+    .o_axi_awaddr    (o_axi_awaddr ),
+    .o_axi_awcache   (o_axi_awcache),
+    .o_axi_awprot    (o_axi_awprot ),
+    .o_axi_awlock    (o_axi_awlock ),
+    .o_axi_awburst   (o_axi_awburst),
+    .o_axi_awlen     (o_axi_awlen  ),
+    .o_axi_awsize    (o_axi_awsize ),
+                     
+    .o_axi_rvalid    (o_axi_rvalid ),
+    .o_axi_rready    (o_axi_rready ),
+    .o_axi_rdata     (o_axi_rdata  ),
+    .o_axi_rresp     (o_axi_rresp  ),
+    .o_axi_rlast     (o_axi_rlast  ),
+                    
+    .o_axi_wvalid    (o_axi_wvalid ),
+    .o_axi_wready    (o_axi_wready ),
+    .o_axi_wdata     (o_axi_wdata  ),
+    .o_axi_wstrb     (o_axi_wstrb  ),
+    .o_axi_wlast     (o_axi_wlast  ),
+                   
+    .o_axi_bvalid    (o_axi_bvalid ),
+    .o_axi_bready    (o_axi_bready ),
+    .o_axi_bresp     (o_axi_bresp  ),
+       
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+
+
+endmodule
+
+
+// ===========================================================================
+//
+// Description:
+//  The module to handle the simple-ICB bus to Wishbone bus conversion 
+//  Note: in order to support the open source I2C IP, which is 8 bits
+//       wide bus and byte-addresable, so here this module is just ICB to 
+//       wishbone 8-bits bus conversion
+//
+// ===========================================================================
+
+module sirv_gnrl_icb32towishb8 # (
+  parameter AW = 32 
+) (
+  input              i_icb_cmd_valid, 
+  output             i_icb_cmd_ready, 
+  input  [1-1:0]     i_icb_cmd_read, 
+  input  [AW-1:0]    i_icb_cmd_addr, 
+  input  [32-1:0]    i_icb_cmd_wdata, 
+  input  [32/8-1:0]  i_icb_cmd_wmask,
+  input  [1:0]       i_icb_cmd_size,
+
+  output             i_icb_rsp_valid, 
+  input              i_icb_rsp_ready, 
+  output             i_icb_rsp_err,
+  output [32-1:0]    i_icb_rsp_rdata, 
+  
+  // The 8bits wishbone slave (e.g., I2C) must be accessed by load/store byte instructions
+  output  [AW-1:0] wb_adr,     // lower address bits
+  output  [8-1:0]  wb_dat_w,   // databus input
+  input   [8-1:0]  wb_dat_r,   // databus output
+  output           wb_we,      // write enable input
+  output           wb_stb,     // stobe/core select signal
+  output           wb_cyc,     // valid bus cycle input
+  input            wb_ack,     // bus cycle acknowledge output
+
+  input  clk,  
+  input  rst_n
+  );
+
+  assign wb_adr   = i_icb_cmd_addr;
+  assign wb_we    = ~i_icb_cmd_read;
+
+  // The 32bits bus to 8bits bus remapping
+  assign wb_dat_w = 
+             i_icb_cmd_wmask[3] ? i_icb_cmd_wdata[31:24] :
+             i_icb_cmd_wmask[2] ? i_icb_cmd_wdata[23:16] :
+             i_icb_cmd_wmask[1] ? i_icb_cmd_wdata[15:8] :
+             i_icb_cmd_wmask[0] ? i_icb_cmd_wdata[7:0] :
+                                  8'b0;
+             
+             
+  wire  [32-1:0]  wb_dat_r_remap = 
+                 {24'b0,wb_dat_r} << {i_icb_cmd_addr[1:0],3'b0};
+             
+  // Since the Wishbone reponse channel does not have handhake scheme, but the
+  //   ICB have, so the response may not be accepted by the upstream master
+  //   So in order to make sure the functionality is correct, we must put
+  //   a reponse bypass-buffer here, to always be able to accept response from wishbone
+  //
+  sirv_gnrl_fifo # (
+   .CUT_READY (1),
+   .MSKO      (0),
+   .DP(1),
+   .DW(32)
+  ) u_rsp_fifo(
+    .i_vld(wb_ack), 
+    .i_rdy(), 
+    .i_dat(wb_dat_r_remap),
+    .o_vld(i_icb_rsp_valid), 
+    .o_rdy(i_icb_rsp_ready), 
+    .o_dat(i_icb_rsp_rdata),
+  
+    .clk  (clk  ),
+    .rst_n(rst_n)  
+   );
+
+  // We only initiate the reqeust when the response buffer is empty, to make
+  //   sure when the response back from wishbone we can alway be able to 
+  //   accept it
+  assign wb_stb          = (~i_icb_rsp_valid) & i_icb_cmd_valid;
+  assign wb_cyc          = (~i_icb_rsp_valid) & i_icb_cmd_valid;
+  assign i_icb_cmd_ready = (~i_icb_rsp_valid) & wb_ack;
+
+
+  assign i_icb_rsp_err = 1'b0;// Wishbone have no error response
+
+endmodule
+
+// ===========================================================================
+//
+// Description:
+//  The module to handle the simple-ICB bus to APB bus conversion 
+//
+// ===========================================================================
+
+module sirv_gnrl_icb2apb # (
+  parameter AW = 32,
+  parameter FIFO_OUTS_NUM = 8,
+  parameter FIFO_CUT_READY = 0,
+  parameter DW = 64 // 64 or 32 bits
+) (
+  input              i_icb_cmd_valid, 
+  output             i_icb_cmd_ready, 
+  input  [1-1:0]     i_icb_cmd_read, 
+  input  [AW-1:0]    i_icb_cmd_addr, 
+  input  [DW-1:0]    i_icb_cmd_wdata, 
+  input  [DW/8-1:0]  i_icb_cmd_wmask,
+  input  [1:0]       i_icb_cmd_size,
+
+  output             i_icb_rsp_valid, 
+  input              i_icb_rsp_ready, 
+  output             i_icb_rsp_err,
+  output [DW-1:0]    i_icb_rsp_rdata, 
+  
+  output [AW-1:0] apb_paddr,
+  output          apb_pwrite,
+  output          apb_pselx,
+  output          apb_penable,
+  output [DW-1:0] apb_pwdata,
+  input  [DW-1:0] apb_prdata,
+
+  input  clk,  
+  input  rst_n
+  );
+
+  // Since the APB reponse channel does not have handhake scheme, but the
+  //   ICB have, so the response may not be accepted by the upstream master
+  //   So in order to make sure the functionality is correct, we must put
+  //   a reponse bypass-buffer here, to always be able to accept response from apb
+  //
+  wire apb_enable_r;
+
+  sirv_gnrl_fifo # (
+   .CUT_READY (1),
+   .MSKO      (0),
+   .DP(1),
+   .DW(DW)
+  ) u_rsp_fifo(
+    .i_vld(apb_enable_r), 
+    .i_rdy(), 
+    .i_dat(apb_prdata),
+    .o_vld(i_icb_rsp_valid), 
+    .o_rdy(i_icb_rsp_ready), 
+    .o_dat(i_icb_rsp_rdata),
+  
+    .clk  (clk  ),
+    .rst_n(rst_n)  
+   );
+
+  assign i_icb_rsp_err = 1'b0;// Wishbone have no error response
+
+    // apb enable will be set if it is now not set and the new icb valid is coming
+          // And we only initiate the reqeust when the response buffer is empty, to make
+          //   sure when the response back from APB we can alway be able to 
+  wire apb_enable_set = (~apb_enable_r) & i_icb_cmd_valid & (~i_icb_rsp_valid);
+    // apb enable will be clear if it is now already set
+  wire apb_enable_clr = apb_enable_r;
+  wire apb_enable_ena = apb_enable_set | apb_enable_clr;
+  wire apb_enable_nxt = apb_enable_set & (~apb_enable_clr);
+  sirv_gnrl_dfflr #(1) apb_enable_dfflr (apb_enable_ena, apb_enable_nxt, apb_enable_r, clk, rst_n);
+
+  assign i_icb_cmd_ready = apb_enable_r & (~i_icb_rsp_valid);
+
+  assign apb_paddr  = i_icb_cmd_addr;
+  assign apb_pwrite = (~i_icb_cmd_read);
+  assign apb_pselx  = i_icb_cmd_valid;
+  assign apb_penable= apb_enable_r;
+  assign apb_pwdata = i_icb_cmd_wdata;
+
+endmodule
+
+// ===========================================================================
+//
+// Description:
+//  Verilog module for the AXI bus pipeline stage
+//
+// ===========================================================================
+
+module sirv_gnrl_axi_buffer
+  #(
+    parameter CHNL_FIFO_DP = 2,
+    parameter CHNL_FIFO_CUT_READY = 2,
+    parameter AW = 32,
+    parameter DW = 32 
+    )
+  (
+  input  i_axi_arvalid,
+  output i_axi_arready,
+  input  [AW-1:0] i_axi_araddr,
+  input  [3:0] i_axi_arcache,
+  input  [2:0] i_axi_arprot,
+  input  [1:0] i_axi_arlock,
+  input  [1:0] i_axi_arburst,
+  input  [3:0] i_axi_arlen,
+  input  [2:0] i_axi_arsize,
+
+  input  i_axi_awvalid,
+  output i_axi_awready,
+  input  [AW-1:0] i_axi_awaddr,
+  input  [3:0] i_axi_awcache,
+  input  [2:0] i_axi_awprot,
+  input  [1:0] i_axi_awlock,
+  input  [1:0] i_axi_awburst,
+  input  [3:0] i_axi_awlen,
+  input  [2:0] i_axi_awsize,
+
+  output i_axi_rvalid,
+  input  i_axi_rready,
+  output [DW-1:0] i_axi_rdata,
+  output [1:0] i_axi_rresp,
+  output i_axi_rlast,
+
+  input  i_axi_wvalid,
+  output i_axi_wready,
+  input  [DW-1:0] i_axi_wdata,
+  input  [(DW/8)-1:0] i_axi_wstrb,
+  input  i_axi_wlast,
+
+  output i_axi_bvalid,
+  input  i_axi_bready,
+  output [1:0] i_axi_bresp,
+
+  output o_axi_arvalid,
+  input  o_axi_arready,
+  output [AW-1:0] o_axi_araddr,
+  output [3:0] o_axi_arcache,
+  output [2:0] o_axi_arprot,
+  output [1:0] o_axi_arlock,
+  output [1:0] o_axi_arburst,
+  output [3:0] o_axi_arlen,
+  output [2:0] o_axi_arsize,
+
+  output o_axi_awvalid,
+  input  o_axi_awready,
+  output [AW-1:0] o_axi_awaddr,
+  output [3:0] o_axi_awcache,
+  output [2:0] o_axi_awprot,
+  output [1:0] o_axi_awlock,
+  output [1:0] o_axi_awburst,
+  output [3:0] o_axi_awlen,
+  output [2:0] o_axi_awsize,
+
+  input  o_axi_rvalid,
+  output o_axi_rready,
+  input  [DW-1:0] o_axi_rdata,
+  input  [1:0] o_axi_rresp,
+  input  o_axi_rlast,
+
+  output o_axi_wvalid,
+  input  o_axi_wready,
+  output [DW-1:0] o_axi_wdata,
+  output [(DW/8)-1:0] o_axi_wstrb,
+  output o_axi_wlast,
+
+  input  o_axi_bvalid,
+  output o_axi_bready,
+  input  [1:0] o_axi_bresp,
+       
+  input  clk,  
+  input  rst_n 
+  );
+
+
+localparam AR_CHNL_W = 4+3+2+4+3+2+AW;
+localparam AW_CHNL_W = AR_CHNL_W;
+
+wire [AR_CHNL_W -1:0] i_axi_ar_chnl = 
+    {
+    i_axi_araddr,
+    i_axi_arcache,
+    i_axi_arprot ,
+    i_axi_arlock ,
+    i_axi_arburst,
+    i_axi_arlen  ,
+    i_axi_arsize  
+    };
+
+wire [AR_CHNL_W -1:0] o_axi_ar_chnl;
+assign   {
+    o_axi_araddr,
+    o_axi_arcache,
+    o_axi_arprot ,
+    o_axi_arlock ,
+    o_axi_arburst,
+    o_axi_arlen  ,
+    o_axi_arsize   
+    } = o_axi_ar_chnl;
+
+sirv_gnrl_fifo #(
+    .CUT_READY (CHNL_FIFO_CUT_READY),
+    .MSKO      (0),
+    .DP  (CHNL_FIFO_DP),
+    .DW  (AR_CHNL_W)
+) o_axi_ar_fifo (
+  .i_rdy    (i_axi_arready),
+  .i_vld    (i_axi_arvalid),
+  .i_dat    (i_axi_ar_chnl),
+
+  .o_rdy    (o_axi_arready),
+  .o_vld    (o_axi_arvalid),
+  .o_dat    (o_axi_ar_chnl),
+
+  .clk      (clk  ),
+  .rst_n    (rst_n)
+  );
+
+
+wire [AW_CHNL_W-1:0] i_axi_aw_chnl = 
+    {
+    i_axi_awaddr,
+    i_axi_awcache,
+    i_axi_awprot ,
+    i_axi_awlock ,
+    i_axi_awburst,
+    i_axi_awlen  ,
+    i_axi_awsize  
+    };
+
+wire [AW_CHNL_W-1:0] o_axi_aw_chnl;
+assign   {
+    o_axi_awaddr,
+    o_axi_awcache,
+    o_axi_awprot ,
+    o_axi_awlock ,
+    o_axi_awburst,
+    o_axi_awlen  ,
+    o_axi_awsize  
+    } = o_axi_aw_chnl;
+
+sirv_gnrl_fifo #(
+    .CUT_READY (CHNL_FIFO_CUT_READY),
+    .MSKO      (0),
+    .DP  (CHNL_FIFO_DP),
+    .DW  (AW_CHNL_W)
+) o_axi_aw_fifo (
+  .i_rdy    (i_axi_awready),
+  .i_vld    (i_axi_awvalid),
+  .i_dat    (i_axi_aw_chnl ),
+
+  .o_rdy    (o_axi_awready ),
+  .o_vld    (o_axi_awvalid ),
+  .o_dat    (o_axi_aw_chnl),
+
+  .clk      (clk  ),
+  .rst_n    (rst_n)
+  );
+
+
+localparam W_CHNL_W = DW+(DW/8)+1;
+wire [W_CHNL_W-1:0] i_axi_w_chnl = {
+                                                i_axi_wdata,
+                                                i_axi_wstrb,
+                                                i_axi_wlast
+                                                 };
+wire [W_CHNL_W-1:0] o_axi_w_chnl;
+assign { 
+         o_axi_wdata,
+         o_axi_wstrb,
+         o_axi_wlast} = o_axi_w_chnl;
+
+sirv_gnrl_fifo #(
+    .CUT_READY (CHNL_FIFO_CUT_READY),
+    .MSKO      (0),
+    .DP  (CHNL_FIFO_DP),
+    .DW  (W_CHNL_W)
+) o_axi_wdata_fifo(
+  .i_rdy    (i_axi_wready),
+  .i_vld    (i_axi_wvalid),
+  .i_dat    (i_axi_w_chnl ),
+
+  .o_rdy    (o_axi_wready),
+  .o_vld    (o_axi_wvalid),
+  .o_dat    (o_axi_w_chnl),
+
+  .clk        (clk  ),
+  .rst_n      (rst_n)
+);
+//
+
+
+localparam R_CHNL_W = DW+2+1;
+wire [R_CHNL_W-1:0] o_axi_r_chnl = {
+                                                o_axi_rdata,
+                                                o_axi_rresp,
+                                                o_axi_rlast 
+                                                 };
+wire [R_CHNL_W-1:0] i_axi_r_chnl;
+assign {
+        i_axi_rdata,
+        i_axi_rresp,
+        i_axi_rlast} = i_axi_r_chnl;
+
+sirv_gnrl_fifo # (
+    .CUT_READY (CHNL_FIFO_CUT_READY),
+    .MSKO      (0),
+    .DP  (CHNL_FIFO_DP),
+    .DW  (R_CHNL_W)
+) o_axi_rdata_fifo(
+  .i_rdy    (o_axi_rready),
+  .i_vld    (o_axi_rvalid),
+  .i_dat    (o_axi_r_chnl ),
+
+
+  .o_rdy    (i_axi_rready),
+  .o_vld    (i_axi_rvalid),
+  .o_dat    (i_axi_r_chnl),
+  .clk      (clk  ),
+  .rst_n    (rst_n)
+);
+//
+
+
+localparam B_CHNL_W = 2;
+
+wire [B_CHNL_W -1:0] o_axi_b_chnl = {
+           o_axi_bresp
+           };
+
+wire [B_CHNL_W -1:0] i_axi_b_chnl;
+assign {
+           i_axi_bresp
+           } = i_axi_b_chnl;
+
+sirv_gnrl_fifo #(
+    .CUT_READY (CHNL_FIFO_CUT_READY),
+    .MSKO      (0),
+    .DP  (CHNL_FIFO_DP),
+    .DW  (B_CHNL_W)
+) o_axi_bresp_fifo (
+  .i_rdy    (o_axi_bready     ),
+  .i_vld    (o_axi_bvalid     ),
+  .i_dat    (o_axi_b_chnl),
+
+  .o_rdy    (i_axi_bready),
+  .o_vld    (i_axi_bvalid),
+  .o_dat    (i_axi_b_chnl),
+
+  .clk       (clk  ),
+  .rst_n     (rst_n)
+  );
+
+
+
+endmodule 
 
