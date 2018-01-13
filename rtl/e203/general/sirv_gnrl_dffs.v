@@ -63,7 +63,7 @@ begin : DFFLRS_PROC
   if (rst_n == 1'b0)
     qout_r <= {DW{1'b1}};
   else if (lden == 1'b1)
-    qout_r <= dnxt;
+    qout_r <= #1 dnxt;
 end
 
 assign qout = qout_r;
@@ -110,7 +110,7 @@ begin : DFFLR_PROC
   if (rst_n == 1'b0)
     qout_r <= {DW{1'b0}};
   else if (lden == 1'b1)
-    qout_r <= dnxt;
+    qout_r <= #1 dnxt;
 end
 
 assign qout = qout_r;
@@ -153,7 +153,7 @@ reg [DW-1:0] qout_r;
 always @(posedge clk)
 begin : DFFL_PROC
   if (lden == 1'b1)
-    qout_r <= dnxt;
+    qout_r <= #1 dnxt;
 end
 
 assign qout = qout_r;
@@ -199,7 +199,7 @@ begin : DFFRS_PROC
   if (rst_n == 1'b0)
     qout_r <= {DW{1'b1}};
   else                  
-    qout_r <= dnxt;
+    qout_r <= #1 dnxt;
 end
 
 assign qout = qout_r;
@@ -231,7 +231,7 @@ begin : DFFR_PROC
   if (rst_n == 1'b0)
     qout_r <= {DW{1'b0}};
   else                  
-    qout_r <= dnxt;
+    qout_r <= #1 dnxt;
 end
 
 assign qout = qout_r;
