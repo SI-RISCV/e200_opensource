@@ -48,6 +48,7 @@ module e203_srams(
   input  [`E203_ITCM_RAM_DW-1:0] itcm_ram_din,          
   output [`E203_ITCM_RAM_DW-1:0] itcm_ram_dout,
   input                          clk_itcm_ram,
+  input  rst_itcm,
   `endif//}
 
   `ifdef E203_HAS_DTCM //{
@@ -62,6 +63,7 @@ module e203_srams(
   input  [`E203_DTCM_RAM_DW-1:0] dtcm_ram_din,          
   output [`E203_DTCM_RAM_DW-1:0] dtcm_ram_dout,
   input                          clk_dtcm_ram,
+  input  rst_dtcm,
   `endif//}
 
   input  test_mode
@@ -84,7 +86,8 @@ module e203_srams(
     .wem  (itcm_ram_wem  ),
     .din  (itcm_ram_din  ),
     .dout (itcm_ram_dout_pre ),
-    .clk  (clk_itcm_ram      )
+    .rst_n(rst_itcm      ),
+    .clk  (clk_itcm_ram  )
     );
     
   // Bob: we dont need this bypass here, actually the DFT tools will handle this SRAM black box 
@@ -106,7 +109,8 @@ module e203_srams(
     .wem  (dtcm_ram_wem  ),
     .din  (dtcm_ram_din  ),
     .dout (dtcm_ram_dout_pre ),
-    .clk  (clk_dtcm_ram      )
+    .rst_n(rst_dtcm      ),
+    .clk  (clk_dtcm_ram  )
     );
     
   // Bob: we dont need this bypass here, actually the DFT tools will handle this SRAM black box 
