@@ -16,39 +16,31 @@
                                                                          
                                                                          
                                                                          
-module e203_fpga_soc_top(
-  input   hfclk,
-  output  hfclkrst,
+module e203_soc_top(
+
+    // This clock should comes from the crystal pad generated high speed clock (16MHz)
+  input  hfextclk,
+  output hfxoscen,// The signal to enable the crystal pad generated clock
+
+  // This clock should comes from the crystal pad generated low speed clock (32.768KHz)
+  input  lfextclk,
+  output lfxoscen,// The signal to enable the crystal pad generated clock
+
+
+  // The JTAG TCK is input, need to be pull-up
   input   io_pads_jtag_TCK_i_ival,
-  output  io_pads_jtag_TCK_o_oval,
-  output  io_pads_jtag_TCK_o_oe,
-  output  io_pads_jtag_TCK_o_ie,
-  output  io_pads_jtag_TCK_o_pue,
-  output  io_pads_jtag_TCK_o_ds,
+
+  // The JTAG TMS is input, need to be pull-up
   input   io_pads_jtag_TMS_i_ival,
-  output  io_pads_jtag_TMS_o_oval,
-  output  io_pads_jtag_TMS_o_oe,
-  output  io_pads_jtag_TMS_o_ie,
-  output  io_pads_jtag_TMS_o_pue,
-  output  io_pads_jtag_TMS_o_ds,
+
+  // The JTAG TDI is input, need to be pull-up
   input   io_pads_jtag_TDI_i_ival,
-  output  io_pads_jtag_TDI_o_oval,
-  output  io_pads_jtag_TDI_o_oe,
-  output  io_pads_jtag_TDI_o_ie,
-  output  io_pads_jtag_TDI_o_pue,
-  output  io_pads_jtag_TDI_o_ds,
-  input   io_pads_jtag_TDO_i_ival,
+
+  // The JTAG TDO is output have enable
   output  io_pads_jtag_TDO_o_oval,
   output  io_pads_jtag_TDO_o_oe,
-  output  io_pads_jtag_TDO_o_ie,
-  output  io_pads_jtag_TDO_o_pue,
-  output  io_pads_jtag_TDO_o_ds,
-  input   io_pads_jtag_TRST_n_i_ival,
-  output  io_pads_jtag_TRST_n_o_oval,
-  output  io_pads_jtag_TRST_n_o_oe,
-  output  io_pads_jtag_TRST_n_o_ie,
-  output  io_pads_jtag_TRST_n_o_pue,
-  output  io_pads_jtag_TRST_n_o_ds,
+
+  // The GPIO are all bidir pad have enables
   input   io_pads_gpio_0_i_ival,
   output  io_pads_gpio_0_o_oval,
   output  io_pads_gpio_0_o_oe,
@@ -241,12 +233,13 @@ module e203_fpga_soc_top(
   output  io_pads_gpio_31_o_ie,
   output  io_pads_gpio_31_o_pue,
   output  io_pads_gpio_31_o_ds,
-  input   io_pads_qspi_sck_i_ival,
+
+
+  //QSPI SCK and CS is output without enable
   output  io_pads_qspi_sck_o_oval,
-  output  io_pads_qspi_sck_o_oe,
-  output  io_pads_qspi_sck_o_ie,
-  output  io_pads_qspi_sck_o_pue,
-  output  io_pads_qspi_sck_o_ds,
+  output  io_pads_qspi_cs_0_o_oval,
+
+  //QSPI DQ is bidir I/O with enable, and need pull-up enable
   input   io_pads_qspi_dq_0_i_ival,
   output  io_pads_qspi_dq_0_o_oval,
   output  io_pads_qspi_dq_0_o_oe,
@@ -271,40 +264,29 @@ module e203_fpga_soc_top(
   output  io_pads_qspi_dq_3_o_ie,
   output  io_pads_qspi_dq_3_o_pue,
   output  io_pads_qspi_dq_3_o_ds,
-  input   io_pads_qspi_cs_0_i_ival,
-  output  io_pads_qspi_cs_0_o_oval,
-  output  io_pads_qspi_cs_0_o_oe,
-  output  io_pads_qspi_cs_0_o_ie,
-  output  io_pads_qspi_cs_0_o_pue,
-  output  io_pads_qspi_cs_0_o_ds,
+
+  // Erst is input need to be pull-up by default
   input   io_pads_aon_erst_n_i_ival,
-  output  io_pads_aon_erst_n_o_oval,
-  output  io_pads_aon_erst_n_o_oe,
-  output  io_pads_aon_erst_n_o_ie,
-  output  io_pads_aon_erst_n_o_pue,
-  output  io_pads_aon_erst_n_o_ds,
-  input   io_pads_aon_lfextclk_i_ival,
-  output  io_pads_aon_lfextclk_o_oval,
-  output  io_pads_aon_lfextclk_o_oe,
-  output  io_pads_aon_lfextclk_o_ie,
-  output  io_pads_aon_lfextclk_o_pue,
-  output  io_pads_aon_lfextclk_o_ds,
-  input   io_pads_aon_pmu_dwakeup_n_i_ival,
-  output  io_pads_aon_pmu_dwakeup_n_o_oval,
-  output  io_pads_aon_pmu_dwakeup_n_o_oe,
-  output  io_pads_aon_pmu_dwakeup_n_o_ie,
-  output  io_pads_aon_pmu_dwakeup_n_o_pue,
-  output  io_pads_aon_pmu_dwakeup_n_o_ds,
-  input   io_pads_aon_pmu_vddpaden_i_ival,
-  output  io_pads_aon_pmu_vddpaden_o_oval,
-  output  io_pads_aon_pmu_vddpaden_o_oe,
-  output  io_pads_aon_pmu_vddpaden_o_ie,
-  output  io_pads_aon_pmu_vddpaden_o_pue,
-  output  io_pads_aon_pmu_vddpaden_o_ds
+
+  // dbgmode are inputs need to be pull-up by default
+  input  io_pads_dbgmode0_n_i_ival,
+  input  io_pads_dbgmode1_n_i_ival,
+  input  io_pads_dbgmode2_n_i_ival,
+
+  // BootRom is input need to be pull-up by default
+  input  io_pads_bootrom_n_i_ival,
+
+
+  // dwakeup is input need to be pull-up by default
+  input  io_pads_aon_pmu_dwakeup_n_i_ival,
+
+      // PMU output is just output without enable
+  output io_pads_aon_pmu_padrst_o_oval,
+  output io_pads_aon_pmu_vddpaden_o_oval 
 );
 
 
-  
+ 
  wire sysper_icb_cmd_valid;
  wire sysper_icb_cmd_ready;
 
@@ -317,13 +299,6 @@ module e203_fpga_soc_top(
  e203_subsys_top u_e203_subsys_top(
     .core_mhartid      (1'b0),
   
-  `ifdef FPGA_SOURCE //{
-      // This is the external QSPI flash base address
-    .pc_rtvec               (32'h2040_0000),
-  `else//}{
-    .pc_rtvec               (32'h0000_1000),
-  `endif//}
-
 
 
 
@@ -393,297 +368,353 @@ module e203_fpga_soc_top(
   .sysmem_icb_rsp_rdata(32'b0),
 
   .io_pads_jtag_TCK_i_ival    (io_pads_jtag_TCK_i_ival    ),
-  .io_pads_jtag_TCK_o_oval    (io_pads_jtag_TCK_o_oval    ),
-  .io_pads_jtag_TCK_o_oe      (io_pads_jtag_TCK_o_oe      ),
-  .io_pads_jtag_TCK_o_ie      (io_pads_jtag_TCK_o_ie      ),
-  .io_pads_jtag_TCK_o_pue     (io_pads_jtag_TCK_o_pue     ),
-  .io_pads_jtag_TCK_o_ds      (io_pads_jtag_TCK_o_ds      ),
+  .io_pads_jtag_TCK_o_oval    (),
+  .io_pads_jtag_TCK_o_oe      (),
+  .io_pads_jtag_TCK_o_ie      (),
+  .io_pads_jtag_TCK_o_pue     (),
+  .io_pads_jtag_TCK_o_ds      (),
+
   .io_pads_jtag_TMS_i_ival    (io_pads_jtag_TMS_i_ival    ),
-  .io_pads_jtag_TMS_o_oval    (io_pads_jtag_TMS_o_oval    ),
-  .io_pads_jtag_TMS_o_oe      (io_pads_jtag_TMS_o_oe      ),
-  .io_pads_jtag_TMS_o_ie      (io_pads_jtag_TMS_o_ie      ),
-  .io_pads_jtag_TMS_o_pue     (io_pads_jtag_TMS_o_pue     ),
-  .io_pads_jtag_TMS_o_ds      (io_pads_jtag_TMS_o_ds      ),
+  .io_pads_jtag_TMS_o_oval    (),
+  .io_pads_jtag_TMS_o_oe      (),
+  .io_pads_jtag_TMS_o_ie      (),
+  .io_pads_jtag_TMS_o_pue     (),
+  .io_pads_jtag_TMS_o_ds      (),
+
   .io_pads_jtag_TDI_i_ival    (io_pads_jtag_TDI_i_ival    ),
-  .io_pads_jtag_TDI_o_oval    (io_pads_jtag_TDI_o_oval    ),
-  .io_pads_jtag_TDI_o_oe      (io_pads_jtag_TDI_o_oe      ),
-  .io_pads_jtag_TDI_o_ie      (io_pads_jtag_TDI_o_ie      ),
-  .io_pads_jtag_TDI_o_pue     (io_pads_jtag_TDI_o_pue     ),
-  .io_pads_jtag_TDI_o_ds      (io_pads_jtag_TDI_o_ds      ),
-  .io_pads_jtag_TDO_i_ival    (io_pads_jtag_TDO_i_ival    ),
+  .io_pads_jtag_TDI_o_oval    (),
+  .io_pads_jtag_TDI_o_oe      (),
+  .io_pads_jtag_TDI_o_ie      (),
+  .io_pads_jtag_TDI_o_pue     (),
+  .io_pads_jtag_TDI_o_ds      (),
+
+  .io_pads_jtag_TDO_i_ival    (1'b1    ),
   .io_pads_jtag_TDO_o_oval    (io_pads_jtag_TDO_o_oval    ),
   .io_pads_jtag_TDO_o_oe      (io_pads_jtag_TDO_o_oe      ),
-  .io_pads_jtag_TDO_o_ie      (io_pads_jtag_TDO_o_ie      ),
-  .io_pads_jtag_TDO_o_pue     (io_pads_jtag_TDO_o_pue     ),
-  .io_pads_jtag_TDO_o_ds      (io_pads_jtag_TDO_o_ds      ),
-  .io_pads_jtag_TRST_n_i_ival (io_pads_jtag_TRST_n_i_ival ),
-  .io_pads_jtag_TRST_n_o_oval (io_pads_jtag_TRST_n_o_oval ),
-  .io_pads_jtag_TRST_n_o_oe   (io_pads_jtag_TRST_n_o_oe   ),
-  .io_pads_jtag_TRST_n_o_ie   (io_pads_jtag_TRST_n_o_ie   ),
-  .io_pads_jtag_TRST_n_o_pue  (io_pads_jtag_TRST_n_o_pue  ),
-  .io_pads_jtag_TRST_n_o_ds   (io_pads_jtag_TRST_n_o_ds   ),
+  .io_pads_jtag_TDO_o_ie      (),
+  .io_pads_jtag_TDO_o_pue     (),
+  .io_pads_jtag_TDO_o_ds      (),
+
+  .io_pads_jtag_TRST_n_i_ival (1'b1 ),
+  .io_pads_jtag_TRST_n_o_oval (),
+  .io_pads_jtag_TRST_n_o_oe   (),
+  .io_pads_jtag_TRST_n_o_ie   (),
+  .io_pads_jtag_TRST_n_o_pue  (),
+  .io_pads_jtag_TRST_n_o_ds   (),
 
   .test_mode(1'b0),
   .test_iso_override(1'b0),
 
-  .io_pads_gpio_0_i_ival           (io_pads_gpio_0_i_ival),
+  .io_pads_gpio_0_i_ival           (io_pads_gpio_0_i_ival & io_pads_gpio_0_o_ie),
   .io_pads_gpio_0_o_oval           (io_pads_gpio_0_o_oval),
   .io_pads_gpio_0_o_oe             (io_pads_gpio_0_o_oe),
   .io_pads_gpio_0_o_ie             (io_pads_gpio_0_o_ie),
   .io_pads_gpio_0_o_pue            (io_pads_gpio_0_o_pue),
   .io_pads_gpio_0_o_ds             (io_pads_gpio_0_o_ds),
-  .io_pads_gpio_1_i_ival           (io_pads_gpio_1_i_ival),
+
+  .io_pads_gpio_1_i_ival           (io_pads_gpio_1_i_ival & io_pads_gpio_1_o_ie),
   .io_pads_gpio_1_o_oval           (io_pads_gpio_1_o_oval),
   .io_pads_gpio_1_o_oe             (io_pads_gpio_1_o_oe),
   .io_pads_gpio_1_o_ie             (io_pads_gpio_1_o_ie),
   .io_pads_gpio_1_o_pue            (io_pads_gpio_1_o_pue),
   .io_pads_gpio_1_o_ds             (io_pads_gpio_1_o_ds),
-  .io_pads_gpio_2_i_ival           (io_pads_gpio_2_i_ival),
+
+  .io_pads_gpio_2_i_ival           (io_pads_gpio_2_i_ival & io_pads_gpio_2_o_ie),
   .io_pads_gpio_2_o_oval           (io_pads_gpio_2_o_oval),
   .io_pads_gpio_2_o_oe             (io_pads_gpio_2_o_oe),
   .io_pads_gpio_2_o_ie             (io_pads_gpio_2_o_ie),
   .io_pads_gpio_2_o_pue            (io_pads_gpio_2_o_pue),
   .io_pads_gpio_2_o_ds             (io_pads_gpio_2_o_ds),
-  .io_pads_gpio_3_i_ival           (io_pads_gpio_3_i_ival),
+
+  .io_pads_gpio_3_i_ival           (io_pads_gpio_3_i_ival & io_pads_gpio_3_o_ie),
   .io_pads_gpio_3_o_oval           (io_pads_gpio_3_o_oval),
   .io_pads_gpio_3_o_oe             (io_pads_gpio_3_o_oe),
   .io_pads_gpio_3_o_ie             (io_pads_gpio_3_o_ie),
   .io_pads_gpio_3_o_pue            (io_pads_gpio_3_o_pue),
   .io_pads_gpio_3_o_ds             (io_pads_gpio_3_o_ds),
-  .io_pads_gpio_4_i_ival           (io_pads_gpio_4_i_ival),
+
+  .io_pads_gpio_4_i_ival           (io_pads_gpio_4_i_ival & io_pads_gpio_4_o_ie),
   .io_pads_gpio_4_o_oval           (io_pads_gpio_4_o_oval),
   .io_pads_gpio_4_o_oe             (io_pads_gpio_4_o_oe),
   .io_pads_gpio_4_o_ie             (io_pads_gpio_4_o_ie),
   .io_pads_gpio_4_o_pue            (io_pads_gpio_4_o_pue),
   .io_pads_gpio_4_o_ds             (io_pads_gpio_4_o_ds),
-  .io_pads_gpio_5_i_ival           (io_pads_gpio_5_i_ival),
+
+  .io_pads_gpio_5_i_ival           (io_pads_gpio_5_i_ival & io_pads_gpio_5_o_ie),
   .io_pads_gpio_5_o_oval           (io_pads_gpio_5_o_oval),
   .io_pads_gpio_5_o_oe             (io_pads_gpio_5_o_oe),
   .io_pads_gpio_5_o_ie             (io_pads_gpio_5_o_ie),
   .io_pads_gpio_5_o_pue            (io_pads_gpio_5_o_pue),
   .io_pads_gpio_5_o_ds             (io_pads_gpio_5_o_ds),
-  .io_pads_gpio_6_i_ival           (io_pads_gpio_6_i_ival),
+
+  .io_pads_gpio_6_i_ival           (io_pads_gpio_6_i_ival & io_pads_gpio_6_o_ie),
   .io_pads_gpio_6_o_oval           (io_pads_gpio_6_o_oval),
   .io_pads_gpio_6_o_oe             (io_pads_gpio_6_o_oe),
   .io_pads_gpio_6_o_ie             (io_pads_gpio_6_o_ie),
   .io_pads_gpio_6_o_pue            (io_pads_gpio_6_o_pue),
   .io_pads_gpio_6_o_ds             (io_pads_gpio_6_o_ds),
-  .io_pads_gpio_7_i_ival           (io_pads_gpio_7_i_ival),
+
+  .io_pads_gpio_7_i_ival           (io_pads_gpio_7_i_ival & io_pads_gpio_7_o_ie),
   .io_pads_gpio_7_o_oval           (io_pads_gpio_7_o_oval),
   .io_pads_gpio_7_o_oe             (io_pads_gpio_7_o_oe),
   .io_pads_gpio_7_o_ie             (io_pads_gpio_7_o_ie),
   .io_pads_gpio_7_o_pue            (io_pads_gpio_7_o_pue),
   .io_pads_gpio_7_o_ds             (io_pads_gpio_7_o_ds),
-  .io_pads_gpio_8_i_ival           (io_pads_gpio_8_i_ival),
+
+  .io_pads_gpio_8_i_ival           (io_pads_gpio_8_i_ival & io_pads_gpio_8_o_ie),
   .io_pads_gpio_8_o_oval           (io_pads_gpio_8_o_oval),
   .io_pads_gpio_8_o_oe             (io_pads_gpio_8_o_oe),
   .io_pads_gpio_8_o_ie             (io_pads_gpio_8_o_ie),
   .io_pads_gpio_8_o_pue            (io_pads_gpio_8_o_pue),
   .io_pads_gpio_8_o_ds             (io_pads_gpio_8_o_ds),
-  .io_pads_gpio_9_i_ival           (io_pads_gpio_9_i_ival),
+
+  .io_pads_gpio_9_i_ival           (io_pads_gpio_9_i_ival & io_pads_gpio_9_o_ie),
   .io_pads_gpio_9_o_oval           (io_pads_gpio_9_o_oval),
   .io_pads_gpio_9_o_oe             (io_pads_gpio_9_o_oe),
   .io_pads_gpio_9_o_ie             (io_pads_gpio_9_o_ie),
   .io_pads_gpio_9_o_pue            (io_pads_gpio_9_o_pue),
   .io_pads_gpio_9_o_ds             (io_pads_gpio_9_o_ds),
-  .io_pads_gpio_10_i_ival          (io_pads_gpio_10_i_ival),
+
+  .io_pads_gpio_10_i_ival          (io_pads_gpio_10_i_ival & io_pads_gpio_10_o_ie),
   .io_pads_gpio_10_o_oval          (io_pads_gpio_10_o_oval),
   .io_pads_gpio_10_o_oe            (io_pads_gpio_10_o_oe),
   .io_pads_gpio_10_o_ie            (io_pads_gpio_10_o_ie),
   .io_pads_gpio_10_o_pue           (io_pads_gpio_10_o_pue),
   .io_pads_gpio_10_o_ds            (io_pads_gpio_10_o_ds),
-  .io_pads_gpio_11_i_ival          (io_pads_gpio_11_i_ival),
+
+  .io_pads_gpio_11_i_ival          (io_pads_gpio_11_i_ival & io_pads_gpio_11_o_ie),
   .io_pads_gpio_11_o_oval          (io_pads_gpio_11_o_oval),
   .io_pads_gpio_11_o_oe            (io_pads_gpio_11_o_oe),
   .io_pads_gpio_11_o_ie            (io_pads_gpio_11_o_ie),
   .io_pads_gpio_11_o_pue           (io_pads_gpio_11_o_pue),
   .io_pads_gpio_11_o_ds            (io_pads_gpio_11_o_ds),
-  .io_pads_gpio_12_i_ival          (io_pads_gpio_12_i_ival),
+
+  .io_pads_gpio_12_i_ival          (io_pads_gpio_12_i_ival & io_pads_gpio_12_o_ie),
   .io_pads_gpio_12_o_oval          (io_pads_gpio_12_o_oval),
   .io_pads_gpio_12_o_oe            (io_pads_gpio_12_o_oe),
   .io_pads_gpio_12_o_ie            (io_pads_gpio_12_o_ie),
   .io_pads_gpio_12_o_pue           (io_pads_gpio_12_o_pue),
   .io_pads_gpio_12_o_ds            (io_pads_gpio_12_o_ds),
-  .io_pads_gpio_13_i_ival          (io_pads_gpio_13_i_ival),
+
+  .io_pads_gpio_13_i_ival          (io_pads_gpio_13_i_ival & io_pads_gpio_13_o_ie),
   .io_pads_gpio_13_o_oval          (io_pads_gpio_13_o_oval),
   .io_pads_gpio_13_o_oe            (io_pads_gpio_13_o_oe),
   .io_pads_gpio_13_o_ie            (io_pads_gpio_13_o_ie),
   .io_pads_gpio_13_o_pue           (io_pads_gpio_13_o_pue),
   .io_pads_gpio_13_o_ds            (io_pads_gpio_13_o_ds),
-  .io_pads_gpio_14_i_ival          (io_pads_gpio_14_i_ival),
+
+  .io_pads_gpio_14_i_ival          (io_pads_gpio_14_i_ival & io_pads_gpio_14_o_ie),
   .io_pads_gpio_14_o_oval          (io_pads_gpio_14_o_oval),
   .io_pads_gpio_14_o_oe            (io_pads_gpio_14_o_oe),
   .io_pads_gpio_14_o_ie            (io_pads_gpio_14_o_ie),
   .io_pads_gpio_14_o_pue           (io_pads_gpio_14_o_pue),
   .io_pads_gpio_14_o_ds            (io_pads_gpio_14_o_ds),
-  .io_pads_gpio_15_i_ival          (io_pads_gpio_15_i_ival),
+
+  .io_pads_gpio_15_i_ival          (io_pads_gpio_15_i_ival & io_pads_gpio_15_o_ie),
   .io_pads_gpio_15_o_oval          (io_pads_gpio_15_o_oval),
   .io_pads_gpio_15_o_oe            (io_pads_gpio_15_o_oe),
   .io_pads_gpio_15_o_ie            (io_pads_gpio_15_o_ie),
   .io_pads_gpio_15_o_pue           (io_pads_gpio_15_o_pue),
   .io_pads_gpio_15_o_ds            (io_pads_gpio_15_o_ds),
-  .io_pads_gpio_16_i_ival          (io_pads_gpio_16_i_ival),
+
+  .io_pads_gpio_16_i_ival          (io_pads_gpio_16_i_ival & io_pads_gpio_16_o_ie),
   .io_pads_gpio_16_o_oval          (io_pads_gpio_16_o_oval),
   .io_pads_gpio_16_o_oe            (io_pads_gpio_16_o_oe),
   .io_pads_gpio_16_o_ie            (io_pads_gpio_16_o_ie),
   .io_pads_gpio_16_o_pue           (io_pads_gpio_16_o_pue),
   .io_pads_gpio_16_o_ds            (io_pads_gpio_16_o_ds),
-  .io_pads_gpio_17_i_ival          (io_pads_gpio_17_i_ival),
+
+  .io_pads_gpio_17_i_ival          (io_pads_gpio_17_i_ival & io_pads_gpio_17_o_ie),
   .io_pads_gpio_17_o_oval          (io_pads_gpio_17_o_oval),
   .io_pads_gpio_17_o_oe            (io_pads_gpio_17_o_oe),
   .io_pads_gpio_17_o_ie            (io_pads_gpio_17_o_ie),
   .io_pads_gpio_17_o_pue           (io_pads_gpio_17_o_pue),
   .io_pads_gpio_17_o_ds            (io_pads_gpio_17_o_ds),
-  .io_pads_gpio_18_i_ival          (io_pads_gpio_18_i_ival),
+
+  .io_pads_gpio_18_i_ival          (io_pads_gpio_18_i_ival & io_pads_gpio_18_o_ie),
   .io_pads_gpio_18_o_oval          (io_pads_gpio_18_o_oval),
   .io_pads_gpio_18_o_oe            (io_pads_gpio_18_o_oe),
   .io_pads_gpio_18_o_ie            (io_pads_gpio_18_o_ie),
   .io_pads_gpio_18_o_pue           (io_pads_gpio_18_o_pue),
   .io_pads_gpio_18_o_ds            (io_pads_gpio_18_o_ds),
-  .io_pads_gpio_19_i_ival          (io_pads_gpio_19_i_ival),
+
+  .io_pads_gpio_19_i_ival          (io_pads_gpio_19_i_ival & io_pads_gpio_19_o_ie),
   .io_pads_gpio_19_o_oval          (io_pads_gpio_19_o_oval),
   .io_pads_gpio_19_o_oe            (io_pads_gpio_19_o_oe),
   .io_pads_gpio_19_o_ie            (io_pads_gpio_19_o_ie),
   .io_pads_gpio_19_o_pue           (io_pads_gpio_19_o_pue),
   .io_pads_gpio_19_o_ds            (io_pads_gpio_19_o_ds),
-  .io_pads_gpio_20_i_ival          (io_pads_gpio_20_i_ival),
+
+  .io_pads_gpio_20_i_ival          (io_pads_gpio_20_i_ival & io_pads_gpio_20_o_ie),
   .io_pads_gpio_20_o_oval          (io_pads_gpio_20_o_oval),
   .io_pads_gpio_20_o_oe            (io_pads_gpio_20_o_oe),
   .io_pads_gpio_20_o_ie            (io_pads_gpio_20_o_ie),
   .io_pads_gpio_20_o_pue           (io_pads_gpio_20_o_pue),
   .io_pads_gpio_20_o_ds            (io_pads_gpio_20_o_ds),
-  .io_pads_gpio_21_i_ival          (io_pads_gpio_21_i_ival),
+
+  .io_pads_gpio_21_i_ival          (io_pads_gpio_21_i_ival & io_pads_gpio_21_o_ie),
   .io_pads_gpio_21_o_oval          (io_pads_gpio_21_o_oval),
   .io_pads_gpio_21_o_oe            (io_pads_gpio_21_o_oe),
   .io_pads_gpio_21_o_ie            (io_pads_gpio_21_o_ie),
   .io_pads_gpio_21_o_pue           (io_pads_gpio_21_o_pue),
   .io_pads_gpio_21_o_ds            (io_pads_gpio_21_o_ds),
-  .io_pads_gpio_22_i_ival          (io_pads_gpio_22_i_ival),
+
+  .io_pads_gpio_22_i_ival          (io_pads_gpio_22_i_ival & io_pads_gpio_22_o_ie),
   .io_pads_gpio_22_o_oval          (io_pads_gpio_22_o_oval),
   .io_pads_gpio_22_o_oe            (io_pads_gpio_22_o_oe),
   .io_pads_gpio_22_o_ie            (io_pads_gpio_22_o_ie),
   .io_pads_gpio_22_o_pue           (io_pads_gpio_22_o_pue),
   .io_pads_gpio_22_o_ds            (io_pads_gpio_22_o_ds),
-  .io_pads_gpio_23_i_ival          (io_pads_gpio_23_i_ival),
+
+  .io_pads_gpio_23_i_ival          (io_pads_gpio_23_i_ival & io_pads_gpio_23_o_ie),
   .io_pads_gpio_23_o_oval          (io_pads_gpio_23_o_oval),
   .io_pads_gpio_23_o_oe            (io_pads_gpio_23_o_oe),
   .io_pads_gpio_23_o_ie            (io_pads_gpio_23_o_ie),
   .io_pads_gpio_23_o_pue           (io_pads_gpio_23_o_pue),
   .io_pads_gpio_23_o_ds            (io_pads_gpio_23_o_ds),
-  .io_pads_gpio_24_i_ival          (io_pads_gpio_24_i_ival),
+
+  .io_pads_gpio_24_i_ival          (io_pads_gpio_24_i_ival & io_pads_gpio_24_o_ie),
   .io_pads_gpio_24_o_oval          (io_pads_gpio_24_o_oval),
   .io_pads_gpio_24_o_oe            (io_pads_gpio_24_o_oe),
   .io_pads_gpio_24_o_ie            (io_pads_gpio_24_o_ie),
   .io_pads_gpio_24_o_pue           (io_pads_gpio_24_o_pue),
   .io_pads_gpio_24_o_ds            (io_pads_gpio_24_o_ds),
-  .io_pads_gpio_25_i_ival          (io_pads_gpio_25_i_ival),
+
+  .io_pads_gpio_25_i_ival          (io_pads_gpio_25_i_ival & io_pads_gpio_25_o_ie),
   .io_pads_gpio_25_o_oval          (io_pads_gpio_25_o_oval),
   .io_pads_gpio_25_o_oe            (io_pads_gpio_25_o_oe),
   .io_pads_gpio_25_o_ie            (io_pads_gpio_25_o_ie),
   .io_pads_gpio_25_o_pue           (io_pads_gpio_25_o_pue),
   .io_pads_gpio_25_o_ds            (io_pads_gpio_25_o_ds),
-  .io_pads_gpio_26_i_ival          (io_pads_gpio_26_i_ival),
+
+  .io_pads_gpio_26_i_ival          (io_pads_gpio_26_i_ival & io_pads_gpio_26_o_ie),
   .io_pads_gpio_26_o_oval          (io_pads_gpio_26_o_oval),
   .io_pads_gpio_26_o_oe            (io_pads_gpio_26_o_oe),
   .io_pads_gpio_26_o_ie            (io_pads_gpio_26_o_ie),
   .io_pads_gpio_26_o_pue           (io_pads_gpio_26_o_pue),
   .io_pads_gpio_26_o_ds            (io_pads_gpio_26_o_ds),
-  .io_pads_gpio_27_i_ival          (io_pads_gpio_27_i_ival),
+
+  .io_pads_gpio_27_i_ival          (io_pads_gpio_27_i_ival & io_pads_gpio_27_o_ie),
   .io_pads_gpio_27_o_oval          (io_pads_gpio_27_o_oval),
   .io_pads_gpio_27_o_oe            (io_pads_gpio_27_o_oe),
   .io_pads_gpio_27_o_ie            (io_pads_gpio_27_o_ie),
   .io_pads_gpio_27_o_pue           (io_pads_gpio_27_o_pue),
   .io_pads_gpio_27_o_ds            (io_pads_gpio_27_o_ds),
-  .io_pads_gpio_28_i_ival          (io_pads_gpio_28_i_ival),
+
+  .io_pads_gpio_28_i_ival          (io_pads_gpio_28_i_ival & io_pads_gpio_28_o_ie),
   .io_pads_gpio_28_o_oval          (io_pads_gpio_28_o_oval),
   .io_pads_gpio_28_o_oe            (io_pads_gpio_28_o_oe),
   .io_pads_gpio_28_o_ie            (io_pads_gpio_28_o_ie),
   .io_pads_gpio_28_o_pue           (io_pads_gpio_28_o_pue),
   .io_pads_gpio_28_o_ds            (io_pads_gpio_28_o_ds),
-  .io_pads_gpio_29_i_ival          (io_pads_gpio_29_i_ival),
+
+  .io_pads_gpio_29_i_ival          (io_pads_gpio_29_i_ival & io_pads_gpio_29_o_ie),
   .io_pads_gpio_29_o_oval          (io_pads_gpio_29_o_oval),
   .io_pads_gpio_29_o_oe            (io_pads_gpio_29_o_oe),
   .io_pads_gpio_29_o_ie            (io_pads_gpio_29_o_ie),
   .io_pads_gpio_29_o_pue           (io_pads_gpio_29_o_pue),
   .io_pads_gpio_29_o_ds            (io_pads_gpio_29_o_ds),
-  .io_pads_gpio_30_i_ival          (io_pads_gpio_30_i_ival),
+
+  .io_pads_gpio_30_i_ival          (io_pads_gpio_30_i_ival & io_pads_gpio_30_o_ie),
   .io_pads_gpio_30_o_oval          (io_pads_gpio_30_o_oval),
   .io_pads_gpio_30_o_oe            (io_pads_gpio_30_o_oe),
   .io_pads_gpio_30_o_ie            (io_pads_gpio_30_o_ie),
   .io_pads_gpio_30_o_pue           (io_pads_gpio_30_o_pue),
   .io_pads_gpio_30_o_ds            (io_pads_gpio_30_o_ds),
-  .io_pads_gpio_31_i_ival          (io_pads_gpio_31_i_ival),
+
+  .io_pads_gpio_31_i_ival          (io_pads_gpio_31_i_ival & io_pads_gpio_31_o_ie),
   .io_pads_gpio_31_o_oval          (io_pads_gpio_31_o_oval),
   .io_pads_gpio_31_o_oe            (io_pads_gpio_31_o_oe),
   .io_pads_gpio_31_o_ie            (io_pads_gpio_31_o_ie),
   .io_pads_gpio_31_o_pue           (io_pads_gpio_31_o_pue),
   .io_pads_gpio_31_o_ds            (io_pads_gpio_31_o_ds),
 
-  .io_pads_qspi_sck_i_ival    (io_pads_qspi_sck_i_ival ),
+  .io_pads_qspi_sck_i_ival    (1'b1 ),
   .io_pads_qspi_sck_o_oval    (io_pads_qspi_sck_o_oval ),
-  .io_pads_qspi_sck_o_oe      (io_pads_qspi_sck_o_oe   ),
-  .io_pads_qspi_sck_o_ie      (io_pads_qspi_sck_o_ie   ),
-  .io_pads_qspi_sck_o_pue     (io_pads_qspi_sck_o_pue  ),
-  .io_pads_qspi_sck_o_ds      (io_pads_qspi_sck_o_ds   ),
-  .io_pads_qspi_dq_0_i_ival   (io_pads_qspi_dq_0_i_ival),
+  .io_pads_qspi_sck_o_oe      (),
+  .io_pads_qspi_sck_o_ie      (),
+  .io_pads_qspi_sck_o_pue     (),
+  .io_pads_qspi_sck_o_ds      (),
+  .io_pads_qspi_dq_0_i_ival   (io_pads_qspi_dq_0_i_ival & io_pads_qspi_dq_0_o_ie),
   .io_pads_qspi_dq_0_o_oval   (io_pads_qspi_dq_0_o_oval),
   .io_pads_qspi_dq_0_o_oe     (io_pads_qspi_dq_0_o_oe  ),
   .io_pads_qspi_dq_0_o_ie     (io_pads_qspi_dq_0_o_ie  ),
   .io_pads_qspi_dq_0_o_pue    (io_pads_qspi_dq_0_o_pue ),
   .io_pads_qspi_dq_0_o_ds     (io_pads_qspi_dq_0_o_ds  ),
-  .io_pads_qspi_dq_1_i_ival   (io_pads_qspi_dq_1_i_ival),
+
+  .io_pads_qspi_dq_1_i_ival   (io_pads_qspi_dq_1_i_ival & io_pads_qspi_dq_1_o_ie),
   .io_pads_qspi_dq_1_o_oval   (io_pads_qspi_dq_1_o_oval),
   .io_pads_qspi_dq_1_o_oe     (io_pads_qspi_dq_1_o_oe  ),
   .io_pads_qspi_dq_1_o_ie     (io_pads_qspi_dq_1_o_ie  ),
   .io_pads_qspi_dq_1_o_pue    (io_pads_qspi_dq_1_o_pue ),
   .io_pads_qspi_dq_1_o_ds     (io_pads_qspi_dq_1_o_ds  ),
-  .io_pads_qspi_dq_2_i_ival   (io_pads_qspi_dq_2_i_ival),
+
+  .io_pads_qspi_dq_2_i_ival   (io_pads_qspi_dq_2_i_ival & io_pads_qspi_dq_2_o_ie),
   .io_pads_qspi_dq_2_o_oval   (io_pads_qspi_dq_2_o_oval),
   .io_pads_qspi_dq_2_o_oe     (io_pads_qspi_dq_2_o_oe  ),
   .io_pads_qspi_dq_2_o_ie     (io_pads_qspi_dq_2_o_ie  ),
   .io_pads_qspi_dq_2_o_pue    (io_pads_qspi_dq_2_o_pue ),
   .io_pads_qspi_dq_2_o_ds     (io_pads_qspi_dq_2_o_ds  ),
-  .io_pads_qspi_dq_3_i_ival   (io_pads_qspi_dq_3_i_ival),
+
+  .io_pads_qspi_dq_3_i_ival   (io_pads_qspi_dq_3_i_ival & io_pads_qspi_dq_3_o_ie),
   .io_pads_qspi_dq_3_o_oval   (io_pads_qspi_dq_3_o_oval),
   .io_pads_qspi_dq_3_o_oe     (io_pads_qspi_dq_3_o_oe  ),
   .io_pads_qspi_dq_3_o_ie     (io_pads_qspi_dq_3_o_ie  ),
   .io_pads_qspi_dq_3_o_pue    (io_pads_qspi_dq_3_o_pue ),
   .io_pads_qspi_dq_3_o_ds     (io_pads_qspi_dq_3_o_ds  ),
-  .io_pads_qspi_cs_0_i_ival   (io_pads_qspi_cs_0_i_ival),
+  .io_pads_qspi_cs_0_i_ival   (1'b1),
   .io_pads_qspi_cs_0_o_oval   (io_pads_qspi_cs_0_o_oval),
-  .io_pads_qspi_cs_0_o_oe     (io_pads_qspi_cs_0_o_oe  ),
-  .io_pads_qspi_cs_0_o_ie     (io_pads_qspi_cs_0_o_ie  ),
-  .io_pads_qspi_cs_0_o_pue    (io_pads_qspi_cs_0_o_pue ),
-  .io_pads_qspi_cs_0_o_ds     (io_pads_qspi_cs_0_o_ds  ),
+  .io_pads_qspi_cs_0_o_oe     (),
+  .io_pads_qspi_cs_0_o_ie     (),
+  .io_pads_qspi_cs_0_o_pue    (),
+  .io_pads_qspi_cs_0_o_ds     (),
 
-  .hfclk (hfclk), 
+    .hfextclk        (hfextclk),
+    .hfxoscen        (hfxoscen),
+    .lfextclk        (lfextclk),
+    .lfxoscen        (lfxoscen),
 
   .io_pads_aon_erst_n_i_ival        (io_pads_aon_erst_n_i_ival       ), 
-  .io_pads_aon_erst_n_o_oval        (io_pads_aon_erst_n_o_oval       ),
-  .io_pads_aon_erst_n_o_oe          (io_pads_aon_erst_n_o_oe         ),
-  .io_pads_aon_erst_n_o_ie          (io_pads_aon_erst_n_o_ie         ),
-  .io_pads_aon_erst_n_o_pue         (io_pads_aon_erst_n_o_pue        ),
-  .io_pads_aon_erst_n_o_ds          (io_pads_aon_erst_n_o_ds         ),
-  .io_pads_aon_lfextclk_i_ival      (io_pads_aon_lfextclk_i_ival     ),
-  .io_pads_aon_lfextclk_o_oval      (io_pads_aon_lfextclk_o_oval     ),
-  .io_pads_aon_lfextclk_o_oe        (io_pads_aon_lfextclk_o_oe       ),
-  .io_pads_aon_lfextclk_o_ie        (io_pads_aon_lfextclk_o_ie       ),
-  .io_pads_aon_lfextclk_o_pue       (io_pads_aon_lfextclk_o_pue      ),
-  .io_pads_aon_lfextclk_o_ds        (io_pads_aon_lfextclk_o_ds       ),
+  .io_pads_aon_erst_n_o_oval        (),
+  .io_pads_aon_erst_n_o_oe          (),
+  .io_pads_aon_erst_n_o_ie          (),
+  .io_pads_aon_erst_n_o_pue         (),
+  .io_pads_aon_erst_n_o_ds          (),
   .io_pads_aon_pmu_dwakeup_n_i_ival (io_pads_aon_pmu_dwakeup_n_i_ival),
-  .io_pads_aon_pmu_dwakeup_n_o_oval (io_pads_aon_pmu_dwakeup_n_o_oval),
-  .io_pads_aon_pmu_dwakeup_n_o_oe   (io_pads_aon_pmu_dwakeup_n_o_oe  ),
-  .io_pads_aon_pmu_dwakeup_n_o_ie   (io_pads_aon_pmu_dwakeup_n_o_ie  ),
-  .io_pads_aon_pmu_dwakeup_n_o_pue  (io_pads_aon_pmu_dwakeup_n_o_pue ),
-  .io_pads_aon_pmu_dwakeup_n_o_ds   (io_pads_aon_pmu_dwakeup_n_o_ds  ),
-  .io_pads_aon_pmu_vddpaden_i_ival  (io_pads_aon_pmu_vddpaden_i_ival ),
+  .io_pads_aon_pmu_dwakeup_n_o_oval (),
+  .io_pads_aon_pmu_dwakeup_n_o_oe   (),
+  .io_pads_aon_pmu_dwakeup_n_o_ie   (),
+  .io_pads_aon_pmu_dwakeup_n_o_pue  (),
+  .io_pads_aon_pmu_dwakeup_n_o_ds   (),
+  .io_pads_aon_pmu_vddpaden_i_ival  (1'b1 ),
   .io_pads_aon_pmu_vddpaden_o_oval  (io_pads_aon_pmu_vddpaden_o_oval ),
-  .io_pads_aon_pmu_vddpaden_o_oe    (io_pads_aon_pmu_vddpaden_o_oe   ),
-  .io_pads_aon_pmu_vddpaden_o_ie    (io_pads_aon_pmu_vddpaden_o_ie   ),
-  .io_pads_aon_pmu_vddpaden_o_pue   (io_pads_aon_pmu_vddpaden_o_pue  ),
-  .io_pads_aon_pmu_vddpaden_o_ds    (io_pads_aon_pmu_vddpaden_o_ds   ),
+  .io_pads_aon_pmu_vddpaden_o_oe    (),
+  .io_pads_aon_pmu_vddpaden_o_ie    (),
+  .io_pads_aon_pmu_vddpaden_o_pue   (),
+  .io_pads_aon_pmu_vddpaden_o_ds    (),
 
-  .hfclkrst (hfclkrst) 
+  
+    .io_pads_aon_pmu_padrst_i_ival    (1'b1 ),
+    .io_pads_aon_pmu_padrst_o_oval    (io_pads_aon_pmu_padrst_o_oval ),
+    .io_pads_aon_pmu_padrst_o_oe      (),
+    .io_pads_aon_pmu_padrst_o_ie      (),
+    .io_pads_aon_pmu_padrst_o_pue     (),
+    .io_pads_aon_pmu_padrst_o_ds      (),
+
+    .io_pads_bootrom_n_i_ival       (io_pads_bootrom_n_i_ival),
+    .io_pads_bootrom_n_o_oval       (),
+    .io_pads_bootrom_n_o_oe         (),
+    .io_pads_bootrom_n_o_ie         (),
+    .io_pads_bootrom_n_o_pue        (),
+    .io_pads_bootrom_n_o_ds         (),
+
+    .io_pads_dbgmode0_n_i_ival       (io_pads_dbgmode0_n_i_ival),
+
+    .io_pads_dbgmode1_n_i_ival       (io_pads_dbgmode1_n_i_ival),
+
+    .io_pads_dbgmode2_n_i_ival       (io_pads_dbgmode2_n_i_ival) 
+
+
   );
 
 endmodule
