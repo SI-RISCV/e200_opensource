@@ -18,7 +18,7 @@
                                                                          
 
 `define E203_CFG_DEBUG_HAS_JTAG
-//`define E203_CFG_IRQ_NEED_SYNC
+`define E203_CFG_IRQ_NEED_SYNC
 
 //`define E203_CFG_ADDR_SIZE_IS_16
 //`define E203_CFG_ADDR_SIZE_IS_24
@@ -57,14 +57,15 @@
 `define E203_CFG_HAS_DTCM
     // 16KB have address 14 wide
     //   The depth is 16*1024*8/32=4096
-`define E203_CFG_DTCM_ADDR_WIDTH  14
+
+    // 256KB have address 18 wide
+    //   The depth is 256*1024*8/32=65536
 
 //    // 1MB have address 20bits wide
 //    //   The depth is 1024*1024*8/32=262144
-//`define E203_CFG_DTCM_ADDR_WIDTH  20
 
 /////////////////////////////////////////////////////////////////
-`define E203_CFG_REGFILE_LATCH_BASED
+//`define E203_CFG_REGFILE_LATCH_BASED
 //
 
 
@@ -96,3 +97,4 @@
 `define E203_CFG_HAS_EAI
 `define E203_CFG_SUPPORT_SHARE_MULDIV
 `define E203_CFG_SUPPORT_AMO
+`define E203_CFG_DTCM_ADDR_WIDTH 16
