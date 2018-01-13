@@ -32,21 +32,24 @@
 //
 // ====================================================================
 
-module sirv_gnrl_ram 
+module sirv_gnrl_ram
 #(parameter DP = 32,
-  parameter DW = 256,
-  parameter AW = 5 
+  parameter DW = 32,
+  parameter FORCE_X2ZERO = 1,
+  parameter MW = 4,
+  parameter AW = 15 
   ) (
   input            sd,
   input            ds,
   input            ls,
 
+  input            rst_n,
   input            clk,
   input            cs,
   input            we,
   input [AW-1:0]   addr,
   input [DW-1:0]   din,
-  input [DW/8-1:0] wem,
+  input [MW-1:0]   wem,
   output[DW-1:0]   dout
 );
 
@@ -55,8 +58,10 @@ module sirv_gnrl_ram
 //
 `ifdef FPGA_SOURCE
 sirv_sim_ram #(
+    .FORCE_X2ZERO (1'b0),
     .DP (DP),
     .AW (AW),
+    .MW (MW),
     .DW (DW) 
 )u_sirv_sim_ram (
     .clk   (clk),
@@ -68,10 +73,12 @@ sirv_sim_ram #(
     .dout  (dout)
 );
 `else
-    //To instantiate different tech's ASIC SRAM model here
+
 sirv_sim_ram #(
+    .FORCE_X2ZERO (FORCE_X2ZERO),
     .DP (DP),
     .AW (AW),
+    .MW (MW),
     .DW (DW) 
 )u_sirv_sim_ram (
     .clk   (clk),
