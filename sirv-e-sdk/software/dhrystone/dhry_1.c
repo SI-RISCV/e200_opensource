@@ -297,7 +297,7 @@ main ()
     //printf ("Print Personal Added Addtional Info to Easy Visual Analysis\n");
     //printf ("\n");
     printf (" (*) User_Cycle for total run through Dhrystone with loops %d: \n", Number_Of_Runs);
-    printf ("%lld \n", User_Cycle);
+    printf ("%ld \n", User_Cycle);
     //printf (" (*) User_Time  for total run through Dhrystone with loops %d: \n", Number_Of_Runs);
     //printf ("%lld \n", User_Time);
     //printf ("\n");

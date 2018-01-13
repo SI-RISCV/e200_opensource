@@ -23,6 +23,6 @@ void __wrap_scanf(const char* fmt, int* n)
 {
 //  *n = 100000000;
 // Bob: it takes to long time to run that much time, so change it to shorter times
-  *n = 40000;
+  *n = 160000;
   //*n = 100;
 }
