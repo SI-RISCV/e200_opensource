@@ -35,6 +35,7 @@
 
 module e203_exu_csr(
   input nonflush_cmt_ena,
+  output eai_xs_off,
 
   input csr_ena,
   input csr_wr_en,
@@ -45,6 +46,9 @@ module e203_exu_csr(
   output tm_stop,
   output core_cgstop,
   output tcm_cgstop,
+  output itcm_nohold,
+  output mdv_nob2b,
+
 
   output [`E203_XLEN-1:0] read_csr_dat,
   input  [`E203_XLEN-1:0] wbck_csr_dat,
@@ -92,10 +96,13 @@ module e203_exu_csr(
   output[`E203_PC_SIZE-1:0]  csr_dpc_r,
   output[`E203_XLEN-1:0]     csr_mtvec_r,
 
+
+  input  clk_aon,
   input  clk,
   input  rst_n
 
   );
+
 
 
 assign csr_access_ilgl = 1'b0
@@ -198,9 +205,12 @@ wire status_sd_r = (status_fs_r == 2'b11) | (status_xs_r == 2'b11);
 //  See Priv SPEC:
 //    XS field is read-only
 //    The XS field represents a summary of all extensions' status
+    // But in E200 we implement XS exactly same as FS to make it usable by software to 
+    //   disable extended accelerators
 `ifndef E203_HAS_EAI
    // If no EAI coprocessor interface configured, the XS is just hardwired to 0
 assign status_xs_r = 2'b0; 
+assign eai_xs_off = 1'b0;// We just make this signal to 0
 `endif
 
 //////////////////////////
@@ -324,21 +334,33 @@ wire sel_mcycleh   = (csr_idx == 12'hB80);
 wire sel_minstret  = (csr_idx == 12'hB02);
 wire sel_minstreth = (csr_idx == 12'hB82);
 
-// 0xBFF MRW mcounterstop 
+// 0xBFF MRW counterstop 
       // This register is our self-defined register to stop
       // the cycle/time/instret counters to save dynamic powers
-wire sel_mcounterstop = (csr_idx == 12'hBFF);// This address is not used
+wire sel_counterstop = (csr_idx == 12'hBFF);// This address is not used by ISA
 // 0xBFE MRW mcgstop 
       // This register is our self-defined register to disable the 
       // automaticall clock gating for CPU logics for debugging purpose
-wire sel_mcgstop = (csr_idx == 12'hBFE);// This address is not used
+wire sel_mcgstop = (csr_idx == 12'hBFE);// This address is not used by ISA
+// 0xBFD MRW itcmnohold 
+      // This register is our self-defined register to disble the 
+      // ITCM SRAM output holdup feature, if set, then we assume
+      // ITCM SRAM output cannot holdup last read value
+wire sel_itcmnohold = (csr_idx == 12'hBFD);// This address is not used by ISA
+// 0xBF0 MRW mdvnob2b 
+      // This register is our self-defined register to disble the 
+      // Mul/div back2back feature
+wire sel_mdvnob2b = (csr_idx == 12'hBF0);// This address is not used by ISA
+
 
 wire rd_mcycle     = csr_rd_en & sel_mcycle   ;
 wire rd_mcycleh    = csr_rd_en & sel_mcycleh  ;
 wire rd_minstret   = csr_rd_en & sel_minstret ;
 wire rd_minstreth  = csr_rd_en & sel_minstreth;
 
-wire rd_mcounterstop  = csr_rd_en & sel_mcounterstop;
+wire rd_itcmnohold   = csr_rd_en & sel_itcmnohold;
+wire rd_mdvnob2b   = csr_rd_en & sel_mdvnob2b;
+wire rd_counterstop  = csr_rd_en & sel_counterstop;
 wire rd_mcgstop       = csr_rd_en & sel_mcgstop;
 
 `ifdef E203_SUPPORT_MCYCLE_MINSTRET //{
@@ -347,7 +369,9 @@ wire wr_mcycleh    = csr_wr_en & sel_mcycleh  ;
 wire wr_minstret   = csr_wr_en & sel_minstret ;
 wire wr_minstreth  = csr_wr_en & sel_minstreth;
 
-wire wr_mcounterstop  = csr_wr_en & sel_mcounterstop;
+wire wr_itcmnohold   = csr_wr_en & sel_itcmnohold ;
+wire wr_mdvnob2b   = csr_wr_en & sel_mdvnob2b ;
+wire wr_counterstop  = csr_wr_en & sel_counterstop;
 wire wr_mcgstop       = csr_wr_en & sel_mcgstop     ;
 
 wire mcycle_wr_ena    = (wr_mcycle    & wbck_csr_wen);
@@ -355,7 +379,9 @@ wire mcycleh_wr_ena   = (wr_mcycleh   & wbck_csr_wen);
 wire minstret_wr_ena  = (wr_minstret  & wbck_csr_wen);
 wire minstreth_wr_ena = (wr_minstreth & wbck_csr_wen);
 
-wire mcounterstop_wr_ena = (wr_mcounterstop & wbck_csr_wen);
+wire itcmnohold_wr_ena  = (wr_itcmnohold  & wbck_csr_wen);
+wire mdvnob2b_wr_ena  = (wr_mdvnob2b  & wbck_csr_wen);
+wire counterstop_wr_ena = (wr_counterstop & wbck_csr_wen);
 wire mcgstop_wr_ena      = (wr_mcgstop      & wbck_csr_wen);
 
 wire [`E203_XLEN-1:0] mcycle_r   ;
@@ -381,33 +407,52 @@ wire [`E203_XLEN-1:0] mcycleh_nxt   = mcycleh_wr_ena   ? wbck_csr_dat : (mcycleh
 wire [`E203_XLEN-1:0] minstret_nxt  = minstret_wr_ena  ? wbck_csr_dat : (minstret_r  + 1'b1);
 wire [`E203_XLEN-1:0] minstreth_nxt = minstreth_wr_ena ? wbck_csr_dat : (minstreth_r + 1'b1);
 
-sirv_gnrl_dfflr #(`E203_XLEN) mcycle_dfflr (mcycle_ena, mcycle_nxt, mcycle_r   , clk, rst_n);
-sirv_gnrl_dfflr #(`E203_XLEN) mcycleh_dfflr (mcycleh_ena, mcycleh_nxt, mcycleh_r  , clk, rst_n);
+//We need to use the always-on clock for this counter
+sirv_gnrl_dfflr #(`E203_XLEN) mcycle_dfflr (mcycle_ena, mcycle_nxt, mcycle_r   , clk_aon, rst_n);
+sirv_gnrl_dfflr #(`E203_XLEN) mcycleh_dfflr (mcycleh_ena, mcycleh_nxt, mcycleh_r  , clk_aon, rst_n);
 sirv_gnrl_dfflr #(`E203_XLEN) minstret_dfflr (minstret_ena, minstret_nxt, minstret_r , clk, rst_n);
 sirv_gnrl_dfflr #(`E203_XLEN) minstreth_dfflr (minstreth_ena, minstreth_nxt, minstreth_r, clk, rst_n);
 
-wire [`E203_XLEN-1:0] mcounterstop_r;
-wire mcounterstop_ena = mcounterstop_wr_ena;
-wire [`E203_XLEN-1:0] mcounterstop_nxt = {29'b0,wbck_csr_dat[2:0]};// Only LSB 3bits are useful
-sirv_gnrl_dfflr #(`E203_XLEN) mcounterstop_dfflr (mcounterstop_ena, mcounterstop_nxt, mcounterstop_r, clk, rst_n);
-
+wire [`E203_XLEN-1:0] counterstop_r;
+wire counterstop_ena = counterstop_wr_ena;
+wire [`E203_XLEN-1:0] counterstop_nxt = {29'b0,wbck_csr_dat[2:0]};// Only LSB 3bits are useful
+sirv_gnrl_dfflr #(`E203_XLEN) counterstop_dfflr (counterstop_ena, counterstop_nxt, counterstop_r, clk, rst_n);
 
 wire [`E203_XLEN-1:0] csr_mcycle    = mcycle_r;
 wire [`E203_XLEN-1:0] csr_mcycleh   = mcycleh_r;
 wire [`E203_XLEN-1:0] csr_minstret  = minstret_r;
 wire [`E203_XLEN-1:0] csr_minstreth = minstreth_r;
-wire [`E203_XLEN-1:0] csr_mcounterstop = mcounterstop_r;
+wire [`E203_XLEN-1:0] csr_counterstop = counterstop_r;
 `else//}{
 wire [`E203_XLEN-1:0] csr_mcycle    = `E203_XLEN'b0;
 wire [`E203_XLEN-1:0] csr_mcycleh   = `E203_XLEN'b0;
 wire [`E203_XLEN-1:0] csr_minstret  = `E203_XLEN'b0;
 wire [`E203_XLEN-1:0] csr_minstreth = `E203_XLEN'b0;
-wire [`E203_XLEN-1:0] csr_mcounterstop = `E203_XLEN'b0;
+wire [`E203_XLEN-1:0] csr_counterstop = `E203_XLEN'b0;
 `endif//}
 
-assign cy_stop = mcounterstop_r[0];// Stop CYCLE   counter
-assign tm_stop = mcounterstop_r[1];// Stop TIME    counter
-assign ir_stop = mcounterstop_r[2];// Stop INSTRET counter
+wire [`E203_XLEN-1:0] itcmnohold_r;
+wire itcmnohold_ena = itcmnohold_wr_ena;
+wire [`E203_XLEN-1:0] itcmnohold_nxt = {31'b0,wbck_csr_dat[0]};// Only LSB 1bits are useful
+sirv_gnrl_dfflr #(`E203_XLEN) itcmnohold_dfflr (itcmnohold_ena, itcmnohold_nxt, itcmnohold_r, clk, rst_n);
+
+wire [`E203_XLEN-1:0] csr_itcmnohold  = itcmnohold_r;
+
+wire [`E203_XLEN-1:0] mdvnob2b_r;
+wire mdvnob2b_ena = mdvnob2b_wr_ena;
+wire [`E203_XLEN-1:0] mdvnob2b_nxt = {31'b0,wbck_csr_dat[0]};// Only LSB 1bits are useful
+sirv_gnrl_dfflr #(`E203_XLEN) mdvnob2b_dfflr (mdvnob2b_ena, mdvnob2b_nxt, mdvnob2b_r, clk, rst_n);
+
+wire [`E203_XLEN-1:0] csr_mdvnob2b  = mdvnob2b_r;
+
+assign cy_stop = counterstop_r[0];// Stop CYCLE   counter
+assign tm_stop = counterstop_r[1];// Stop TIME    counter
+assign ir_stop = counterstop_r[2];// Stop INSTRET counter
+
+assign itcm_nohold = itcmnohold_r[0];// ITCM no-hold up feature
+assign mdv_nob2b = mdvnob2b_r[0];// Mul/Div no back2back feature
+
+
 
 wire [`E203_XLEN-1:0] mcgstop_r;
 wire mcgstop_ena = mcgstop_wr_ena;
@@ -624,11 +669,15 @@ assign read_csr_dat = `E203_XLEN'b0
                | ({`E203_XLEN{rd_mcycleh  }} & csr_mcycleh  )
                | ({`E203_XLEN{rd_minstret }} & csr_minstret )
                | ({`E203_XLEN{rd_minstreth}} & csr_minstreth)
-               | ({`E203_XLEN{rd_mcounterstop}} & csr_mcounterstop)
-               | ({`E203_XLEN{rd_mcgstop}} & csr_mcgstop)
+               | ({`E203_XLEN{rd_counterstop}} & csr_counterstop)// Self-defined
+               | ({`E203_XLEN{rd_mcgstop}} & csr_mcgstop)// Self-defined
+               | ({`E203_XLEN{rd_itcmnohold}} & csr_itcmnohold)// Self-defined
+               | ({`E203_XLEN{rd_mdvnob2b}} & csr_mdvnob2b)// Self-defined
                | ({`E203_XLEN{rd_dcsr     }} & csr_dcsr    )
                | ({`E203_XLEN{rd_dpc      }} & csr_dpc     )
                | ({`E203_XLEN{rd_dscratch }} & csr_dscratch)
                ;
+
+
 endmodule
 
