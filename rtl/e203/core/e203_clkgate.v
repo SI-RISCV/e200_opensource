@@ -39,6 +39,13 @@ module e203_clkgate (
   output  clk_out
 );
 
+`ifdef FPGA_SOURCE//{
+    // In the FPGA, the clock gating is just pass through
+    assign clk_out = clk_in;
+`endif//}
+
+`ifndef FPGA_SOURCE//{
+
 reg enb;
 
 always@(*)
@@ -47,6 +54,7 @@ always@(*)
 
 assign clk_out = enb & clk_in;
 
+`endif//}
 
 endmodule 
 
