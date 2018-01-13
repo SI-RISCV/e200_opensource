@@ -68,7 +68,6 @@
    `define E203_SUPPORT_MCYCLE_MINSTRET 
 `endif
 
-   //`define E203_SUPPORT_TRIGM
 
 `define E203_CFG_XLEN_IS_32
 `ifdef E203_CFG_XLEN_IS_32//{
@@ -98,7 +97,9 @@
 `endif//}
 
 `ifdef E203_CFG_REGFILE_LATCH_BASED//{
-  `define E203_REGFILE_LATCH_BASED 
+    `ifndef FPGA_SOURCE//{ Only If there is not on FPGA
+        `define E203_REGFILE_LATCH_BASED 
+    `endif//}
 `endif//}
 
 `define E203_PPI_ADDR_BASE    `E203_CFG_PPI_ADDR_BASE  
@@ -168,6 +169,9 @@
 `ifdef E203_CFG_HAS_EAI//{
 `endif//}
 
+`ifdef E203_CFG_HAS_LOCKSTEP//{
+`endif//}
+
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -189,13 +193,12 @@
     `define E203_ITCM_DATA_WIDTH  64
     `define E203_ITCM_WMSK_WIDTH  8
   
+    `define E203_ITCM_RAM_ECC_DW  8
+    `define E203_ITCM_RAM_ECC_MW  1
+  `endif
+  `ifndef E203_HAS_ECC //{
     `define E203_ITCM_RAM_DW      `E203_ITCM_DATA_WIDTH
     `define E203_ITCM_RAM_MW      `E203_ITCM_WMSK_WIDTH
-  `endif
-  `ifdef E203_CFG_HAS_ECC //{
-    `define E203_ITCM_OUTS_NUM 1 // If ECC, ITCM is still 1 cycle latency then only allow 1 oustanding for external agent
-  `endif//}
-  `ifndef E203_CFG_HAS_ECC //{
     `define E203_ITCM_OUTS_NUM 1 // If no-ECC, ITCM is 1 cycle latency then only allow 1 oustanding for external agent
   `endif//}
 
@@ -220,15 +223,15 @@
     `define E203_DTCM_DATA_WIDTH  32
     `define E203_DTCM_WMSK_WIDTH  4
   
+    `define E203_DTCM_RAM_ECC_DW  7
+    `define E203_DTCM_RAM_ECC_MW  1
+
+  `ifndef E203_HAS_ECC //{
     `define E203_DTCM_RAM_DW      `E203_DTCM_DATA_WIDTH
     `define E203_DTCM_RAM_MW      `E203_DTCM_WMSK_WIDTH
-
-  `ifdef E203_CFG_HAS_ECC //{
-    `define E203_DTCM_OUTS_NUM 1 // If ECC, DTCM is still 1 cycle latency then only allow 1 oustanding for external agent
-  `endif//}
-  `ifndef E203_CFG_HAS_ECC //{
     `define E203_DTCM_OUTS_NUM 1 // If no-ECC, DTCM is 1 cycle latency then only allow 1 oustanding for external agent
   `endif//}
+
 
   `define E203_HAS_DTCM_EXTITF
 `endif//}
@@ -787,3 +790,5 @@
   `else
     `define E203_BIU_RSP_DP        0
   `endif
+
+  `define E203_HAS_CSR_EAI  1
