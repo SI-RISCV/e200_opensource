@@ -124,7 +124,7 @@ module tb_top();
     #100
     @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
     forever begin
-      repeat ($urandom_range(1, 1000)) @(posedge clk) tb_ext_irq = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 10000)) @(posedge clk) tb_ext_irq = 1'b0; // Wait random times
       tb_ext_irq = 1'b1; // assert the irq
       @((pc == `PC_EXT_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
       tb_ext_irq = 1'b0;
@@ -138,7 +138,7 @@ module tb_top();
     #100
     @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
     forever begin
-      repeat ($urandom_range(1, 1000)) @(posedge clk) tb_sft_irq = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 10000)) @(posedge clk) tb_sft_irq = 1'b0; // Wait random times
       tb_sft_irq = 1'b1; // assert the irq
       @((pc == `PC_SFT_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
       tb_sft_irq = 1'b0;
@@ -152,7 +152,7 @@ module tb_top();
     #100
     @(pc == `PC_AFTER_SETMTVEC ) // Wait the program goes out the reset_vector program
     forever begin
-      repeat ($urandom_range(1, 1000)) @(posedge clk) tb_tmr_irq = 1'b0; // Wait random times
+      repeat ($urandom_range(1, 10000)) @(posedge clk) tb_tmr_irq = 1'b0; // Wait random times
       tb_tmr_irq = 1'b1; // assert the irq
       @((pc == `PC_TMR_IRQ_BEFOR_MRET)) // Wait the program run into the IRQ handler by check PC values
       tb_tmr_irq = 1'b0;
