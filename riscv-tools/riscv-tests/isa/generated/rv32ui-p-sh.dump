@@ -559,31 +559,31 @@ Disassembly of section .data:
 	...
 
 80002010 <begin_signature>:
-80002010:	beefbeef          	jal	t4,7fffd3fe <_start-0x2c02>
+80002010:	          	jal	t4,7fffd3fe <_start-0x2c02>
 
 80002012 <tdat2>:
-80002012:	beefbeef          	jal	t4,7fffd400 <_start-0x2c00>
+80002012:	          	jal	t4,7fffd400 <_start-0x2c00>
 
 80002014 <tdat3>:
-80002014:	beefbeef          	jal	t4,7fffd402 <_start-0x2bfe>
+80002014:	          	jal	t4,7fffd402 <_start-0x2bfe>
 
 80002016 <tdat4>:
-80002016:	beefbeef          	jal	t4,7fffd404 <_start-0x2bfc>
+80002016:	          	jal	t4,7fffd404 <_start-0x2bfc>
 
 80002018 <tdat5>:
-80002018:	beefbeef          	jal	t4,7fffd406 <_start-0x2bfa>
+80002018:	          	jal	t4,7fffd406 <_start-0x2bfa>
 
 8000201a <tdat6>:
-8000201a:	beefbeef          	jal	t4,7fffd408 <_start-0x2bf8>
+8000201a:	          	jal	t4,7fffd408 <_start-0x2bf8>
 
 8000201c <tdat7>:
-8000201c:	beefbeef          	jal	t4,7fffd40a <_start-0x2bf6>
+8000201c:	          	jal	t4,7fffd40a <_start-0x2bf6>
 
 8000201e <tdat8>:
-8000201e:	beefbeef          	jal	t4,7fffd40c <_start-0x2bf4>
+8000201e:	          	jal	t4,7fffd40c <_start-0x2bf4>
 
 80002020 <tdat9>:
-80002020:	beefbeef          	jal	t4,7fffd40e <_start-0x2bf2>
+80002020:	          	jal	t4,7fffd40e <_start-0x2bf2>
 
 80002022 <tdat10>:
 80002022:	0000beef          	jal	t4,8000d022 <_end+0xaff2>

@@ -526,31 +526,31 @@ Disassembly of section .data:
 	...
 
 80002010 <begin_signature>:
-80002010:	efefefef          	jal	t6,8000070e <pass+0x158>
+80002010:	          	jal	t6,8000070e <pass+0x158>
 
 80002011 <tdat2>:
-80002011:	efefefef          	jal	t6,8000070f <pass+0x159>
+80002011:	          	jal	t6,8000070f <pass+0x159>
 
 80002012 <tdat3>:
-80002012:	efefefef          	jal	t6,80000710 <pass+0x15a>
+80002012:	          	jal	t6,80000710 <pass+0x15a>
 
 80002013 <tdat4>:
-80002013:	efefefef          	jal	t6,80000711 <pass+0x15b>
+80002013:	          	jal	t6,80000711 <pass+0x15b>
 
 80002014 <tdat5>:
-80002014:	efefefef          	jal	t6,80000712 <pass+0x15c>
+80002014:	          	jal	t6,80000712 <pass+0x15c>
 
 80002015 <tdat6>:
-80002015:	efefefef          	jal	t6,80000713 <pass+0x15d>
+80002015:	          	jal	t6,80000713 <pass+0x15d>
 
 80002016 <tdat7>:
-80002016:	efefefef          	jal	t6,80000714 <pass+0x15e>
+80002016:	          	jal	t6,80000714 <pass+0x15e>
 
 80002017 <tdat8>:
-80002017:	00efefef          	jal	t6,80100025 <_end+0xfe005>
+80002017:	          	jal	t6,80100025 <_end+0xfe005>
 
 80002018 <tdat9>:
-80002018:	0000efef          	jal	t6,80010018 <_end+0xdff8>
+80002018:	          	jal	t6,80010018 <_end+0xdff8>
 
 80002019 <tdat10>:
 80002019:	000000ef          	jal	ra,80002019 <tdat10>

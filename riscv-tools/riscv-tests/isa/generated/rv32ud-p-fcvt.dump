@@ -292,7 +292,7 @@ Disassembly of section .text.init:
 8000035e:	4554                	lw	a3,12(a0)
 80000360:	420001d3          	fcvt.d.s	ft3,ft0
 80000364:	4011f1d3          	fcvt.s.d	ft3,ft3
-80000368:	e0018553          	fmv.x.s	a0,ft3
+80000368:	e0018553          	fmv.x.w	a0,ft3
 8000036c:	001015f3          	fsflags	a1,zero
 80000370:	4601                	li	a2,0
 80000372:	02d51c63          	bne	a0,a3,800003aa <fail>
@@ -362,7 +362,7 @@ Disassembly of section .data:
 80002020:	0000                	unimp
 80002022:	ffc0                	fsw	fs0,60(a5)
 80002024:	ffff                	0xffff
-80002026:	000041ef          	jal	gp,80006026 <_end+0x3fb6>
+80002026:	          	jal	gp,80006026 <_end+0x3fb6>
 
 80002028 <test_10_data>:
 80002028:	0000                	unimp

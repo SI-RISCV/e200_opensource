@@ -391,7 +391,7 @@ Disassembly of section .data:
 80002010:	b0dd                	j	800018f6 <fromhost+0x8b6>
 80002012:	89f1                	andi	a1,a1,28
 80002014:	bf0a                	fsd	ft2,440(sp)
-80002016:	4005                	0x4005
+80002016:	4005                	c.li	zero,1
 	...
 80002020:	83ec                	0x83ec
 80002022:	7ddbf6c3          	0x7ddbf6c3
@@ -411,7 +411,7 @@ Disassembly of section .data:
 80002040:	29a5                	jal	800024b8 <_end+0x3a8>
 80002042:	3e19                	jal	80001b58 <fromhost+0xb18>
 80002044:	f8b4                	fsw	fa3,112(s1)
-80002046:	d4f1bfef          	jal	t6,7ff1dd94 <_start-0xe226c>
+80002046:	          	jal	t6,7ff1dd94 <_start-0xe226c>
 
 80002048 <test_4_data>:
 80002048:	d4f1                	beqz	s1,80002014 <test_2_data+0xc>
@@ -441,7 +441,7 @@ Disassembly of section .data:
 8000208c:	8800                	0x8800
 8000208e:	000040c3          	fmadd.s	ft1,ft0,ft0,ft0,rmm
 	...
-800020a6:	4059                	0x4059
+800020a6:	4059                	c.li	zero,22
 
 800020a8 <test_16_data>:
 800020a8:	0000                	unimp
@@ -456,7 +456,7 @@ Disassembly of section .data:
 800020c8:	0000                	unimp
 800020ca:	0000                	unimp
 800020cc:	6000                	flw	fs0,0(s0)
-800020ce:	4065                	0x4065
+800020ce:	4065                	c.li	zero,25
 	...
 800020e0:	74f5                	lui	s1,0xffffd
 800020e2:	ce96                	sw	t0,92(sp)

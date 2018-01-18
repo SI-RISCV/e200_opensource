@@ -445,7 +445,7 @@ Disassembly of section .data:
 80002036:	3ff1                	jal	80002012 <test_2_data+0xa>
 	...
 80002044:	4800                	lw	s0,16(s0)
-80002046:	d4f1c093          	xori	ra,gp,-689
+80002046:	          	xori	ra,gp,-689
 
 80002048 <test_4_data>:
 80002048:	d4f1                	beqz	s1,80002014 <test_2_data+0xc>
@@ -457,7 +457,7 @@ Disassembly of section .data:
 80002056:	3e45                	jal	80001c06 <fromhost+0xbc6>
 	...
 80002060:	6ddf 5520 21fb      	0x21fb55206ddf
-80002066:	4009                	0x4009
+80002066:	4009                	c.li	zero,2
 
 80002068 <test_5_data>:
 80002068:	0000                	unimp
@@ -482,7 +482,7 @@ Disassembly of section .data:
 80002096:	bff1                	j	80002072 <test_5_data+0xa>
 	...
 800020a4:	4800                	lw	s0,16(s0)
-800020a6:	d4f1c093          	xori	ra,gp,-689
+800020a6:	          	xori	ra,gp,-689
 
 800020a8 <test_7_data>:
 800020a8:	d4f1                	beqz	s1,80002074 <test_5_data+0xc>

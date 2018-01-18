@@ -10,6 +10,6 @@ echo "Starting RISC-V Toolchain build process"
 
 build_project riscv-fesvr --prefix=$PREFIX
 build_project riscv-isa-sim --prefix=$PREFIX --with-fesvr=$PREFIX  --enable-commitlog
-build_project riscv-tests --prefix=$PREFIX/riscv32-unknown-elf --with-xlen=32
+build_project riscv-tests --prefix=$PREFIX/riscv32-none-embed --with-xlen=32
 
 echo -e "\\nRISC-V Toolchain installation completed!"

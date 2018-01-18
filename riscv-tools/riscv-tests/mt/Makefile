@@ -75,7 +75,7 @@ bmarks = $(bmarks_vvadd) $(bmarks_matmul)
 # Build rules
 #--------------------------------------------------------------------
 
-RISCV_PREFIX=riscv$(XLEN)-unknown-elf-
+RISCV_PREFIX=riscv-none-embed-
 RISCV_GCC = $(RISCV_PREFIX)gcc
 RISCV_GCC_OPTS = -std=gnu99 -O2 -ffast-math
 RISCV_LINK = $(RISCV_GCC) -T $(common)/test.ld $(incs)

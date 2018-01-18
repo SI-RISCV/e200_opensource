@@ -412,13 +412,13 @@ Disassembly of section .data:
 	...
 
 80002010 <begin_signature>:
-80002010:	00ff                	0xff
+80002010:	                	0xff
 
 80002011 <tdat2>:
 	...
 
 80002012 <tdat3>:
-80002012:	0ff0                	addi	a2,sp,988
+80002012:	                	addi	a2,sp,988
 
 80002013 <tdat4>:
 80002013:	0000000f          	fence	unknown,unknown

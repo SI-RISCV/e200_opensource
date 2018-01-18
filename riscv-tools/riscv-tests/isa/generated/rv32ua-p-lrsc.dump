@@ -207,67 +207,67 @@ Disassembly of section .text.init:
 8000026c:	00b5262f          	amoadd.w	a2,a1,(a0)
 80000270:	4685                	li	a3,1
 80000272:	fed67fe3          	bleu	a3,a2,80000270 <waitloop4+0x4e>
-80000276:	00052583          	lw	a1,0(a0)
-8000027a:	fed5eee3          	bltu	a1,a3,80000276 <waitloop4+0x54>
+80000276:	410c                	lw	a1,0(a0)
+80000278:	fed5efe3          	bltu	a1,a3,80000276 <waitloop4+0x54>
 
-8000027e <test_2>:
-8000027e:	00002517          	auipc	a0,0x2
-80000282:	d9a50513          	addi	a0,a0,-614 # 80002018 <foo>
-80000286:	1805272f          	sc.w	a4,zero,(a0)
-8000028a:	4e85                	li	t4,1
-8000028c:	4189                	li	gp,2
-8000028e:	07d71c63          	bne	a4,t4,80000306 <fail>
+8000027c <test_2>:
+8000027c:	00002517          	auipc	a0,0x2
+80000280:	d9c50513          	addi	a0,a0,-612 # 80002018 <foo>
+80000284:	1805272f          	sc.w	a4,zero,(a0)
+80000288:	4e85                	li	t4,1
+8000028a:	4189                	li	gp,2
+8000028c:	07d71b63          	bne	a4,t4,80000302 <fail>
 
-80000292 <test_3>:
-80000292:	00002517          	auipc	a0,0x2
-80000296:	d8650513          	addi	a0,a0,-634 # 80002018 <foo>
-8000029a:	40050593          	addi	a1,a0,1024
-8000029e:	1005a5af          	lr.w	a1,(a1)
-800002a2:	18b5272f          	sc.w	a4,a1,(a0)
-800002a6:	4e85                	li	t4,1
-800002a8:	418d                	li	gp,3
-800002aa:	05d71e63          	bne	a4,t4,80000306 <fail>
-800002ae:	00002517          	auipc	a0,0x2
-800002b2:	d6a50513          	addi	a0,a0,-662 # 80002018 <foo>
-800002b6:	04000593          	li	a1,64
-800002ba:	0605                	addi	a2,a2,1
-800002bc:	1005272f          	lr.w	a4,(a0)
-800002c0:	9732                	add	a4,a4,a2
-800002c2:	18e5272f          	sc.w	a4,a4,(a0)
-800002c6:	fb7d                	bnez	a4,800002bc <test_3+0x2a>
-800002c8:	15fd                	addi	a1,a1,-1
-800002ca:	f9ed                	bnez	a1,800002bc <test_3+0x2a>
-800002cc:	00002517          	auipc	a0,0x2
-800002d0:	d4850513          	addi	a0,a0,-696 # 80002014 <barrier>
-800002d4:	4585                	li	a1,1
-800002d6:	00b5202f          	amoadd.w	zero,a1,(a0)
-800002da:	00052583          	lw	a1,0(a0)
-800002de:	fed5cee3          	blt	a1,a3,800002da <test_3+0x48>
-800002e2:	0ff0000f          	fence
+80000290 <test_3>:
+80000290:	00002517          	auipc	a0,0x2
+80000294:	d8850513          	addi	a0,a0,-632 # 80002018 <foo>
+80000298:	40050593          	addi	a1,a0,1024
+8000029c:	1005a5af          	lr.w	a1,(a1)
+800002a0:	18b5272f          	sc.w	a4,a1,(a0)
+800002a4:	4e85                	li	t4,1
+800002a6:	418d                	li	gp,3
+800002a8:	05d71d63          	bne	a4,t4,80000302 <fail>
+800002ac:	00002517          	auipc	a0,0x2
+800002b0:	d6c50513          	addi	a0,a0,-660 # 80002018 <foo>
+800002b4:	04000593          	li	a1,64
+800002b8:	0605                	addi	a2,a2,1
+800002ba:	1005272f          	lr.w	a4,(a0)
+800002be:	9732                	add	a4,a4,a2
+800002c0:	18e5272f          	sc.w	a4,a4,(a0)
+800002c4:	fb7d                	bnez	a4,800002ba <test_3+0x2a>
+800002c6:	15fd                	addi	a1,a1,-1
+800002c8:	f9ed                	bnez	a1,800002ba <test_3+0x2a>
+800002ca:	00002517          	auipc	a0,0x2
+800002ce:	d4a50513          	addi	a0,a0,-694 # 80002014 <barrier>
+800002d2:	4585                	li	a1,1
+800002d4:	00b5202f          	amoadd.w	zero,a1,(a0)
+800002d8:	410c                	lw	a1,0(a0)
+800002da:	fed5cfe3          	blt	a1,a3,800002d8 <test_3+0x48>
+800002de:	0ff0000f          	fence
 
-800002e6 <test_4>:
-800002e6:	00002517          	auipc	a0,0x2
-800002ea:	d3252503          	lw	a0,-718(a0) # 80002018 <foo>
-800002ee:	00569593          	slli	a1,a3,0x5
-800002f2:	8d0d                	sub	a0,a0,a1
-800002f4:	16fd                	addi	a3,a3,-1
-800002f6:	fe06dee3          	bgez	a3,800002f2 <test_4+0xc>
-800002fa:	4e81                	li	t4,0
-800002fc:	4191                	li	gp,4
-800002fe:	01d51463          	bne	a0,t4,80000306 <fail>
-80000302:	00301b63          	bne	zero,gp,80000318 <pass>
+800002e2 <test_4>:
+800002e2:	00002517          	auipc	a0,0x2
+800002e6:	d3652503          	lw	a0,-714(a0) # 80002018 <foo>
+800002ea:	00569593          	slli	a1,a3,0x5
+800002ee:	8d0d                	sub	a0,a0,a1
+800002f0:	16fd                	addi	a3,a3,-1
+800002f2:	fe06dee3          	bgez	a3,800002ee <test_4+0xc>
+800002f6:	4e81                	li	t4,0
+800002f8:	4191                	li	gp,4
+800002fa:	01d51463          	bne	a0,t4,80000302 <fail>
+800002fe:	00301b63          	bne	zero,gp,80000314 <pass>
 
-80000306 <fail>:
-80000306:	0ff0000f          	fence
-8000030a:	00018063          	beqz	gp,8000030a <fail+0x4>
-8000030e:	0186                	slli	gp,gp,0x1
-80000310:	0011e193          	ori	gp,gp,1
-80000314:	00000073          	ecall
+80000302 <fail>:
+80000302:	0ff0000f          	fence
+80000306:	00018063          	beqz	gp,80000306 <fail+0x4>
+8000030a:	0186                	slli	gp,gp,0x1
+8000030c:	0011e193          	ori	gp,gp,1
+80000310:	00000073          	ecall
 
-80000318 <pass>:
-80000318:	0ff0000f          	fence
-8000031c:	4185                	li	gp,1
-8000031e:	00000073          	ecall
+80000314 <pass>:
+80000314:	0ff0000f          	fence
+80000318:	4185                	li	gp,1
+8000031a:	00000073          	ecall
 	...
 
 Disassembly of section .tohost:

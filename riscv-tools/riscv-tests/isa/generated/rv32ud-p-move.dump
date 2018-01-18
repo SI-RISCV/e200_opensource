@@ -549,7 +549,7 @@ Disassembly of section .text.init:
 80000744:	00b8a223          	sw	a1,4(a7)
 80000748:	0008b107          	fld	ft2,0(a7)
 8000074c:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000750:	e0000553          	fmv.x.s	a0,ft0
+80000750:	e0000553          	fmv.x.w	a0,ft0
 80000754:	7fc00eb7          	lui	t4,0x7fc00
 80000758:	02800193          	li	gp,40
 8000075c:	41d516e3          	bne	a0,t4,80001368 <fail>
@@ -590,7 +590,7 @@ Disassembly of section .text.init:
 800007d0:	00b8a223          	sw	a1,4(a7)
 800007d4:	0008b107          	fld	ft2,0(a7)
 800007d8:	20208053          	fsgnj.s	ft0,ft1,ft2
-800007dc:	e0000553          	fmv.x.s	a0,ft0
+800007dc:	e0000553          	fmv.x.w	a0,ft0
 800007e0:	7fc00eb7          	lui	t4,0x7fc00
 800007e4:	02900193          	li	gp,41
 800007e8:	39d510e3          	bne	a0,t4,80001368 <fail>
@@ -631,7 +631,7 @@ Disassembly of section .text.init:
 8000085c:	00b8a223          	sw	a1,4(a7)
 80000860:	0008b107          	fld	ft2,0(a7)
 80000864:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000868:	e0000553          	fmv.x.s	a0,ft0
+80000868:	e0000553          	fmv.x.w	a0,ft0
 8000086c:	7fc00eb7          	lui	t4,0x7fc00
 80000870:	02a00193          	li	gp,42
 80000874:	2fd51ae3          	bne	a0,t4,80001368 <fail>
@@ -672,7 +672,7 @@ Disassembly of section .text.init:
 800008e8:	00b8a223          	sw	a1,4(a7)
 800008ec:	0008b107          	fld	ft2,0(a7)
 800008f0:	20208053          	fsgnj.s	ft0,ft1,ft2
-800008f4:	e0000553          	fmv.x.s	a0,ft0
+800008f4:	e0000553          	fmv.x.w	a0,ft0
 800008f8:	12345eb7          	lui	t4,0x12345
 800008fc:	678e8e93          	addi	t4,t4,1656 # 12345678 <_start-0x6dcba988>
 80000900:	02b00193          	li	gp,43
@@ -715,7 +715,7 @@ Disassembly of section .text.init:
 8000097e:	00b8a223          	sw	a1,4(a7)
 80000982:	0008b107          	fld	ft2,0(a7)
 80000986:	20208053          	fsgnj.s	ft0,ft1,ft2
-8000098a:	e0000553          	fmv.x.s	a0,ft0
+8000098a:	e0000553          	fmv.x.w	a0,ft0
 8000098e:	7fc00eb7          	lui	t4,0x7fc00
 80000992:	03200193          	li	gp,50
 80000996:	1dd519e3          	bne	a0,t4,80001368 <fail>
@@ -756,7 +756,7 @@ Disassembly of section .text.init:
 80000a0e:	00b8a223          	sw	a1,4(a7)
 80000a12:	0008b107          	fld	ft2,0(a7)
 80000a16:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000a1a:	e0000553          	fmv.x.s	a0,ft0
+80000a1a:	e0000553          	fmv.x.w	a0,ft0
 80000a1e:	7fc00eb7          	lui	t4,0x7fc00
 80000a22:	03300193          	li	gp,51
 80000a26:	15d511e3          	bne	a0,t4,80001368 <fail>
@@ -797,7 +797,7 @@ Disassembly of section .text.init:
 80000a9e:	00b8a223          	sw	a1,4(a7)
 80000aa2:	0008b107          	fld	ft2,0(a7)
 80000aa6:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000aaa:	e0000553          	fmv.x.s	a0,ft0
+80000aaa:	e0000553          	fmv.x.w	a0,ft0
 80000aae:	7fc00eb7          	lui	t4,0x7fc00
 80000ab2:	03400193          	li	gp,52
 80000ab6:	0bd519e3          	bne	a0,t4,80001368 <fail>
@@ -838,7 +838,7 @@ Disassembly of section .text.init:
 80000b2e:	00b8a223          	sw	a1,4(a7)
 80000b32:	0008b107          	fld	ft2,0(a7)
 80000b36:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000b3a:	e0000553          	fmv.x.s	a0,ft0
+80000b3a:	e0000553          	fmv.x.w	a0,ft0
 80000b3e:	12345eb7          	lui	t4,0x12345
 80000b42:	678e8e93          	addi	t4,t4,1656 # 12345678 <_start-0x6dcba988>
 80000b46:	03500193          	li	gp,53
@@ -881,7 +881,7 @@ Disassembly of section .text.init:
 80000bc8:	00b8a223          	sw	a1,4(a7)
 80000bcc:	0008b107          	fld	ft2,0(a7)
 80000bd0:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000bd4:	e0000553          	fmv.x.s	a0,ft0
+80000bd4:	e0000553          	fmv.x.w	a0,ft0
 80000bd8:	ffc00eb7          	lui	t4,0xffc00
 80000bdc:	03c00193          	li	gp,60
 80000be0:	79d51463          	bne	a0,t4,80001368 <fail>
@@ -922,7 +922,7 @@ Disassembly of section .text.init:
 80000c5c:	00b8a223          	sw	a1,4(a7)
 80000c60:	0008b107          	fld	ft2,0(a7)
 80000c64:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000c68:	e0000553          	fmv.x.s	a0,ft0
+80000c68:	e0000553          	fmv.x.w	a0,ft0
 80000c6c:	ffc00eb7          	lui	t4,0xffc00
 80000c70:	03d00193          	li	gp,61
 80000c74:	6fd51a63          	bne	a0,t4,80001368 <fail>
@@ -962,7 +962,7 @@ Disassembly of section .text.init:
 80000cec:	00b8a223          	sw	a1,4(a7)
 80000cf0:	0008b107          	fld	ft2,0(a7)
 80000cf4:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000cf8:	e0000553          	fmv.x.s	a0,ft0
+80000cf8:	e0000553          	fmv.x.w	a0,ft0
 80000cfc:	92345eb7          	lui	t4,0x92345
 80000d00:	678e8e93          	addi	t4,t4,1656 # 92345678 <_end+0x12342658>
 80000d04:	03e00193          	li	gp,62
@@ -1005,7 +1005,7 @@ Disassembly of section .text.init:
 80000d88:	00b8a223          	sw	a1,4(a7)
 80000d8c:	0008b107          	fld	ft2,0(a7)
 80000d90:	20208053          	fsgnj.s	ft0,ft1,ft2
-80000d94:	e0000553          	fmv.x.s	a0,ft0
+80000d94:	e0000553          	fmv.x.w	a0,ft0
 80000d98:	12345eb7          	lui	t4,0x12345
 80000d9c:	678e8e93          	addi	t4,t4,1656 # 12345678 <_start-0x6dcba988>
 80000da0:	03f00193          	li	gp,63
@@ -1052,7 +1052,7 @@ Disassembly of section .text.init:
 80000e34:	a0002553          	feq.s	a0,ft0,ft0
 80000e38:	157d                	addi	a0,a0,-1
 80000e3a:	e119                	bnez	a0,80000e40 <test_70+0x40>
-80000e3c:	e0000553          	fmv.x.s	a0,ft0
+80000e3c:	e0000553          	fmv.x.w	a0,ft0
 80000e40:	11111eb7          	lui	t4,0x11111
 80000e44:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 80000e48:	04600193          	li	gp,70
@@ -1100,7 +1100,7 @@ Disassembly of section .text.init:
 80000ee0:	a0002553          	feq.s	a0,ft0,ft0
 80000ee4:	00050513          	mv	a0,a0
 80000ee8:	e119                	bnez	a0,80000eee <test_71+0x46>
-80000eea:	e0000553          	fmv.x.s	a0,ft0
+80000eea:	e0000553          	fmv.x.w	a0,ft0
 80000eee:	11111eb7          	lui	t4,0x11111
 80000ef2:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 80000ef6:	04700193          	li	gp,71
@@ -1149,7 +1149,7 @@ Disassembly of section .text.init:
 80000f92:	a0002553          	feq.s	a0,ft0,ft0
 80000f96:	157d                	addi	a0,a0,-1
 80000f98:	e119                	bnez	a0,80000f9e <test_72+0x40>
-80000f9a:	e0000553          	fmv.x.s	a0,ft0
+80000f9a:	e0000553          	fmv.x.w	a0,ft0
 80000f9e:	11111eb7          	lui	t4,0x11111
 80000fa2:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 80000fa6:	04800193          	li	gp,72
@@ -1195,7 +1195,7 @@ Disassembly of section .text.init:
 80001034:	a0002553          	feq.s	a0,ft0,ft0
 80001038:	157d                	addi	a0,a0,-1
 8000103a:	e119                	bnez	a0,80001040 <test_73+0x3a>
-8000103c:	e0000553          	fmv.x.s	a0,ft0
+8000103c:	e0000553          	fmv.x.w	a0,ft0
 80001040:	11111eb7          	lui	t4,0x11111
 80001044:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 80001048:	04900193          	li	gp,73
@@ -1242,7 +1242,7 @@ Disassembly of section .text.init:
 800010da:	a0002553          	feq.s	a0,ft0,ft0
 800010de:	157d                	addi	a0,a0,-1
 800010e0:	e119                	bnez	a0,800010e6 <test_74+0x44>
-800010e2:	e0000553          	fmv.x.s	a0,ft0
+800010e2:	e0000553          	fmv.x.w	a0,ft0
 800010e6:	11111eb7          	lui	t4,0x11111
 800010ea:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 800010ee:	04a00193          	li	gp,74
@@ -1292,7 +1292,7 @@ Disassembly of section .text.init:
 8000118e:	a0002553          	feq.s	a0,ft0,ft0
 80001192:	00050513          	mv	a0,a0
 80001196:	e119                	bnez	a0,8000119c <test_75+0x4a>
-80001198:	e0000553          	fmv.x.s	a0,ft0
+80001198:	e0000553          	fmv.x.w	a0,ft0
 8000119c:	11111eb7          	lui	t4,0x11111
 800011a0:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 800011a4:	04b00193          	li	gp,75
@@ -1343,7 +1343,7 @@ Disassembly of section .text.init:
 80001248:	a0002553          	feq.s	a0,ft0,ft0
 8000124c:	157d                	addi	a0,a0,-1
 8000124e:	e119                	bnez	a0,80001254 <test_76+0x44>
-80001250:	e0000553          	fmv.x.s	a0,ft0
+80001250:	e0000553          	fmv.x.w	a0,ft0
 80001254:	11111eb7          	lui	t4,0x11111
 80001258:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 8000125c:	04c00193          	li	gp,76
@@ -1391,7 +1391,7 @@ Disassembly of section .text.init:
 800012f2:	a0002553          	feq.s	a0,ft0,ft0
 800012f6:	157d                	addi	a0,a0,-1
 800012f8:	e119                	bnez	a0,800012fe <test_77+0x3e>
-800012fa:	e0000553          	fmv.x.s	a0,ft0
+800012fa:	e0000553          	fmv.x.w	a0,ft0
 800012fe:	11111eb7          	lui	t4,0x11111
 80001302:	111e8e93          	addi	t4,t4,273 # 11111111 <_start-0x6eeeeeef>
 80001306:	04d00193          	li	gp,77

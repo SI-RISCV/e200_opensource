@@ -599,7 +599,7 @@ Disassembly of section .data:
 80002040:	6666                	flw	fa2,88(sp)
 80002042:	6666                	flw	fa2,88(sp)
 80002044:	4c66                	lw	s8,88(sp)
-80002046:	999ac093          	xori	ra,s5,-1639
+80002046:	          	xori	ra,s5,-1639
 
 80002048 <test_4_data>:
 80002048:	999a                	add	s3,s3,t1
@@ -616,7 +616,7 @@ Disassembly of section .data:
 80002060:	6666                	flw	fa2,88(sp)
 80002062:	6666                	flw	fa2,88(sp)
 80002064:	4c66                	lw	s8,88(sp)
-80002066:	ffffc093          	not	ra,t6
+80002066:	          	not	ra,t6
 
 80002068 <test_5_data>:
 80002068:	ffff                	0xffff
@@ -633,7 +633,7 @@ Disassembly of section .data:
 80002080:	6666                	flw	fa2,88(sp)
 80002082:	6666                	flw	fa2,88(sp)
 80002084:	4c66                	lw	s8,88(sp)
-80002086:	d4f1c093          	xori	ra,gp,-689
+80002086:	          	xori	ra,gp,-689
 
 80002088 <test_6_data>:
 80002088:	d4f1                	beqz	s1,80002054 <test_4_data+0xc>
@@ -721,7 +721,7 @@ Disassembly of section .data:
 80002140:	6666                	flw	fa2,88(sp)
 80002142:	6666                	flw	fa2,88(sp)
 80002144:	4c66                	lw	s8,88(sp)
-80002146:	d4f1c093          	xori	ra,gp,-689
+80002146:	          	xori	ra,gp,-689
 
 80002148 <test_16_data>:
 80002148:	d4f1                	beqz	s1,80002114 <test_14_data+0xc>

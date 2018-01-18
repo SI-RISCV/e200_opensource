@@ -267,4 +267,4 @@ Disassembly of section .data:
 80002028:	1dea                	slli	s11,s11,0x3a
 8000202a:	abad                	j	800025a4 <_end+0x574>
 8000202c:	d00d                	beqz	s0,80001f4e <fromhost+0xf0e>
-8000202e:	00401337          	lui	t1,0x1
+8000202e:	          	lui	t1,0x1

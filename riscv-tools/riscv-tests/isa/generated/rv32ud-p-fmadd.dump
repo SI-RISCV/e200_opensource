@@ -493,7 +493,7 @@ Disassembly of section .data:
 80002040:	cccc                	sw	a1,28(s1)
 80002042:	cccc                	sw	a1,28(s1)
 80002044:	50cc                	lw	a1,36(s1)
-80002046:	00004093          	xori	ra,zero,0
+80002046:	          	xori	ra,zero,0
 
 80002048 <test_4_data>:
 80002048:	0000                	unimp
@@ -546,7 +546,7 @@ Disassembly of section .data:
 800020a0:	cccc                	sw	a1,28(s1)
 800020a2:	cccc                	sw	a1,28(s1)
 800020a4:	50cc                	lw	a1,36(s1)
-800020a6:	0000c093          	xori	ra,ra,0
+800020a6:	          	xori	ra,ra,0
 
 800020a8 <test_7_data>:
 800020a8:	0000                	unimp
@@ -599,7 +599,7 @@ Disassembly of section .data:
 80002100:	0000                	unimp
 80002102:	0000                	unimp
 80002104:	4800                	lw	s0,16(s0)
-80002106:	00004093          	xori	ra,zero,0
+80002106:	          	xori	ra,zero,0
 
 80002108 <test_10_data>:
 80002108:	0000                	unimp
@@ -652,7 +652,7 @@ Disassembly of section .data:
 80002160:	0000                	unimp
 80002162:	0000                	unimp
 80002164:	4800                	lw	s0,16(s0)
-80002166:	0000c093          	xori	ra,ra,0
+80002166:	          	xori	ra,ra,0
 
 80002168 <test_13_data>:
 80002168:	0000                	unimp

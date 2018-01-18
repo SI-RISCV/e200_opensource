@@ -1146,7 +1146,7 @@ Disassembly of section .text.init:
 
 800020a0 <test_12>:
 800020a0:	7405                	lui	s0,0xfffe1
-800020a2:	8031                	c.srli	s0,0xc
+800020a2:	8031                	srli	s0,s0,0xc
 800020a4:	00100eb7          	lui	t4,0x100
 800020a8:	fe1e8e93          	addi	t4,t4,-31 # fffe1 <_start-0x7ff0001f>
 800020ac:	00c00193          	li	gp,12

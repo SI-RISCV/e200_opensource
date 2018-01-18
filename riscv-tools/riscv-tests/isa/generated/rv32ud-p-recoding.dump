@@ -259,7 +259,7 @@ Disassembly of section .text.init:
 800002ea:	d4253087          	fld	ft1,-702(a0) # 80002028 <tiny>
 800002ee:	4010f0d3          	fcvt.s.d	ft1,ft1
 800002f2:	10107053          	fmul.s	ft0,ft0,ft1
-800002f6:	e0000553          	fmv.x.s	a0,ft0
+800002f6:	e0000553          	fmv.x.w	a0,ft0
 800002fa:	00002597          	auipc	a1,0x2
 800002fe:	d2a5a583          	lw	a1,-726(a1) # 80002024 <small>
 

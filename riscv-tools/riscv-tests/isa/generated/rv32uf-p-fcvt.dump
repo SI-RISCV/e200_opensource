@@ -213,7 +213,7 @@ Disassembly of section .text.init:
 80000278:	4509                	li	a0,2
 8000027a:	d0057053          	fcvt.s.w	ft0,a0
 8000027e:	00101073          	fsflags	zero
-80000282:	e0000553          	fmv.x.s	a0,ft0
+80000282:	e0000553          	fmv.x.w	a0,ft0
 80000286:	06d51163          	bne	a0,a3,800002e8 <fail>
 
 8000028a <test_3>:
@@ -224,7 +224,7 @@ Disassembly of section .text.init:
 80000296:	5579                	li	a0,-2
 80000298:	d0057053          	fcvt.s.w	ft0,a0
 8000029c:	00101073          	fsflags	zero
-800002a0:	e0000553          	fmv.x.s	a0,ft0
+800002a0:	e0000553          	fmv.x.w	a0,ft0
 800002a4:	04d51263          	bne	a0,a3,800002e8 <fail>
 
 800002a8 <test_4>:
@@ -235,7 +235,7 @@ Disassembly of section .text.init:
 800002b4:	4509                	li	a0,2
 800002b6:	d0157053          	fcvt.s.wu	ft0,a0
 800002ba:	00101073          	fsflags	zero
-800002be:	e0000553          	fmv.x.s	a0,ft0
+800002be:	e0000553          	fmv.x.w	a0,ft0
 800002c2:	02d51363          	bne	a0,a3,800002e8 <fail>
 
 800002c6 <test_5>:
@@ -246,7 +246,7 @@ Disassembly of section .text.init:
 800002d2:	5579                	li	a0,-2
 800002d4:	d0157053          	fcvt.s.wu	ft0,a0
 800002d8:	00101073          	fsflags	zero
-800002dc:	e0000553          	fmv.x.s	a0,ft0
+800002dc:	e0000553          	fmv.x.w	a0,ft0
 800002e0:	00d51463          	bne	a0,a3,800002e8 <fail>
 800002e4:	00301b63          	bne	zero,gp,800002fa <pass>
 

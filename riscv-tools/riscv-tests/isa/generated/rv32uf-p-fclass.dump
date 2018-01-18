@@ -207,7 +207,7 @@ Disassembly of section .text.init:
 
 8000026c <test_2>:
 8000026c:	ff800537          	lui	a0,0xff800
-80000270:	f0050553          	fmv.s.x	fa0,a0
+80000270:	f0050553          	fmv.w.x	fa0,a0
 80000274:	e0051553          	fclass.s	a0,fa0
 80000278:	4e85                	li	t4,1
 8000027a:	4189                	li	gp,2
@@ -215,7 +215,7 @@ Disassembly of section .text.init:
 
 80000280 <test_3>:
 80000280:	bf800537          	lui	a0,0xbf800
-80000284:	f0050553          	fmv.s.x	fa0,a0
+80000284:	f0050553          	fmv.w.x	fa0,a0
 80000288:	e0051553          	fclass.s	a0,fa0
 8000028c:	4e89                	li	t4,2
 8000028e:	418d                	li	gp,3
@@ -224,7 +224,7 @@ Disassembly of section .text.init:
 80000294 <test_4>:
 80000294:	80800537          	lui	a0,0x80800
 80000298:	fff50513          	addi	a0,a0,-1 # 807fffff <_end+0x7fdfef>
-8000029c:	f0050553          	fmv.s.x	fa0,a0
+8000029c:	f0050553          	fmv.w.x	fa0,a0
 800002a0:	e0051553          	fclass.s	a0,fa0
 800002a4:	4e91                	li	t4,4
 800002a6:	4191                	li	gp,4
@@ -232,7 +232,7 @@ Disassembly of section .text.init:
 
 800002ac <test_5>:
 800002ac:	80000537          	lui	a0,0x80000
-800002b0:	f0050553          	fmv.s.x	fa0,a0
+800002b0:	f0050553          	fmv.w.x	fa0,a0
 800002b4:	e0051553          	fclass.s	a0,fa0
 800002b8:	4ea1                	li	t4,8
 800002ba:	4195                	li	gp,5
@@ -240,7 +240,7 @@ Disassembly of section .text.init:
 
 800002c0 <test_6>:
 800002c0:	4501                	li	a0,0
-800002c2:	f0050553          	fmv.s.x	fa0,a0
+800002c2:	f0050553          	fmv.w.x	fa0,a0
 800002c6:	e0051553          	fclass.s	a0,fa0
 800002ca:	4ec1                	li	t4,16
 800002cc:	4199                	li	gp,6
@@ -249,7 +249,7 @@ Disassembly of section .text.init:
 800002d2 <test_7>:
 800002d2:	00800537          	lui	a0,0x800
 800002d6:	fff50513          	addi	a0,a0,-1 # 7fffff <_start-0x7f800001>
-800002da:	f0050553          	fmv.s.x	fa0,a0
+800002da:	f0050553          	fmv.w.x	fa0,a0
 800002de:	e0051553          	fclass.s	a0,fa0
 800002e2:	02000e93          	li	t4,32
 800002e6:	419d                	li	gp,7
@@ -257,7 +257,7 @@ Disassembly of section .text.init:
 
 800002ec <test_8>:
 800002ec:	3f800537          	lui	a0,0x3f800
-800002f0:	f0050553          	fmv.s.x	fa0,a0
+800002f0:	f0050553          	fmv.w.x	fa0,a0
 800002f4:	e0051553          	fclass.s	a0,fa0
 800002f8:	04000e93          	li	t4,64
 800002fc:	41a1                	li	gp,8
@@ -265,7 +265,7 @@ Disassembly of section .text.init:
 
 80000302 <test_9>:
 80000302:	7f800537          	lui	a0,0x7f800
-80000306:	f0050553          	fmv.s.x	fa0,a0
+80000306:	f0050553          	fmv.w.x	fa0,a0
 8000030a:	e0051553          	fclass.s	a0,fa0
 8000030e:	08000e93          	li	t4,128
 80000312:	41a5                	li	gp,9
@@ -274,7 +274,7 @@ Disassembly of section .text.init:
 80000318 <test_10>:
 80000318:	7f800537          	lui	a0,0x7f800
 8000031c:	00150513          	addi	a0,a0,1 # 7f800001 <_start-0x7fffff>
-80000320:	f0050553          	fmv.s.x	fa0,a0
+80000320:	f0050553          	fmv.w.x	fa0,a0
 80000324:	e0051553          	fclass.s	a0,fa0
 80000328:	10000e93          	li	t4,256
 8000032c:	41a9                	li	gp,10
@@ -282,7 +282,7 @@ Disassembly of section .text.init:
 
 80000332 <test_11>:
 80000332:	7fc00537          	lui	a0,0x7fc00
-80000336:	f0050553          	fmv.s.x	fa0,a0
+80000336:	f0050553          	fmv.w.x	fa0,a0
 8000033a:	e0051553          	fclass.s	a0,fa0
 8000033e:	20000e93          	li	t4,512
 80000342:	41ad                	li	gp,11

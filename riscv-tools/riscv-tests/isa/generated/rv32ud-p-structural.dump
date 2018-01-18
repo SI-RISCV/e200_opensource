@@ -223,7 +223,7 @@ Disassembly of section .text.init:
 800002a8:	0045bc27          	fsd	ft4,24(a1)
 800002ac:	4d98                	lw	a4,24(a1)
 800002ae:	4ddc                	lw	a5,28(a1)
-800002b0:	e00182d3          	fmv.x.s	t0,ft3
+800002b0:	e00182d3          	fmv.x.w	t0,ft3
 800002b4:	00508b63          	beq	ra,t0,800002ca <waitloop4+0xa8>
 800002b8:	0ff0000f          	fence
 800002bc:	00018063          	beqz	gp,800002bc <waitloop4+0x9a>
@@ -245,7 +245,7 @@ Disassembly of section .text.init:
 800002f6:	0011e193          	ori	gp,gp,1
 800002fa:	00000073          	ecall
 800002fe:	0005b107          	fld	ft2,0(a1)
-80000302:	f00000d3          	fmv.s.x	ft1,zero
+80000302:	f00000d3          	fmv.w.x	ft1,zero
 80000306:	0005b207          	fld	ft4,0(a1)
 8000030a:	0005a187          	flw	ft3,0(a1)
 8000030e:	0085b107          	fld	ft2,8(a1)
@@ -259,7 +259,7 @@ Disassembly of section .text.init:
 8000032a:	0045bc27          	fsd	ft4,24(a1)
 8000032e:	4d98                	lw	a4,24(a1)
 80000330:	4ddc                	lw	a5,28(a1)
-80000332:	e00182d3          	fmv.x.s	t0,ft3
+80000332:	e00182d3          	fmv.x.w	t0,ft3
 80000336:	00508b63          	beq	ra,t0,8000034c <waitloop4+0x12a>
 8000033a:	0ff0000f          	fence
 8000033e:	00018063          	beqz	gp,8000033e <waitloop4+0x11c>
@@ -281,7 +281,7 @@ Disassembly of section .text.init:
 80000378:	0011e193          	ori	gp,gp,1
 8000037c:	00000073          	ecall
 80000380:	0005b107          	fld	ft2,0(a1)
-80000384:	f00000d3          	fmv.s.x	ft1,zero
+80000384:	f00000d3          	fmv.w.x	ft1,zero
 80000388:	0005b207          	fld	ft4,0(a1)
 8000038c:	0005a187          	flw	ft3,0(a1)
 80000390:	0085b107          	fld	ft2,8(a1)
@@ -296,7 +296,7 @@ Disassembly of section .text.init:
 800003ac:	0045bc27          	fsd	ft4,24(a1)
 800003b0:	4d98                	lw	a4,24(a1)
 800003b2:	4ddc                	lw	a5,28(a1)
-800003b4:	e00182d3          	fmv.x.s	t0,ft3
+800003b4:	e00182d3          	fmv.x.w	t0,ft3
 800003b8:	00508b63          	beq	ra,t0,800003ce <waitloop4+0x1ac>
 800003bc:	0ff0000f          	fence
 800003c0:	00018063          	beqz	gp,800003c0 <waitloop4+0x19e>
@@ -318,7 +318,7 @@ Disassembly of section .text.init:
 800003fa:	0011e193          	ori	gp,gp,1
 800003fe:	00000073          	ecall
 80000402:	0005b107          	fld	ft2,0(a1)
-80000406:	f00000d3          	fmv.s.x	ft1,zero
+80000406:	f00000d3          	fmv.w.x	ft1,zero
 8000040a:	0005b207          	fld	ft4,0(a1)
 8000040e:	0005a187          	flw	ft3,0(a1)
 80000412:	0085b107          	fld	ft2,8(a1)
@@ -333,7 +333,7 @@ Disassembly of section .text.init:
 8000042e:	0045bc27          	fsd	ft4,24(a1)
 80000432:	4d98                	lw	a4,24(a1)
 80000434:	4ddc                	lw	a5,28(a1)
-80000436:	e00182d3          	fmv.x.s	t0,ft3
+80000436:	e00182d3          	fmv.x.w	t0,ft3
 8000043a:	00508b63          	beq	ra,t0,80000450 <waitloop4+0x22e>
 8000043e:	0ff0000f          	fence
 80000442:	00018063          	beqz	gp,80000442 <waitloop4+0x220>
@@ -355,7 +355,7 @@ Disassembly of section .text.init:
 8000047c:	0011e193          	ori	gp,gp,1
 80000480:	00000073          	ecall
 80000484:	0005b107          	fld	ft2,0(a1)
-80000488:	f00000d3          	fmv.s.x	ft1,zero
+80000488:	f00000d3          	fmv.w.x	ft1,zero
 8000048c:	0005b207          	fld	ft4,0(a1)
 80000490:	0005a187          	flw	ft3,0(a1)
 80000494:	0085b107          	fld	ft2,8(a1)
@@ -371,7 +371,7 @@ Disassembly of section .text.init:
 800004b0:	0045bc27          	fsd	ft4,24(a1)
 800004b4:	4d98                	lw	a4,24(a1)
 800004b6:	4ddc                	lw	a5,28(a1)
-800004b8:	e00182d3          	fmv.x.s	t0,ft3
+800004b8:	e00182d3          	fmv.x.w	t0,ft3
 800004bc:	00508b63          	beq	ra,t0,800004d2 <waitloop4+0x2b0>
 800004c0:	0ff0000f          	fence
 800004c4:	00018063          	beqz	gp,800004c4 <waitloop4+0x2a2>
@@ -393,7 +393,7 @@ Disassembly of section .text.init:
 800004fe:	0011e193          	ori	gp,gp,1
 80000502:	00000073          	ecall
 80000506:	0005b107          	fld	ft2,0(a1)
-8000050a:	f00000d3          	fmv.s.x	ft1,zero
+8000050a:	f00000d3          	fmv.w.x	ft1,zero
 8000050e:	0005b207          	fld	ft4,0(a1)
 80000512:	0005a187          	flw	ft3,0(a1)
 80000516:	0085b107          	fld	ft2,8(a1)
@@ -409,7 +409,7 @@ Disassembly of section .text.init:
 80000532:	0045bc27          	fsd	ft4,24(a1)
 80000536:	4d98                	lw	a4,24(a1)
 80000538:	4ddc                	lw	a5,28(a1)
-8000053a:	e00182d3          	fmv.x.s	t0,ft3
+8000053a:	e00182d3          	fmv.x.w	t0,ft3
 8000053e:	00508b63          	beq	ra,t0,80000554 <waitloop4+0x332>
 80000542:	0ff0000f          	fence
 80000546:	00018063          	beqz	gp,80000546 <waitloop4+0x324>
@@ -431,7 +431,7 @@ Disassembly of section .text.init:
 80000580:	0011e193          	ori	gp,gp,1
 80000584:	00000073          	ecall
 80000588:	0005b107          	fld	ft2,0(a1)
-8000058c:	f00000d3          	fmv.s.x	ft1,zero
+8000058c:	f00000d3          	fmv.w.x	ft1,zero
 80000590:	0005b207          	fld	ft4,0(a1)
 80000594:	0005a187          	flw	ft3,0(a1)
 80000598:	0085b107          	fld	ft2,8(a1)
@@ -456,7 +456,7 @@ Disassembly of section .text.init:
 800005d4:	0045bc27          	fsd	ft4,24(a1)
 800005d8:	4d98                	lw	a4,24(a1)
 800005da:	4ddc                	lw	a5,28(a1)
-800005dc:	e00182d3          	fmv.x.s	t0,ft3
+800005dc:	e00182d3          	fmv.x.w	t0,ft3
 800005e0:	00508b63          	beq	ra,t0,800005f6 <waitloop4+0x3d4>
 800005e4:	0ff0000f          	fence
 800005e8:	00018063          	beqz	gp,800005e8 <waitloop4+0x3c6>
@@ -478,7 +478,7 @@ Disassembly of section .text.init:
 80000622:	0011e193          	ori	gp,gp,1
 80000626:	00000073          	ecall
 8000062a:	0005b107          	fld	ft2,0(a1)
-8000062e:	f00000d3          	fmv.s.x	ft1,zero
+8000062e:	f00000d3          	fmv.w.x	ft1,zero
 80000632:	0ff0000f          	fence
 80000636:	4185                	li	gp,1
 80000638:	00000073          	ecall

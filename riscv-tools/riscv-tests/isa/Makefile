@@ -32,7 +32,7 @@ default: all
 # Build rules
 #--------------------------------------------------------------------
 
-RISCV_PREFIX ?= ${PWD}/../../prebuilt_tools/prefix/bin/riscv$(XLEN)-unknown-elf-
+RISCV_PREFIX ?= ${PWD}/../../prebuilt_tools/prefix/bin/riscv-none-embed-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
 RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all
@@ -51,6 +51,7 @@ vpath %.S $(src_dir)
 	$(RISCV_OBJDUMP) $< > $@
 	$(RISCV_OBJCOPY) $<   $<.verilog
 	sed -i 's/@800/@000/g' $<.verilog
+	sed -i 's/@00002FB8/@00002000/g' $<.verilog
 
 %.out: %
 	$(RISCV_SIM) --isa=rv64gc $< 2> $@
