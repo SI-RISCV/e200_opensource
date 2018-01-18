@@ -2,7 +2,7 @@
 
 #include <unistd.h>
 
-int __wrap_isatty(int fd)
+int _isatty(int fd)
 {
   if (fd == STDOUT_FILENO || fd == STDERR_FILENO)
     return 1;

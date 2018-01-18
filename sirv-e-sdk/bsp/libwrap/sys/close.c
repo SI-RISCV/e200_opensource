@@ -3,7 +3,7 @@
 #include <errno.h>
 #include "stub.h"
 
-int __wrap_close(int fd)
+int _close(int fd)
 {
   return _stub(EBADF);
 }

@@ -8,7 +8,7 @@
 #include "platform.h"
 #include "stub.h"
 
-ssize_t __wrap_write(int fd, const void* ptr, size_t len)
+ssize_t _write(int fd, const void* ptr, size_t len)
 {
   const uint8_t * current = (const char *)ptr;
 

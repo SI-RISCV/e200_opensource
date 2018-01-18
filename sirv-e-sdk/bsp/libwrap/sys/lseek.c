@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include "stub.h"
 
-off_t __wrap_lseek(int fd, off_t ptr, int dir)
+off_t _lseek(int fd, off_t ptr, int dir)
 {
   if (isatty(fd))
     return 0;

@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-void *__wrap_sbrk(ptrdiff_t incr)
+void *_sbrk(ptrdiff_t incr)
 {
   extern char _end[];
   extern char _heap_end[];

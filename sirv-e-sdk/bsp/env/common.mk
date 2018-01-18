@@ -6,15 +6,37 @@ _SIFIVE_MK_COMMON := # defined
 .PHONY: all
 all: $(TARGET)
 
-include $(BSP_BASE)/libwrap/libwrap.mk
 
 ENV_DIR = $(BSP_BASE)/env
+LIBWRAP_DIR = $(BSP_BASE)/libwrap
 PLATFORM_DIR = $(ENV_DIR)/$(BOARD)
 
 ASM_SRCS += $(ENV_DIR)/start.S
 ASM_SRCS += $(ENV_DIR)/entry.S
 C_SRCS += $(PLATFORM_DIR)/init.c
 C_SRCS += $(ENV_DIR)/sirv_printf.c
+
+C_SRCS += $(LIBWRAP_DIR)/stdlib/malloc.c 
+C_SRCS += $(LIBWRAP_DIR)/sys/open.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/lseek.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/read.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/write.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/fstat.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/stat.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/close.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/link.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/unlink.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/execve.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/fork.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/getpid.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/kill.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/wait.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/isatty.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/times.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/sbrk.c  
+C_SRCS += $(LIBWRAP_DIR)/sys/_exit.c  
+C_SRCS += $(LIBWRAP_DIR)/misc/write_hex.c
+
 
 LINKER_SCRIPT := $(PLATFORM_DIR)/link.lds
 

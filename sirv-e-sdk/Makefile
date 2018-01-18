@@ -11,7 +11,7 @@ $(info Obtaining additional make variables from $(extra_configs))
 include $(extra_configs)
 endif
 
-GCCVER ?= 6
+GCCVER ?= 7
 
 # Default target
 BOARD ?= freedom-e300-hifive1

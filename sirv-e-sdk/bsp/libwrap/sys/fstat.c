@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include "stub.h"
 
-int __wrap_fstat(int fd, struct stat* st)
+int _fstat(int fd, struct stat* st)
 {
   if (isatty(fd)) {
     st->st_mode = S_IFCHR;

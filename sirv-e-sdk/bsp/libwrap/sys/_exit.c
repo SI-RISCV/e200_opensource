@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include "platform.h"
 
-void __wrap__exit(int code)
+void _exit(int code)
 {
   const char message[] = "\nProgam has exited with code:";
 
