@@ -3,7 +3,6 @@
 toolchain/
 work/
 shortcmd/
-bsp/include/sifive/devices/i2c.h
 software/.gitignore
 software/HiFive1-UART-master/
 software/SoftFloat-3d/
