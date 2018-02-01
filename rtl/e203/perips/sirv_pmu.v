@@ -541,7 +541,7 @@ module sirv_pmu(
   always @(posedge clock or posedge reset) begin
     if(reset) begin
       T_355 <= 1'b1;
-      T_356 <= T_355;
+      T_356 <= 1'b1;
     end
     else begin
       T_355 <= 1'b0;
