@@ -1016,6 +1016,7 @@ module system
   // data to both places, switch 3 (sw[3]) determines whether
   // input to UART comes from FTDI chip or gpio_16 (shield pin PD0)
 
+
   assign ck_io[0] = gpio_16; // UART0 RX
   assign ck_io[1] = gpio_17; // UART0 TX
   assign ck_io[2] = gpio_18;
@@ -1328,11 +1329,15 @@ module system
 
     .io_pads_aon_pmu_padrst_o_oval    (dut_io_pads_aon_pmu_padrst_o_oval ),
 
-    .io_pads_bootrom_n_i_ival       (dut_io_pads_bootrom_n_i_ival),
-
-    .io_pads_dbgmode0_n_i_ival       (dut_io_pads_dbgmode0_n_i_ival),
-    .io_pads_dbgmode1_n_i_ival       (dut_io_pads_dbgmode1_n_i_ival),
-    .io_pads_dbgmode2_n_i_ival       (dut_io_pads_dbgmode2_n_i_ival) 
+    // Many people dont know how to control these pins, so just tie them to 1
+    .io_pads_bootrom_n_i_ival        (1'b1),
+    .io_pads_dbgmode0_n_i_ival       (1'b1),
+    .io_pads_dbgmode1_n_i_ival       (1'b1),
+    .io_pads_dbgmode2_n_i_ival       (1'b1) 
+    //.io_pads_bootrom_n_i_ival       (dut_io_pads_bootrom_n_i_ival),
+    //.io_pads_dbgmode0_n_i_ival       (dut_io_pads_dbgmode0_n_i_ival),
+    //.io_pads_dbgmode1_n_i_ival       (dut_io_pads_dbgmode1_n_i_ival),
+    //.io_pads_dbgmode2_n_i_ival       (dut_io_pads_dbgmode2_n_i_ival) 
   );
 
   // Assign reasonable values to otherwise unconnected inputs to chip top
