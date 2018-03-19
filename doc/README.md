@@ -17,4 +17,4 @@ The SoC introduction doc can be seen from:
     HBird_OpenSource_MCU_SoC_Spec.pdf
 
 
-If you find any issues from the doc, you can directly contact zhenbo.hu@si-in.com
+
