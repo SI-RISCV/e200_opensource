@@ -7,3 +7,6 @@
 [submodule "riscv-tools/riscv-tests"]
 	path = riscv-tools/riscv-tests
 	url = https://github.com/riscv/riscv-tests
+[submodule "riscv-tools/riscv-torture"]
+	path = riscv-tools/riscv-torture
+	url = https://github.com/ucb-bar/riscv-torture
