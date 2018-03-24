@@ -4,3 +4,6 @@
 [submodule "riscv-tools/riscv-fesvr"]
 	path = riscv-tools/riscv-fesvr
 	url = https://github.com/riscv/riscv-fesvr
+[submodule "riscv-tools/riscv-tests"]
+	path = riscv-tools/riscv-tests
+	url = https://github.com/riscv/riscv-tests
