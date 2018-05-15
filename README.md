@@ -38,6 +38,16 @@ What are you waiting for? Try it out now!
 
 Release History
 -----------------------------
+#### May 15, 2018
+
+    -- The 3rd official release, please clone this version if you want to use it
+         or reclone it (if you already cloned the earlier-test version).
+    -- Compared with earlier-test version, main updates includes:
+       ---- Fixed a Typo in a source file (in rtl/e203/core/e203_exu_decocde.v) 
+       ---- Fixed a Tied-to-zero issue in source files (in rtl/e203/perips/sirv_qspi_physical_*.v) 
+              * This is original freedom-e310 chisel generated QSPI file, which have a bug in Quad-mode (the 4th data enable
+                signal was tied to zero), fix it here
+
 #### Jan 13, 2018
 
     -- The 2nd official release, please clone this version if you want to use it
