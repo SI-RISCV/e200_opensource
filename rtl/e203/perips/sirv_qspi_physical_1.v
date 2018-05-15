@@ -281,7 +281,7 @@ module sirv_qspi_physical_1(
   assign io_port_dq_2_o = T_217;
   assign io_port_dq_2_oe = T_196;
   assign io_port_dq_3_o = T_218;
-  assign io_port_dq_3_oe = 1'h0;
+  assign io_port_dq_3_oe = io_port_dq_2_oe;
   assign io_port_cs_0 = T_208_0;
   assign io_port_cs_1 = T_208_1;
   assign io_port_cs_2 = T_208_2;
