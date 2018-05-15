@@ -504,8 +504,8 @@ module e203_exu_decode(
   assign dec_mulhsu = rv32_mulh | rv32_mulhsu | rv32_mulhu;
   assign dec_mul    = rv32_mul;
   assign dec_div    = rv32_div ;
-  assign dec_rem    = rv32_divu;
-  assign dec_divu   = rv32_rem;
+  assign dec_divu   = rv32_divu;
+  assign dec_rem    = rv32_rem;
   assign dec_remu   = rv32_remu;
  
   // ===========================================================================
