@@ -6,9 +6,6 @@ About
 
 This repository hosts the project for open-source hummingbird E200 RISC processor Core.
 
-The Hummingbird E200 (32bits RISC processor core) was developed by "武汉聚芯微电子有限公司" and 
-"北京九天微星科技发展有限公司", supporting part of RISC-V instruction set. 
-
 The Hummingbird E200 core is a two-stages pipeline based ultra-low power/area implementation, 
 which has both performance and areas benchmark better than ARM Cortex-M0+ core, makes the Hummingbird E200 as a perfect replacement for legacy 8051 core or ARM Cortex-M cores in the IoT or other ultra-low power applications. 
 
@@ -18,8 +15,6 @@ China mainland with industry level quality and state-of-art CPU design skills to
 
 Our ambition is to make "Hummingbird E200" become next 8051 in China, please go with us to make it happen.
 
-
-If there are any questions or problems, you can directly contact zhenbo.hu@si-in.com
 
 Usages and Applications
 -----------------------------
