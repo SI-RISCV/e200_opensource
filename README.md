@@ -34,6 +34,9 @@ from `e200_opensource/doc` directory.
 
 By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
 
+Meanwhile, the Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E200处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
+    《手把手教你设计CPU：RISC-V处理器》（已经上市，请在京东、淘宝、当当上搜索 RISC-V关键字）
+
 What are you waiting for? Try it out now!
 
 Release History
