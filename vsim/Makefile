@@ -3,7 +3,7 @@ RUN_DIR      := ${PWD}/run
 TESTNAME     := rv32ui-p-add 
 TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/${TESTNAME}
 DUMPWAVE     := 1
-CORE        := e201
+CORE        := e203
 CFG         := ${CORE}_config
 
 E201        := e201
