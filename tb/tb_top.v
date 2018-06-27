@@ -21,6 +21,7 @@ module tb_top();
 
   wire [`E200_XLEN-1:0] x3 = `EXU.u_e200_exu_regfile.rf_r[3];
   wire [`E200_PC_SIZE-1:0] pc = `EXU.u_e200_exu_commit.alu_cmt_i_pc;
+  wire [`E200_PC_SIZE-1:0] pc_vld = `EXU.u_e200_exu_commit.alu_cmt_i_valid;
 
   reg [31:0] pc_write_to_host_cnt;
   reg [31:0] pc_write_to_host_cycle;
@@ -35,7 +36,7 @@ module tb_top();
         pc_write_to_host_flag <= 1'b0;
         pc_write_to_host_cycle <= 32'b0;
     end
-    else if (pc == `PC_WRITE_TOHOST) begin
+    else if (pc_vld & (pc == `PC_WRITE_TOHOST)) begin
         pc_write_to_host_cnt <= pc_write_to_host_cnt + 1'b1;
         pc_write_to_host_flag <= 1'b1;
         if (pc_write_to_host_flag == 1'b0) begin
