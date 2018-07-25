@@ -6,6 +6,9 @@ There will be three main docs to help user ramp up using the Hummingbird E200 Se
     Hummingbird_E200_Series_Core_SoC_Quick_Start_Guide.pdf 
     Hummingbird_E200_Coprocessor_Extension_Quick_Start_Guide.pdf
 
+The SoC introduction doc can be seen from:
+
+    HBird_OpenSource_MCU_SoC_Spec.pdf
 
 The Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E200处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
 
@@ -13,10 +16,6 @@ The Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E20
   
  ![RISC-V中文书](../bookpic.jpg)
     
-
-The SoC introduction doc can be seen from:
-
-    HBird_OpenSource_MCU_SoC_Spec.pdf
 
 
 
