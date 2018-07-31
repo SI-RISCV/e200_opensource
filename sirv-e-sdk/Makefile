@@ -108,20 +108,28 @@ toolchain_prefix := $(toolchain_builddir)/prefix
 
 RISCV_PATH ?= $(toolchain_prefix)
 
+ifeq ($(GCCVER),)
+RISCV_GCC     ?= $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-gcc)
+RISCV_GXX     ?= $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-g++)
+RISCV_OBJDUMP ?= $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-objdump)
+RISCV_GDB     ?= $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-gdb)
+RISCV_AR      ?= $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-ar)
+endif
+
 ifeq ($(GCCVER),6)
-RISCV_GCC     := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-gcc)
-RISCV_GXX     := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-g++)
-RISCV_OBJDUMP := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-objdump)
-RISCV_GDB     := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-gdb)
-RISCV_AR      := $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-ar)
+RISCV_GCC     ?= $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-gcc)
+RISCV_GXX     ?= $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-g++)
+RISCV_OBJDUMP ?= $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-objdump)
+RISCV_GDB     ?= $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-gdb)
+RISCV_AR      ?= $(abspath $(RISCV_PATH)/bin/riscv32-unknown-elf-ar)
 endif
 
 ifeq ($(GCCVER),7)
-RISCV_GCC     := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-gcc)
-RISCV_GXX     := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-g++)
-RISCV_OBJDUMP := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-objdump)
-RISCV_GDB     := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-gdb)
-RISCV_AR      := $(abspath $(RISCV_PATH)/bin/riscv-none-embed-ar)
+RISCV_GCC     ?= $(abspath $(RISCV_PATH)/bin/riscv-none-embed-gcc)
+RISCV_GXX     ?= $(abspath $(RISCV_PATH)/bin/riscv-none-embed-g++)
+RISCV_OBJDUMP ?= $(abspath $(RISCV_PATH)/bin/riscv-none-embed-objdump)
+RISCV_GDB     ?= $(abspath $(RISCV_PATH)/bin/riscv-none-embed-gdb)
+RISCV_AR      ?= $(abspath $(RISCV_PATH)/bin/riscv-none-embed-ar)
 endif
 
 PATH := $(abspath $(RISCV_PATH)/bin):$(PATH)
@@ -198,6 +206,7 @@ PROGRAM_DIR = software/$(PROGRAM)
 PROGRAM_ELF = software/$(PROGRAM)/$(PROGRAM)
 
 .PHONY: software_clean
+clean: software_clean
 software_clean:
 	$(MAKE) -C $(PROGRAM_DIR) BSP_BASE=$(abspath bsp) BOARD=$(BOARD) clean
 

@@ -7,7 +7,7 @@
 # - CONFIG
 # - FPGA_DIR
 
-CORE = e201
+CORE = e203
 PATCHVERILOG ?= ""
 
 
@@ -25,8 +25,7 @@ install:
 	sed -i '1i\`define FPGA_SOURCE\'  ${INSTALL_RTL}/core/${CORE}_defines.v
 
 EXTRA_FPGA_VSRCS := 
-verilog := $(wildcard ${INSTALL_RTL}/*/*.v)
-verilog += $(wildcard ${INSTALL_RTL}/*.v)
+verilog =$(wildcard ${INSTALL_RTL}/*/*.v ${INSTALL_RTL}/*.v)
 
 
 # Build .mcs
@@ -42,7 +41,7 @@ bit : install
 
 
 .PHONY: setup
-setup: 
+setup: install
 	BASEDIR=${base_dir} VSRCS="$(verilog)" EXTRA_VSRCS="$(EXTRA_FPGA_VSRCS)" $(MAKE) -C $(FPGA_DIR) setup
 
 
