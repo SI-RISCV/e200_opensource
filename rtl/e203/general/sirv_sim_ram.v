@@ -48,7 +48,7 @@ module sirv_sim_ram
   output [DW-1:0]   dout
 );
 
-    reg [DW-1:0] mem_r [0:DP-1];
+    reg [0:DP-1] [DW-1:0] mem_r;
     reg [AW-1:0] addr_r;
     wire [MW-1:0] wen;
     wire ren;
