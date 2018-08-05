@@ -38,7 +38,7 @@ Instructions from https://github.com/ucb-bar/riscv-sodor
       wget http://mirrors.kernel.org/ubuntu/pool/universe/v/verilator/verilator_3.900-1_amd64.deb
       sudo dpkg -i verilator_3.900-1_amd64.deb
 
-### Building ###
+### Building from Source ###
 
 Instructions adapted from https://github.com/ucb-bar/riscv-sodor
 
@@ -63,8 +63,8 @@ Instructions adapted from https://github.com/ucb-bar/riscv-sodor
     export VERILATOR_ROOT=$PWD
     export PATH=$PATH:$VERILATOR_ROOT/bin
 
-Building
---------
+Building Testbench
+------------------
 
 To build with default settings:
 
@@ -77,7 +77,7 @@ into the testbench binary and hence you need to rebuild to turn it on and off.
 
 To build with Verilator prior to 3.922:
 
-    make build vflags_extra='--trace +define+DISABLE_SV_ASSERTIONS=1'
+    make build vflags_extra='--trace +define+DISABLE_SV_ASSERTION=1'
 
 Running
 -------
