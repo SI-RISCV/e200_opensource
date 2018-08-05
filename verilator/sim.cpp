@@ -1,3 +1,19 @@
+/*
+Copyright 2018 Tomas Brabec
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 #include "Vtb_verilator.h"
 #include <verilated.h>
 
@@ -23,50 +39,54 @@ int main(int argc, char **argv, char **env) {
 #if VM_TRACE
 	Verilated::traceEverOn(true);
         VerilatedVcdC* tfp = new VerilatedVcdC;
-//	top->trace (tfp, 99);
-//        tfp->open ("simx.vcd");
+#if VCDTRACE
+	top->trace (tfp, 99);
+        tfp->open ("dump.vcd");
+#endif
 #endif
 
 	// reset
 	top->rst_n = 1;
 	top->clk = 0;
 	top->eval();
-//#if VM_TRACE
-//	tfp->dump(simtime);
-//#endif
+#if VM_TRACE && VCDTRACE
+	tfp->dump(simtime);
+#endif
 	simtime++;
 	top->rst_n = 0;
 	top->eval();
-//#if VM_TRACE
-//	tfp->dump(simtime);
-//#endif
+#if VM_TRACE && VCDTRACE
+	tfp->dump(simtime);
+#endif
 	simtime++;
 	top->rst_n = 1;
 	top->eval();
-//#if VM_TRACE
-//	tfp->dump(simtime);
-//#endif
+#if VM_TRACE && VCDTRACE
+	tfp->dump(simtime);
+#endif
 	simtime++;
 
 	while (!Verilated::gotFinish() && cnt < (1 << 15)) {
 		top->clk = 1;
 		top->eval();
-//#if VM_TRACE
-//		tfp->dump(simtime);
-//#endif
+#if VM_TRACE && VCDTRACE
+		tfp->dump(simtime);
+#endif
 		simtime++;
 		top->clk = 0;
 		top->eval();
-//#if VM_TRACE
-//		tfp->dump(simtime);
-//#endif
+#if VM_TRACE && VCDTRACE
+		tfp->dump(simtime);
+#endif
 		simtime++;
 		cnt++;
 	}
 	delete top;
 
 #if VM_TRACE
-//	tfp->close();
+#if VCDTRACE
+	tfp->close();
+#endif
 	delete tfp;
 #endif
 
