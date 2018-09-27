@@ -11,9 +11,7 @@ which has both performance and areas benchmark better than ARM Cortex-M0+ core, 
 
 To boost the RISC-V popularity and to speed up the IoT development in China,
 we are very proud to make it open-source. It is the first open-source processor core from
-China mainland with industry level quality and state-of-art CPU design skills to support RISC-V instruction set.
-
-Our ambition is to make "Hummingbird E200" become next 8051 in China, please go with us to make it happen.
+China mainland with state-of-art CPU design skills to support RISC-V instruction set.
 
 
 Usages and Applications
@@ -44,6 +42,18 @@ What are you waiting for? Try it out now!
 
 Release History
 -----------------------------
+#### Note at First:
+    -- Many people asked if this core can be commercially used, the answer as below:
+       * According to the Apache 2.0 license, this open-sourced core can be used in commercail way.
+       * But the feature is not full (e.g., the debug functionalities is not full, which 
+           cannot add breakpoint into the read-only region, .e.g, ROM/Flash)
+       * The main purpose of this open-sourced core is to be used by students/university/research/
+           and entry-level-beginners, hence, the commercail quality (bug-free) and
+           service of this core is not not not warranted!!! 
+
+#### Sep 27, 2018
+    -- The 4th official release with some minor fixing.
+
 #### May 15, 2018
 
     -- The 3rd official release, please clone this version if you want to use it
