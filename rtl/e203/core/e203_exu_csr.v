@@ -1,5 +1,5 @@
  /*                                                                      
- Copyright 2017 Silicon Integrated Microelectronics, Inc.                
+ Copyright 2018 Nuclei System Technology, Inc.                
                                                                          
  Licensed under the Apache License, Version 2.0 (the "License");         
  you may not use this file except in compliance with the License.        
@@ -16,13 +16,6 @@
                                                                          
                                                                          
                                                                          
-//=====================================================================
-//--        _______   ___
-//--       (   ____/ /__/
-//--        \ \     __
-//--     ____\ \   / /
-//--    /_______\ /_/   MICROELECTRONICS
-//--
 //=====================================================================
 //
 // Designer   : Bob Hu
@@ -598,9 +591,9 @@ wire [`E203_XLEN-1:0] csr_misa = {
 //0xF12 MRO marchid Architecture ID.
 //0xF13 MRO mimpid Implementation ID.
 //0xF14 MRO mhartid Hardware thread ID.
-wire [`E203_XLEN-1:0] csr_mvendorid = `E203_XLEN'h`E203_MVENDORID;
-wire [`E203_XLEN-1:0] csr_marchid   = `E203_XLEN'h`E203_MARCHID  ;
-wire [`E203_XLEN-1:0] csr_mimpid    = `E203_XLEN'h`E203_MIMPID   ;
+wire [`E203_XLEN-1:0] csr_mvendorid = `E203_XLEN'h536;
+wire [`E203_XLEN-1:0] csr_marchid   = `E203_XLEN'hE203;
+wire [`E203_XLEN-1:0] csr_mimpid    = `E203_XLEN'h1;
 wire [`E203_XLEN-1:0] csr_mhartid   = {{`E203_XLEN-`E203_HART_ID_W{1'b0}},core_mhartid};
 wire rd_mvendorid = csr_rd_en & (csr_idx == 12'hF11);
 wire rd_marchid   = csr_rd_en & (csr_idx == 12'hF12);

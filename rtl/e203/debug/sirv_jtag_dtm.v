@@ -1,5 +1,5 @@
  /*                                                                      
- Copyright 2017 Silicon Integrated Microelectronics, Inc.                
+ Copyright 2018 Nuclei System Technology, Inc.                
                                                                          
  Licensed under the Apache License, Version 2.0 (the "License");         
  you may not use this file except in compliance with the License.        
@@ -49,8 +49,6 @@ module sirv_jtag_dtm (
    parameter DEBUG_OP_BITS = 2; // OP and RESP are the same size.
 
    parameter JTAG_VERSION  = 4'h1;
-   parameter JTAG_PART_NUM = 16'h0E31; // E31
-   parameter JTAG_MANUF_ID = 11'h489;  // As Assigned by JEDEC
 
    // Number of cycles which must remain in IDLE
    // The software should handle even if the
@@ -158,7 +156,7 @@ module sirv_jtag_dtm (
    //--------------------------------------------------------
    // Combo Logic
 
-   assign idcode  = {JTAG_VERSION, JTAG_PART_NUM, JTAG_MANUF_ID, 1'h1};
+   assign idcode  = {JTAG_VERSION, 16'he200 , 11'h536, 1'h1};
 
    wire [3:0]                           debugAddrBits = DEBUG_ADDR_BITS[3:0];
    wire [3:0]                           debugVersion = DEBUG_VERSION[3:0];

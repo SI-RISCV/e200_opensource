@@ -1,5 +1,5 @@
  /*                                                                      
- Copyright 2017 Silicon Integrated Microelectronics, Inc.                
+ Copyright 2018 Nuclei System Technology, Inc.                
                                                                          
  Licensed under the Apache License, Version 2.0 (the "License");         
  you may not use this file except in compliance with the License.        
@@ -16,13 +16,6 @@
                                                                          
                                                                          
                                                                          
-//=====================================================================
-//--        _______   ___
-//--       (   ____/ /__/
-//--        \ \     __
-//--     ____\ \   / /
-//--    /_______\ /_/   MICROELECTRONICS
-//--
 //=====================================================================
 //
 // Designer   : Bob Hu
@@ -114,10 +107,6 @@
 `define E203_DTCM_ADDR_BASE   `E203_CFG_DTCM_ADDR_BASE 
 `define E203_ITCM_ADDR_BASE   `E203_CFG_ITCM_ADDR_BASE 
                              
-// These ID are all hex value, e.g, ffeda04c
-`define E203_MIMPID           0
-`define E203_MVENDORID        0
-`define E203_MARCHID          0
 
 
 
