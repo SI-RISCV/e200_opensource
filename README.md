@@ -44,11 +44,11 @@ Release History
 -----------------------------
 #### Note at First:
     -- Many people asked if this core can be commercially used, the answer as below:
-       * According to the Apache 2.0 license, this open-sourced core can be used in commercail way.
+       * According to the Apache 2.0 license, this open-sourced core can be used in commercial way.
        * But the feature is not full (e.g., the debug functionalities is not full, which 
            cannot add breakpoint into the read-only region, .e.g, ROM/Flash)
        * The main purpose of this open-sourced core is to be used by students/university/research/
-           and entry-level-beginners, hence, the commercail quality (bug-free) and
+           and entry-level-beginners, hence, the commercial quality (bug-free) and
            service of this core is not not not warranted!!! 
 
 #### Sep 27, 2018
