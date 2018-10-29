@@ -5,35 +5,47 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 1 概述
 -----------
 
-为了便于初学者能够快速地学习RISC-V嵌入式开发，蜂鸟E203开源MCU原型SoC（在本文中将其简称为“MCU SoC”或者“SoC”）定制了基于Xilinx FPGA的专用开发板（在本文中将其简称为“FPGA开发板”）和专用JTAG调试器（在本文中将其简称为“JTAG调试器”）。
+为了便于初学者能够快速地学习RISC-V CPU设计和RISC-V嵌入式开发，蜂鸟E203开源MCU原型SoC（在本文中将其简称为“MCU SoC”或者“SoC”）定制了基于Xilinx FPGA的专用开发板（在本文中将其简称为“FPGA开发板”）和专用JTAG调试器（在本文中将其简称为“JTAG调试器”）。
 
 完整的FPGA开发板原型（包括FPGA开发板和调试器）如图1-1所示。
   
 #### 图1-1 蜂鸟FPGA开发板和JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/1-1.jpg" width="780">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/1-1.jpg" width="680">
+
 
 后文将分别予以详述。
+
  
 2 蜂鸟FPGA开发板
 -----------
 
 *   2.1	 FPGA开发板总体说明
+
 为了便于蜂鸟FPGA开发板的使用，FPGA开发板具备如下特点：
-	一板两用，该开发板不仅可以用于一块FPGA开发板作为电路设计使用，同时由于其预烧了蜂鸟E203开源SoC（包括E203内核），因此其可以直接作为一块MCU SoC原型开发板进行嵌入式软件开发。即：
-	对于不懂FPGA软件开发的用户完全无需做任何的操作，该开发板会预先烧写开源的蜂鸟E203 Core和配套SoC，上电后即可当做一块MCU嵌入式开发板来用。
-	对于了解FPGA使用的硬件用户而言，也可以将其当做普通的FPGA开发板来烧写普通的Verilog电路以进行FPGA开发。
-	由于其预先烧写的蜂鸟E203 Core和配套SoC源代码完全开源，可以对其任意进行修改或二次开发。
-	并且由于开源的蜂鸟E203 MCU SoC的 “FPGA烧写文件（mcs格式）”会上传到githu上，用户可以随时重新烧写此FPGA板将其恢复成为预装的MCU嵌入式开发板。
+
+    * 一板两用，该开发板不仅可以用于一块FPGA开发板作为电路设计使用，同时由于其预烧了蜂鸟E203开
+      源SoC（包括E203内核），因此其可以直接作为一块MCU SoC原型开发板进行嵌入式软件开发。即：
+      ---- 对于不懂FPGA软件开发的用户完全无需做任何的操作，该开发板会预先烧写开源的蜂鸟E203 Core和
+           配套SoC，上电后即可当做一块MCU嵌入式开发板来用。  
+      ---- 对于了解FPGA使用的硬件用户而言，也可以将其当做普通的FPGA开发板来烧写普通的Verilog电路以
+           进行FPGA开发。  
+    * 由于其预先烧写的蜂鸟E203 Core和配套SoC源代码完全开源，可以对其任意进行修改或二次开发。
+    * 并且由于开源的蜂鸟E203 MCU SoC的 “FPGA烧写文件（mcs格式）”会上传
+      到https://github.com/SI-RISCV/e200_opensource/tree/master/fpga/nucleikit/prebuilt_mcs 目录下，
+      用户可以随时重新烧写此FPGA板将其恢复成为预装的MCU嵌入式开发板。
 
 *   2.2	 FPGA开发板的购买途径
-用户可以在蜂鸟E203开源项目的Github网页上（https://github.com/SI-RISCV/e200_opensource/tree/master/boards）了解此开发板的购买渠道。
+
+#### 点此购买（Coming Soon）
 
 *   2.3	 FPGA开发板的硬件指标
  
-#### 图2-1 蜂鸟FPGA开发板总体图
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="780">
+蜂鸟E203专用FPGA开发板是一款低成本的入门级Xilinx FPGA开发板，如图2-1所示。
 
-蜂鸟E203专用FPGA开发板是一款低成本的入门级Xilinx FPGA开发板，如图2-1所示。该FPGA开发板的硬件特性如下：
+#### 图2-1 蜂鸟FPGA开发板总体图
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="680">
+
+该FPGA开发板的硬件特性如下：
 	使用的FPGA型号为Xilinx XC7A100T。
 	板载双晶振设计：100MHz主时钟和32.768K RTC时钟。
 	配备单独直流5V供电，并设有电源开关，如图2-1中的“DC：5V供电及开关”标注。
@@ -64,7 +76,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 	更多详细描述如图2-2中所示。 
  
 #### 图2-2 蜂鸟FPGA开发板的MCU定制部分
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-2.jpg" width="780">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-2.jpg" width="680">
 
 *   2.6	 FPGA开发板的常规功能部分
 为了便于此开发板作为常规FPGA开发板使用，配备分离的拨码开关和LED灯，如图2-3中所示。
@@ -72,38 +84,43 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
    
 #### 图2-3 蜂鸟FPGA开发板的拨码开关和LED灯以及跳线示例
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-3.jpg" width="780">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-3.jpg" width="680">
 
 *   2.7	 烧写蜂鸟E203项目至FPGA开发板
-有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板的具体操作步骤，请参见《蜂鸟E203快速上手介绍》。
+有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/boards目录下的 文档《蜂鸟E203快速上手介绍》。
 
 *   2.8	 使用FPGA开发板进行软件开发与调试
-有关如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见《蜂鸟E203快速上手介绍》。
+有关如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/boards目录下的 文档《蜂鸟E203快速上手介绍》。
 
 
 3	 蜂鸟JTAG调试器
 -----------
+
 *   3.1	 JTAG调试器总体说明
  
 #### 图3-1 蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="780">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="680">
 
 为了便于初学者能够快速地学习RISC-V嵌入式开发，“蜂鸟MCU SoC”定制了专用的JTAG调试器，该调试器具有如下特性：
+
 	调试器的一端为普通U盘接口，便于直接将其插入主机PC的USB接口，另一端为标准的4线JTAG接口和2线UART接口。
 	调试器具备USB转JTAG功能，通过标准的4线JTAG接口与蜂鸟E203 FPGA开发板连接。由于蜂鸟E203 内核支持标准的JTAG接口，通过此接口可以程序下载或进行交互式调试。
-	调试器具备UART转USB功能，通过标准的2线UART接口与蜂鸟E203 FPGA开发板连接。由于嵌入式系统往往没有配备显示屏，因此常用UART口连接主机PC的COM口（或者将UART转换为USB后连接主机PC的USB口）进行调试，这样便可以将嵌入式系统中的printf函数重定向打印至主机的显示屏。参见《RISC-V架构与嵌入式开发快速入门》第9章了解更多详情。
+	调试器具备UART转USB功能，通过标准的2线UART接口与蜂鸟E203 FPGA开发板连接。由于嵌入式系统往往没有配备显示屏，因此常用UART口连接主机PC的COM口（或者将UART转换为USB后连接主机PC的USB口）进行调试，这样便可以将嵌入式系统中的printf函数重定向打印至主机的显示屏。参见中文书籍《RISC-V架构与嵌入式开发快速入门》第9章了解更多详情。
 
 *   3.2	 JTAG调试器的购买途径
-用户可以在蜂鸟E203开源项目的Github网页上（https://github.com/SI-RISCV/e200_opensource/tree/master/boards）了解此JTAG调试器的购买渠道。
+
+#### 点此购买（Coming Soon）
 
 *   3.3	 JTAG调试器与FPGA开发板相连
+
 蜂鸟E203的JTAG调试器与FPGA开发板的连接方法如图3-2中所示。
 
 #### 图3-2 蜂鸟E203专用的JTAG调试器与PC和开发板连接
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-2.jpg" width="780">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-2.jpg" width="680">
 
 *   3.4	 使用JTAG调试器进行软件下载与调试
-有关如何使用JTAG调试器进行软件下载与调试的具体操作步骤，请参见《蜂鸟E203快速上手介绍》。
+
+有关如何使用JTAG调试器进行软件下载与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/boards目录下的 文档《蜂鸟E203快速上手介绍》。
 
 
     
