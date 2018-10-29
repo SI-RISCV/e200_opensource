@@ -5,17 +5,18 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 1 概述
 -----------
 
-    为了便于初学者能够快速地学习RISC-V嵌入式开发，蜂鸟E203开源MCU原型SoC（在本文中将其简称为“MCU SoC”或者“SoC”）定制了
-基于Xilinx FPGA的专用开发板（在本文中将其简称为“FPGA开发板”）和专用JTAG调试器（在本文中将其简称为“JTAG调试器”）。
-    完整的FPGA开发板原型（包括FPGA开发板和调试器）如图1-1所示。
+为了便于初学者能够快速地学习RISC-V嵌入式开发，蜂鸟E203开源MCU原型SoC（在本文中将其简称为“MCU SoC”或者“SoC”）定制了基于Xilinx FPGA的专用开发板（在本文中将其简称为“FPGA开发板”）和专用JTAG调试器（在本文中将其简称为“JTAG调试器”）。
+
+完整的FPGA开发板原型（包括FPGA开发板和调试器）如图1-1所示。
   
 #### 图1-1 蜂鸟FPGA开发板和JTAG调试器
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/1-1.jpg" width="780">
 
-	后续章节将分别予以详述。
+后文将分别予以详述。
  
 2 蜂鸟FPGA开发板
 -----------
+
 *   2.1	 FPGA开发板总体说明
 为了便于蜂鸟FPGA开发板的使用，FPGA开发板具备如下特点：
 	一板两用，该开发板不仅可以用于一块FPGA开发板作为电路设计使用，同时由于其预烧了蜂鸟E203开源SoC（包括E203内核），因此其可以直接作为一块MCU SoC原型开发板进行嵌入式软件开发。即：
