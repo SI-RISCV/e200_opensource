@@ -46,10 +46,10 @@ Dedicated FPGA-Board and JTAG-Debugger
 In order to easy user to study RISC-V in a quick and easy way, we have made a dedicated FPGA-Board and JTAG-Debugger.
 Diagram as below:
 
-   蜂鸟FPGA开发板总体图
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="780">
-   蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="780">
+#### 蜂鸟E203专用的FPGA开发板
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="480">
+#### 蜂鸟E203专用的JTAG调试器
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="180">
 
 The detailed introduction and the relevant documentation can be seen from `e200_opensource/boards` directory.
 
