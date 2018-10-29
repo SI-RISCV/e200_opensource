@@ -61,16 +61,17 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
     	配备多个电源状态指示LED灯。
     	配备板载的Xilinx Platform Cable USB JTAG下载器，用于对FPGA进行比特流的烧写，如图2-1中的“FPGA JTAG”标注。
     	配备两颗MT41K128M16JT-125K DDR III 颗粒。
+    
     	配备独立的128M-bit FPGA SPI Flash，此Flash用于存储mcs格式的比特流文件：
     
-    	熟悉Vivado和Xilinx FPGA使用的用户应该了解，bitstream文件烧录到FPGA中去之后FPGA不能掉电，因为一旦掉电之后FPGA烧
+    （1）熟悉Vivado和Xilinx FPGA使用的用户应该了解，bitstream文件烧录到FPGA中去之后FPGA不能掉电，因为一旦掉电之后FPGA烧
     录的内容即丢失，需要重新使用Vivado的Hardware Manager进行烧录方能使用。为了方便用户使用，Xilinx的FPGA开发板可以将
     需要烧录的内容写入开发板上的Flash中（以mcs格式），然后在每次FPGA上电之后通过硬件电路自动将需要烧录的内容从外部的
     Flash中读出并烧录到FPGA之中（该过程非常的快，不影响用户使用）。由于Flash是非易失性的内存，具有掉电后仍可保存的特
     性，因此意味着将需要烧录的内容写入 Flash后，每次掉电后无需使用Hardware Manager人工重新烧录（而是硬件电路快速自动完
     成），即等效于，FPGA上电即可使用。
     
-    	除了上电自动对FPGA重新进行烧录外，用户还可以通过强行按FPGA开发板上的“FPGA_PROG”按键触发硬件电路使用此Flash中的
+    （2）除了上电自动对FPGA重新进行烧录外，用户还可以通过强行按FPGA开发板上的“FPGA_PROG”按键触发硬件电路使用此Flash中的
     内容对FPGA重新进行烧录。FPGA开发板上的“FPGA_PROG”按键位置请参见图2-1中标注所示。
     
     	为了便于此开发板直接作为MCU原型嵌入式开发板使用，将蜂鸟E203开源SoC的顶层引脚直接连到开发板上，并配有明显的丝印
@@ -91,7 +92,9 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
     	为了实现MCU的功能，在FPGA开发板上专门配备了一个Nor Flash用于存储MCU的软件程序。
     
     	MCU SoC的两个输入时钟输入分别按照如下方式产生：
+    
        (1) 低速的实时时钟直接由FPGA开发板上的32.768KHz时钟源输入。
+       
        (2) 高速时钟由FPGA开发板上的100MHz时钟经过FPGA内部PLL降频而得（16MHz）。
        
     	将SoC的相关输入输出管脚明确的做到FPGA开发板上，并且用印刷字体明确的表明端口号。
