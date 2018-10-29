@@ -1,4 +1,4 @@
-Hummingbird E203 FPGA-Board and JTAG-debugger
+Hummingbird E203 FPGA-Board and JTAG-Debugger
 ================
 
 
@@ -10,7 +10,7 @@ Hummingbird E203 FPGA-Board and JTAG-debugger
     完整的FPGA开发板原型（包括FPGA开发板和调试器）如图1-1所示。
   
 #### 图1-1 蜂鸟FPGA开发板和JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/1-1.jpg" width="480">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/1-1.jpg" width="780">
 
 	后续章节将分别予以详述。
  
@@ -30,7 +30,7 @@ Hummingbird E203 FPGA-Board and JTAG-debugger
 *   2.3	 FPGA开发板的硬件指标
  
 #### 图2-1 蜂鸟FPGA开发板总体图
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="480">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="780">
 
 蜂鸟E203专用FPGA开发板是一款低成本的入门级Xilinx FPGA开发板，如图2-1所示。该FPGA开发板的硬件特性如下：
 	使用的FPGA型号为Xilinx XC7A100T。
@@ -63,7 +63,7 @@ Hummingbird E203 FPGA-Board and JTAG-debugger
 	更多详细描述如图2-2中所示。 
  
 #### 图2-2 蜂鸟FPGA开发板的MCU定制部分
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-2.jpg" width="480">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-2.jpg" width="780">
 
 *   2.6	 FPGA开发板的常规功能部分
 为了便于此开发板作为常规FPGA开发板使用，配备分离的拨码开关和LED灯，如图2-3中所示。
@@ -71,7 +71,7 @@ Hummingbird E203 FPGA-Board and JTAG-debugger
 
    
 #### 图2-3 蜂鸟FPGA开发板的拨码开关和LED灯以及跳线示例
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-3.jpg" width="480">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-3.jpg" width="780">
 
 *   2.7	 烧写蜂鸟E203项目至FPGA开发板
 有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板的具体操作步骤，请参见《蜂鸟E203快速上手介绍》。
@@ -85,7 +85,7 @@ Hummingbird E203 FPGA-Board and JTAG-debugger
 *   3.1	 JTAG调试器总体说明
  
 #### 图3-1 蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="480">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="780">
 
 为了便于初学者能够快速地学习RISC-V嵌入式开发，“蜂鸟MCU SoC”定制了专用的JTAG调试器，该调试器具有如下特性：
 	调试器的一端为普通U盘接口，便于直接将其插入主机PC的USB接口，另一端为标准的4线JTAG接口和2线UART接口。
@@ -99,7 +99,7 @@ Hummingbird E203 FPGA-Board and JTAG-debugger
 蜂鸟E203的JTAG调试器与FPGA开发板的连接方法如图3-2中所示。
 
 #### 图3-2 蜂鸟E203专用的JTAG调试器与PC和开发板连接
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-2.jpg" width="480">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-2.jpg" width="780">
 
 *   3.4	 使用JTAG调试器进行软件下载与调试
 有关如何使用JTAG调试器进行软件下载与调试的具体操作步骤，请参见《蜂鸟E203快速上手介绍》。
