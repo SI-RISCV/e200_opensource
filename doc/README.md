@@ -15,6 +15,7 @@ The Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E20
     《手把手教你设计CPU：RISC-V处理器》（已经上市，请在京东、淘宝、当当上搜索 RISC-V关键字）
   
  ![RISC-V中文书](../bookpic.jpg)
+ <img src="https://github.com/SI-RISCV/e200_opensource/bookpic.jpg" width="48">
     
 
 
