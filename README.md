@@ -28,7 +28,7 @@ Detailed Introduction
 We have provided very detailed introduction and quick start-up documents to help you ramping it up. 
 
 The detailed introduction and the quick start documentation can be seen 
-from `e200_opensource/doc` directory.
+from https://github.com/SI-RISCV/e200_opensource/tree/master/doc directory.
 
 By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
 
@@ -51,7 +51,7 @@ In order to easy user to study RISC-V in a quick and easy way, we have made a de
 #### 蜂鸟E203专用的JTAG调试器
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="400">
 
-The detailed introduction and the relevant documentation can be seen from `e200_opensource/boards` directory.
+The detailed introduction and the relevant documentation can be seen from https://github.com/SI-RISCV/e200_opensource/tree/master/boards directory.
 
 
 Release History
