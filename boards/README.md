@@ -27,9 +27,11 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
      	一板两用，该开发板不仅可以用于一块FPGA开发板作为电路设计使用，同时由于其预烧了蜂鸟E203开
       源SoC（包括E203内核），因此其可以直接作为一块MCU SoC原型开发板进行嵌入式软件开发。即：
-         * 对于不懂FPGA软件开发的用户完全无需做任何的操作，该开发板会预先烧写开源的蜂鸟E203 Core和
+      
+         (1) 对于不懂FPGA软件开发的用户完全无需做任何的操作，该开发板会预先烧写开源的蜂鸟E203 Core和
            配套SoC，上电后即可当做一块MCU嵌入式开发板来用。  
-         * 对于了解FPGA使用的硬件用户而言，也可以将其当做普通的FPGA开发板来烧写普通的Verilog电路以
+         
+         (2) 对于了解FPGA使用的硬件用户而言，也可以将其当做普通的FPGA开发板来烧写普通的Verilog电路以
            进行FPGA开发。  
            
      	由于其预先烧写的蜂鸟E203 Core和配套SoC源代码完全开源，可以对其任意进行修改或二次开发。
@@ -44,7 +46,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 #### 2.3	 FPGA开发板的硬件指标
  
-蜂鸟E203专用FPGA开发板是一款低成本的入门级Xilinx FPGA开发板，如图2-1所示。
+蜂鸟E203专用FPGA开发板是一款入门级Xilinx FPGA开发板，如图2-1所示。
 
 *   图2-1 蜂鸟FPGA开发板总体图
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="680">
@@ -87,12 +89,12 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
     	FPGA预先烧写成为“蜂鸟E203开源MCU SoC”（简称SoC）
     	为了实现MCU的功能，在FPGA开发板上专门配备了一个Nor Flash用于存储MCU的软件程序。
     	MCU SoC的两个输入时钟输入分别按照如下方式产生：
-    	低速的实时时钟直接由FPGA开发板上的32.768KHz时钟源输入。
-    	高速时钟由FPGA开发板上的100MHz时钟经过FPGA内部PLL降频而得（16MHz）。
+       (1) 低速的实时时钟直接由FPGA开发板上的32.768KHz时钟源输入。
+       (2) 高速时钟由FPGA开发板上的100MHz时钟经过FPGA内部PLL降频而得（16MHz）。
     	将SoC的相关输入输出管脚明确的做到FPGA开发板上，并且用印刷字体明确的表明端口号。
-    	有关此SoC的输入输出管脚列表的详细信息请参见《蜂鸟E203开源SoC简介》。
+    	有关此SoC的输入输出管脚列表的详细信息请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203开源SoC简介》。
     	注意：所有的管脚都只是映射到FPGA内部的普通端口（双向IO）上，然后通过FPGA Project通过设置端口映射把FPGA端口映
-    射到这些外部预定义的开发板引脚。有关FPGA Project的详细信息请参见《蜂鸟E203快速上手介绍》。
+    射到这些外部预定义的开发板引脚。有关FPGA Project的详细信息请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
     	更多详细描述如图2-2中所示。 
  
 *   图2-2 蜂鸟FPGA开发板的MCU定制部分
@@ -109,11 +111,11 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 #### 2.7	 烧写蜂鸟E203项目至FPGA开发板
 
-有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/boards 目录下的文档《蜂鸟E203快速上手介绍》。
+有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
 
 #### 2.8	 使用FPGA开发板进行软件开发与调试
 
-有关如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/boards 目录下的文档《蜂鸟E203快速上手介绍》。
+有关如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
 
 
 3	 蜂鸟JTAG调试器
@@ -132,7 +134,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 #### 3.2	 JTAG调试器的购买途径
 
-#### 点此购买（Coming Soon）
+*    点此购买（Coming Soon）
 
 #### 3.3	 JTAG调试器与FPGA开发板相连
 
@@ -143,7 +145,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 #### 3.4	 使用JTAG调试器进行软件下载与调试
 
-有关如何使用JTAG调试器进行软件下载与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/boards 目录下的文档《蜂鸟E203快速上手介绍》。
+有关如何使用JTAG调试器进行软件下载与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
 
 
     
