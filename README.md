@@ -47,8 +47,9 @@ In order to easy user to study RISC-V in a quick and easy way, we have made a de
 
 #### 蜂鸟E203专用的FPGA开发板
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="480">
+
 #### 蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="300">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="450">
 
 The detailed introduction and the relevant documentation can be seen from `e200_opensource/boards` directory.
 
