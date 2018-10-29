@@ -16,6 +16,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 后文将分别予以详述。
 
+
  
 2 蜂鸟FPGA开发板
 -----------
@@ -30,7 +31,9 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
            配套SoC，上电后即可当做一块MCU嵌入式开发板来用。  
          * 对于了解FPGA使用的硬件用户而言，也可以将其当做普通的FPGA开发板来烧写普通的Verilog电路以
            进行FPGA开发。  
+           
      	由于其预先烧写的蜂鸟E203 Core和配套SoC源代码完全开源，可以对其任意进行修改或二次开发。
+      
      	并且由于开源的蜂鸟E203 MCU SoC的 “FPGA烧写文件（mcs格式）”会上传
       到https://github.com/SI-RISCV/e200_opensource/tree/master/fpga/nucleikit/prebuilt_mcs 目录下，
       用户可以随时重新烧写此FPGA板将其恢复成为预装的MCU嵌入式开发板。
@@ -48,25 +51,29 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 该FPGA开发板的硬件特性如下：
 
-    	使用的FPGA型号为Xilinx XC7A100T。
-    	板载双晶振设计：100MHz主时钟和32.768K RTC时钟。
-    	配备单独直流5V供电，并设有电源开关，如图2-1中的“DC：5V供电及开关”标注。
+    	使用的FPGA型号为Xilinx XC7A100T。    
+    	板载双晶振设计：100MHz主时钟和32.768K RTC时钟。    
+    	配备单独直流5V供电，并设有电源开关，如图2-1中的“DC：5V供电及开关”标注。    
     	配备独立的FPGA_RESET按键，用户可用此按键作为FPGA的复位按键。
     	配备多达126个引出的FPGA GPIO，用于用户自定义使用。
     	配备多个电源状态指示LED灯。
     	配备板载的Xilinx Platform Cable USB JTAG下载器，用于对FPGA进行比特流的烧写，如图2-1中的“FPGA JTAG”标注。
     	配备两颗MT41K128M16JT-125K DDR III 颗粒。
     	配备独立的128M-bit FPGA SPI Flash，此Flash用于存储mcs格式的比特流文件：
+    
     	熟悉Vivado和Xilinx FPGA使用的用户应该了解，bitstream文件烧录到FPGA中去之后FPGA不能掉电，因为一旦掉电之后FPGA烧
     录的内容即丢失，需要重新使用Vivado的Hardware Manager进行烧录方能使用。为了方便用户使用，Xilinx的FPGA开发板可以将
     需要烧录的内容写入开发板上的Flash中（以mcs格式），然后在每次FPGA上电之后通过硬件电路自动将需要烧录的内容从外部的
     Flash中读出并烧录到FPGA之中（该过程非常的快，不影响用户使用）。由于Flash是非易失性的内存，具有掉电后仍可保存的特
     性，因此意味着将需要烧录的内容写入 Flash后，每次掉电后无需使用Hardware Manager人工重新烧录（而是硬件电路快速自动完
     成），即等效于，FPGA上电即可使用。
+    
     	除了上电自动对FPGA重新进行烧录外，用户还可以通过强行按FPGA开发板上的“FPGA_PROG”按键触发硬件电路使用此Flash中的
-    内容对FPGA重新进行烧录。FPGA开发板上的“FPGA_PROG”按键位置请参见图2-1中标注所示。		
+    内容对FPGA重新进行烧录。FPGA开发板上的“FPGA_PROG”按键位置请参见图2-1中标注所示。
+    
     	为了便于此开发板直接作为MCU原型嵌入式开发板使用，将蜂鸟E203开源SoC的顶层引脚直接连到开发板上，并配有明显的丝印
     标注。请参见第2.5节了解详细介绍。
+    
     	为了便于此开发板作为常规FPGA开发板使用，配备分离的拨码开关和LED灯，请参见第2.6节了解详细介绍。
 
 #### 2.4	 FPGA开发板的电路原理图
