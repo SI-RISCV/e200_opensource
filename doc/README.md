@@ -1,4 +1,4 @@
-# README #
+# Documentation of Hummingbird E203 #
 
 There will be three main docs to help user ramp up using the Hummingbird E203 Processor Core:
 
