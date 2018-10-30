@@ -32,7 +32,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
   
 *   图1-1 蜂鸟FPGA开发板和JTAG调试器
 
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/1-1.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/1-1.jpg" width="680">
 
 
 后文将分别予以详述。
@@ -69,7 +69,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 蜂鸟E203专用FPGA开发板是一款入门级Xilinx FPGA开发板，如图2-1所示。
 
 *   图2-1 蜂鸟FPGA开发板总体图
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-1.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/2-1.jpg" width="680">
 
 该FPGA开发板的硬件特性如下：
 
@@ -128,7 +128,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
  
  
 *   图2-2 蜂鸟FPGA开发板的MCU定制部分
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-2.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/2-2.jpg" width="680">
 
 #### 2.6	 FPGA开发板的常规功能部分
 
@@ -137,7 +137,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 注意：此组拨码开关和LED并没有被连接到FPGA的管脚上，用户可以自由的进行跳线使其控制开发板上的其他信号。如图2-3中所示，用户可以通过用杜邦线跳线将“拨码开关”与MCU SoC的GPIO接口连接，相当于通过拨码开关来产生GPIO的输入，从而可以编程构建形象化的简单Demo。
    
 *   图2-3 蜂鸟FPGA开发板的拨码开关和LED灯以及跳线示例
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/2-3.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/2-3.jpg" width="680">
 
 #### 2.7	 烧写蜂鸟E203项目至FPGA开发板
 
@@ -154,7 +154,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 #### 3.1	 JTAG调试器总体说明
  
 *   图3-1 蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-1.jpg" width="400">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/3-1.jpg" width="400">
 
 为了便于初学者能够快速地学习RISC-V嵌入式开发，“蜂鸟MCU SoC”定制了专用的JTAG调试器，该调试器具有如下特性：
 
@@ -177,7 +177,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 蜂鸟E203的JTAG调试器与FPGA开发板的连接方法如图3-2中所示。
 
 *   图3-2 蜂鸟E203专用的JTAG调试器与PC和开发板连接
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/3-2.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/3-2.jpg" width="680">
 
 #### 3.4	 使用JTAG调试器进行软件下载与调试
 
