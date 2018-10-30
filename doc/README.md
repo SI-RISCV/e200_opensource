@@ -1,16 +1,17 @@
 # README #
 
-There will be three main docs to help user ramp up using the Hummingbird E200 Series Processor Core:
+There will be three main docs to help user ramp up using the Hummingbird E203 Processor Core:
 
-    Hummingbird_E200_Series_Core_SoC_Introduction.pdf
-    Hummingbird_E200_Series_Core_SoC_Quick_Start_Guide.pdf 
-    Hummingbird_E200_Coprocessor_Extension_Quick_Start_Guide.pdf
+    蜂鸟E203快速上手介绍.pdf
+    蜂鸟E203开源内核简介.pdf 
+    蜂鸟E203开源SoC简介.pdf
 
-The SoC introduction doc can be seen from:
+Besides, there are two more docs under different directories which is very useful:
 
-    HBird_OpenSource_MCU_SoC_Spec.pdf
+    https://github.com/SI-RISCV/e200_opensource/tree/master/boards/蜂鸟FPGA开发板和JTAG调试器介绍.pdf
+    https://github.com/SI-RISCV/hbird-e-sdk/tree/master/software/FreeRTOSv9.0.0/蜂鸟E203移植FreeRTOS.pdf
 
-The Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E200处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
+The Hummingbird E203 Core was deeply introduced in the published Book (蜂鸟E200处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
 
     《手把手教你设计CPU：RISC-V处理器》（已经上市，请在京东、淘宝、当当上搜索 RISC-V关键字）
   
