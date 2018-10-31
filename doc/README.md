@@ -18,5 +18,16 @@ The Hummingbird E203 Core was deeply introduced in the published Book (蜂鸟E20
  <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/bookpic.jpg" width="480">
     
 
+Dedicated FPGA-Board and JTAG-Debugger 
+-----------------------------
+In order to easy user to study RISC-V in a quick and easy way, we have made a dedicated FPGA-Board and JTAG-Debugger.  Diagram as below:
+
+#### 蜂鸟E203专用的FPGA开发板
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/2-1.jpg" width="480">
+
+#### 蜂鸟E203专用的JTAG调试器
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/3-1.jpg" width="400">
+
+The detailed introduction and the relevant documentation can be seen from https://github.com/SI-RISCV/e200_opensource/tree/master/boards directory.
 
 
