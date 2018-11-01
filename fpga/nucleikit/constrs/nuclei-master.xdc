@@ -2,21 +2,32 @@ set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 
 #####               create clock              #####
-set_property -dict { PACKAGE_PIN W19    IOSTANDARD LVCMOS33 } [get_ports { CLK50MHZ }]; 
-create_clock -add -name sys_clk_pin -period 20.00 -waveform {0 10} [get_ports {CLK50MHZ}];
+
+
+
+set_property -dict { PACKAGE_PIN W19    IOSTANDARD LVCMOS33 } [get_ports { CLK100MHZ }]; 
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {CLK100MHZ}];
+
+set_property -dict { PACKAGE_PIN Y18    IOSTANDARD LVCMOS33 } [get_ports { CLK32768KHZ }]; 
+create_clock -add -name sys_clk_pin -period 30517.58 -waveform {0 15258.79} [get_ports {CLK32768KHZ}];
+
+
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets dut_io_pads_jtag_TCK_i_ival]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets IOBUF_jtag_TCK/O]
 
 
 #####            rst define           #####
-set_property PACKAGE_PIN T6  [get_ports ck_rst  ]
+
+set_property PACKAGE_PIN T6  [get_ports fpga_rst  ]
+set_property PACKAGE_PIN P20 [get_ports mcu_rst   ]
 
 #####                spi define               #####
-set_property PACKAGE_PIN N14 [get_ports  qspi_cs    ]
-set_property PACKAGE_PIN T16 [get_ports  qspi_sck   ]
-set_property PACKAGE_PIN Y17 [get_ports {qspi_dq[3]}]
-set_property PACKAGE_PIN R17 [get_ports {qspi_dq[2]}]
-set_property PACKAGE_PIN P16 [get_ports {qspi_dq[1]}]
-set_property PACKAGE_PIN U16 [get_ports {qspi_dq[0]}]
+set_property PACKAGE_PIN W16 [get_ports  qspi_cs    ]
+set_property PACKAGE_PIN W15 [get_ports  qspi_sck   ]
+set_property PACKAGE_PIN U16 [get_ports {qspi_dq[3]}]
+set_property PACKAGE_PIN T16 [get_ports {qspi_dq[2]}]
+set_property PACKAGE_PIN T14 [get_ports {qspi_dq[1]}]
+set_property PACKAGE_PIN T15 [get_ports {qspi_dq[0]}]
 
 #####               MCU JTAG define           #####
 set_property PACKAGE_PIN N17 [get_ports mcu_TDO]
@@ -44,8 +55,8 @@ set_property PACKAGE_PIN Y19  [get_ports {gpio[21]}]
 set_property PACKAGE_PIN V18  [get_ports {gpio[20]}]
 set_property PACKAGE_PIN V19  [get_ports {gpio[19]}]
 set_property PACKAGE_PIN AA19 [get_ports {gpio[18]}]
-set_property PACKAGE_PIN AB20 [get_ports {gpio[17]}]
-set_property PACKAGE_PIN V17  [get_ports {gpio[16]}]
+set_property PACKAGE_PIN R17  [get_ports {gpio[17]}]  #mcu uart0 tx
+set_property PACKAGE_PIN P16  [get_ports {gpio[16]}]  #mcu uart0 rx
 set_property PACKAGE_PIN V22  [get_ports {gpio[15]}]
 set_property PACKAGE_PIN T21  [get_ports {gpio[14]}]
 set_property PACKAGE_PIN U21  [get_ports {gpio[13]}]
@@ -66,7 +77,10 @@ set_property PACKAGE_PIN W22  [get_ports {gpio[0]}]
 
 
 #####            clock & rst define           #####
-set_property IOSTANDARD LVCMOS15 [get_ports ck_rst  ]
+
+set_property IOSTANDARD LVCMOS15 [get_ports fpga_rst  ]
+set_property IOSTANDARD LVCMOS33 [get_ports mcu_rst   ]
+
 
 #####                spi define               #####
 set_property IOSTANDARD LVCMOS33 [get_ports  qspi_cs    ]

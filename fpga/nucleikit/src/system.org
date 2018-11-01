@@ -2,18 +2,20 @@
 
 module system
 (
-  //input wire CLK50MHZ,
-  input wire CLK50MHZ,//GCLK-W19
-  input wire ck_rst,//FPGA_RESET-T6
+  input wire CLK100MHZ,//GCLK-W19
+  input wire CLK32768KHZ,//RTC_CLK-Y18
+
+  input wire fpga_rst,//FPGA_RESET-T6
+  input wire mcu_rst,//MCU_RESET-P20
 
 
   // Dedicated QSPI interface
-  output wire qspi_cs,//FPGA_IIO1-N14
-  output wire qspi_sck,//FPGA_IO4-T16
-  inout wire [3:0] qspi_dq,//qspi_dq[1]-FPGA_IO0-P16    DO
-                           //qspi_dq[0]-FPGA_IO3-U16    DI
-                           //qspi_dq[3]-FPGA_IO2-Y17
-                           //qspi_dq[2]-FPGA_IO5-R17
+  output wire qspi_cs,
+  output wire qspi_sck,
+  inout wire [3:0] qspi_dq,
+                           
+                           
+                           
 
   //gpio
   inout wire [31:0] gpio,//GPIO00~GPIO031
@@ -22,20 +24,22 @@ module system
   // JD (used for JTAG connection)
   inout wire mcu_TDO,//MCU_TDO-N17
   inout wire mcu_TCK,//MCU_TCK-P15 
-  inout wire mcu_TDI,//MCU_TDI-R13
-  inout wire mcu_TMS,//MCU_TMS-T13
+  inout wire mcu_TDI,//MCU_TDI-T18
+  inout wire mcu_TMS,//MCU_TMS-P17
 
   //pmu_wakeup
 
-  inout wire pmu_paden, // ly //PMU_VDDPADEN-U15
-  inout wire pmu_padrst,// ly //PMU_VADDPARST_V15
-  inout wire mcu_wakeup // ly //MCU_WAKE-N15
+  inout wire pmu_paden,  //PMU_VDDPADEN-U15
+  inout wire pmu_padrst, //PMU_VADDPARST_V15
+  inout wire mcu_wakeup  //MCU_WAKE-N15
 );
 
   wire clk_out1;
   wire mmcm_locked;
 
   wire reset_periph;
+
+  wire ck_rst;
 
   // All wires connected to the chip top
   wire dut_clock;
@@ -287,19 +291,15 @@ module system
   mmcm ip_mmcm
   (
     .resetn(ck_rst),
-    .clk_in1(CLK50MHZ),
-    .clk_out1(clk_8388), // 8.388 MHz = 32.768 kHz * 256
+    .clk_in1(CLK100MHZ),
+    
     .clk_out2(clk_16M), // 16 MHz, this clock we set to 16MHz 
     .locked(mmcm_locked)
   );
 
-  wire slowclk;
-  clkdivider slowclkgen
-  (
-    .clk(clk_8388),// We use this clock divide to 32.768KHz
-    .reset(~mmcm_locked),
-    .clk_out(slowclk)
-  );
+  assign ck_rst = fpga_rst & mcu_rst;
+
+  
 
   reset_sys ip_reset_sys
   (
@@ -439,11 +439,57 @@ module system
   );
   assign dut_io_pads_gpio_5_i_ival = iobuf_gpio_5_o & dut_io_pads_gpio_5_o_ie;
 
-  assign dut_io_pads_gpio_6_i_ival = 1'b0;
+  wire iobuf_gpio_6_o;
+  IOBUF
+  #(
+    .DRIVE(12),
+    .IBUF_LOW_PWR("TRUE"),
+    .IOSTANDARD("DEFAULT"),
+    .SLEW("SLOW")
+  )
+  IOBUF_gpio_6
+  (
+    .O(iobuf_gpio_6_o),
+    .IO(gpio[6]),
+    .I(dut_io_pads_gpio_6_o_oval),
+    .T(~dut_io_pads_gpio_6_o_oe)
+  );
+  assign dut_io_pads_gpio_6_i_ival = iobuf_gpio_6_o & dut_io_pads_gpio_6_o_ie;
 
-  assign dut_io_pads_gpio_7_i_ival = 1'b0;
+  wire iobuf_gpio_7_o;
+  IOBUF
+  #(
+    .DRIVE(12),
+    .IBUF_LOW_PWR("TRUE"),
+    .IOSTANDARD("DEFAULT"),
+    .SLEW("SLOW")
+  )
+  IOBUF_gpio_7
+  (
+    .O(iobuf_gpio_7_o),
+    .IO(gpio[7]),
+    .I(dut_io_pads_gpio_7_o_oval),
+    .T(~dut_io_pads_gpio_7_o_oe)
+  );
+  assign dut_io_pads_gpio_7_i_ival = iobuf_gpio_7_o & dut_io_pads_gpio_7_o_ie;
 
-  assign dut_io_pads_gpio_8_i_ival = 1'b0;
+  wire iobuf_gpio_8_o;
+  IOBUF
+  #(
+    .DRIVE(12),
+    .IBUF_LOW_PWR("TRUE"),
+    .IOSTANDARD("DEFAULT"),
+    .SLEW("SLOW")
+  )
+  IOBUF_gpio_8
+  (
+    .O(iobuf_gpio_8_o),
+    .IO(gpio[8]),
+    .I(dut_io_pads_gpio_8_o_oval),
+    .T(~dut_io_pads_gpio_8_o_oe)
+  );
+  assign dut_io_pads_gpio_8_i_ival = iobuf_gpio_8_o & dut_io_pads_gpio_8_o_ie;
+
 
   wire iobuf_gpio_9_o;
   IOBUF
@@ -926,8 +972,8 @@ module system
   // Shield header row 0: PD0-PD7
 
   // Use the LEDs for some more useful debugging things.
-  assign pmu_paden  = dut_io_pads_aon_pmu_vddpaden_o_oval;  //LD4
-  assign pmu_padrst = dut_io_pads_aon_pmu_padrst_o_oval;		//LD5
+  assign pmu_paden  = dut_io_pads_aon_pmu_vddpaden_o_oval;  
+  assign pmu_padrst = dut_io_pads_aon_pmu_padrst_o_oval;		
 
   // model select
   assign dut_io_pads_bootrom_n_i_ival  = 1'b1;   //
@@ -941,7 +987,7 @@ module system
     .hfextclk(clk_16M),
     .hfxoscen(),
 
-    .lfextclk(slowclk),
+    .lfextclk(CLK32768KHZ), 
     .lfxoscen(),
 
        // Note: this is the real SoC top AON domain slow clock
@@ -1169,7 +1215,7 @@ module system
     .io_pads_qspi_dq_3_o_ds(dut_io_pads_qspi_dq_3_o_ds),
     .io_pads_qspi_cs_0_o_oval(dut_io_pads_qspi_cs_0_o_oval),
        // Note: this is the real SoC top level reset signal
-    .io_pads_aon_erst_n_i_ival(dut_io_pads_aon_erst_n_i_ival),
+    .io_pads_aon_erst_n_i_ival(ck_rst),
     .io_pads_aon_pmu_dwakeup_n_i_ival(dut_io_pads_aon_pmu_dwakeup_n_i_ival),
     .io_pads_aon_pmu_vddpaden_o_oval(dut_io_pads_aon_pmu_vddpaden_o_oval),
 
@@ -1201,7 +1247,7 @@ module system
   );
   assign dut_io_pads_aon_pmu_dwakeup_n_i_ival = (~iobuf_dwakeup_o);
 
-  assign dut_io_pads_aon_erst_n_i_ival = ~reset_periph;
+  
 
   assign dut_io_pads_aon_pmu_vddpaden_i_ival = 1'b1;
 
