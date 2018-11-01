@@ -55,8 +55,8 @@ set_property PACKAGE_PIN Y19  [get_ports {gpio[21]}]
 set_property PACKAGE_PIN V18  [get_ports {gpio[20]}]
 set_property PACKAGE_PIN V19  [get_ports {gpio[19]}]
 set_property PACKAGE_PIN AA19 [get_ports {gpio[18]}]
-set_property PACKAGE_PIN R17  [get_ports {gpio[17]}]  #mcu uart0 tx
-set_property PACKAGE_PIN P16  [get_ports {gpio[16]}]  #mcu uart0 rx
+set_property PACKAGE_PIN R17  [get_ports {gpio[17]}]  
+set_property PACKAGE_PIN P16  [get_ports {gpio[16]}]  
 set_property PACKAGE_PIN V22  [get_ports {gpio[15]}]
 set_property PACKAGE_PIN T21  [get_ports {gpio[14]}]
 set_property PACKAGE_PIN U21  [get_ports {gpio[13]}]
