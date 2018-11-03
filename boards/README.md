@@ -3,10 +3,12 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 注意：本文档复制于文档《蜂鸟FPGA开发板和JTAG调试器介绍》（位于本目录 https://github.com/SI-RISCV/e200_opensource/blob/master/boards 下），用户可以方便下载其文档。
 
-有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板，和如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
+有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板，和如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档：
+*   《蜂鸟E203快速上手介绍》。
 
+*   FPGA开发板和JTAG调试器的淘宝购买链接：https://item.taobao.com/item.htm?id=580813056318
 
-如您有关于此开发板的任何信息咨询，请致信summer@nucleisys.com
+*   如您有关于此开发板的任何信息咨询，请致信summer@nucleisys.com
 
 目录
 -----------
@@ -68,7 +70,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 #### 2.2	 FPGA开发板的购买途径
 
-*   点此购买（Coming Soon）
+*   FPGA开发板的淘宝购买链接：https://item.taobao.com/item.htm?id=580813056318
 
 #### 2.3	 FPGA开发板的硬件指标
  
@@ -176,7 +178,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 #### 3.2	 JTAG调试器的购买途径
 
-*    点此购买（Coming Soon）
+*   JTAG调试器的淘宝购买链接：https://item.taobao.com/item.htm?id=580813056318
 
 #### 3.3	 JTAG调试器与FPGA开发板相连
 
