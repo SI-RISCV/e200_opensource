@@ -3,6 +3,11 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 注意：本文档复制于文档《蜂鸟FPGA开发板和JTAG调试器介绍》（位于本目录 https://github.com/SI-RISCV/e200_opensource/blob/master/boards 下），用户可以方便下载其文档。
 
+有关如何烧写蜂鸟E203项目（包括SoC和处理器内核）至此FPGA开发板，和如何使用FPGA开发板进行软件开发与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
+
+
+如您有关于此开发板的任何信息咨询，请致信summer@nucleisys.com
+
 目录
 -----------
 
