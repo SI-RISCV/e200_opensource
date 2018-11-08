@@ -40,7 +40,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
   
 *   图1-1 蜂鸟FPGA开发板和JTAG调试器
 
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/1-1.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p3.jpg" width="680">
 
 
 后文将分别予以详述。
@@ -190,6 +190,26 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 #### 3.4	 使用JTAG调试器进行软件下载与调试
 
 有关如何使用JTAG调试器进行软件下载与调试的具体操作步骤，请参见https://github.com/SI-RISCV/e200_opensource/blob/master/doc 目录下的文档《蜂鸟E203快速上手介绍》。
+
+
+ 
+3 更多图片欣赏
+-----------
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p1.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p2.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p3.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p4.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p5.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p6.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p7.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p8.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p9.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p10.jpg" width="680">
+
+
+
+
+
 
 
     
