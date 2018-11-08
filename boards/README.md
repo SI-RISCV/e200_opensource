@@ -29,6 +29,8 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
       * 3.2	 JTAG调试器的购买途径
       * 3.3	 JTAG调试器与FPGA开发板相连
       * 3.4	 使用JTAG调试器进行软件下载与调试
+   * 4	 更多图片欣赏    
+  
 <!--te-->
 
 1 概述
@@ -193,7 +195,7 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 
 
  
-3 更多图片欣赏
+4 更多图片欣赏
 -----------
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p1.jpg" width="680">
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/p2.jpg" width="680">
