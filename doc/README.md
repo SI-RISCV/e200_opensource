@@ -17,6 +17,9 @@ The Hummingbird E203 Core was deeply introduced in the published Book (蜂鸟E20
   
  <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/bookpic.jpg" width="480">
     
+    《RISC-V架构与嵌入式开发快速入门》（已经上市，请在京东、淘宝、当当上搜索 RISC-V关键字）
+
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/book2pic.jpg" width="620">
 
 Dedicated FPGA-Board and JTAG-Debugger 
 -----------------------------
