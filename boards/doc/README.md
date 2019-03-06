@@ -23,11 +23,14 @@ Dedicated FPGA-Board and JTAG-Debugger
 -----------------------------
 In order to easy user to study RISC-V in a quick and easy way, we have made a dedicated FPGA-Board and JTAG-Debugger.  Diagram as below:
 
-#### 蜂鸟E203专用的FPGA开发板
+#### Nuclei EV Kit
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/2-1.jpg" width="480">
 
+#### Hummingbird EV Kit
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p1.jpg" width="480">
+
 #### 蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/3-1.jpg" width="400">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p4.jpg" width="400">
 
 The detailed introduction and the relevant documentation can be seen from https://github.com/SI-RISCV/e200_opensource/tree/master/boards directory.
 

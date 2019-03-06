@@ -207,6 +207,13 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/p8.jpg" width="680">
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/p9.jpg" width="680">
 <img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/p10.jpg" width="680">
+-----------
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p1.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p2.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p3.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p4.jpg" width="680">
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p5.jpg" width="680">
+
 
 
 
