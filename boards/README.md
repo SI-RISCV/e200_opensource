@@ -79,7 +79,13 @@ Hummingbird E203 FPGA-Board and JTAG-Debugger
 蜂鸟E203专用FPGA开发板是一款入门级Xilinx FPGA开发板，如图2-1所示。
 
 *   图2-1 蜂鸟FPGA开发板总体图
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/2-1.jpg" width="680">
+
+#### Nuclei EV Kit
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/nucleikit/pics/2-1.jpg" width="480">
+
+#### Hummingbird EV Kit
+<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/hbirdkit/pics/p6.jpg" width="480">
+
 
 该FPGA开发板的硬件特性如下：
 
