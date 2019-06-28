@@ -13,6 +13,7 @@ To boost the RISC-V popularity and to speed up the IoT development in China,
 we are very proud to make it open-source. It is the first open-source processor core from
 China mainland with state-of-art CPU design skills to support RISC-V instruction set.
 
+Welcome to visit http://bbs.nucleisys.com/ to see the discussion of the Hummingbird E203.
 
 Usages and Applications
 -----------------------------
