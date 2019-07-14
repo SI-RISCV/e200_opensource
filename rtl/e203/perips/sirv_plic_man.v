@@ -413,8 +413,8 @@ localparam PLIC_PEND_ARRAY = (((PLIC_IRQ_NUM-1)/32) + 1);
    end//}
 
    //
-         //0x0C00 1000 Start of target 0 enable array
-         //0x0C00 107C End   of target 0 enable array
+         //0x0C00 2000 Start of target 0 enable array
+         //0x0C00 207C End   of target 0 enable array
          //.... target 1
          //.... target 2
      for(i=0; i<(PLIC_PEND_ARRAY);i=i+1) begin: sel_enab_i//{
@@ -504,7 +504,6 @@ localparam PLIC_PEND_ARRAY = (((PLIC_IRQ_NUM-1)/32) + 1);
    endgenerate
 
 
-
    generate 
    //
    for(i=0; i<PLIC_IRQ_NUM;i=i+1) begin: claim_complete_gen//{
@@ -514,9 +513,9 @@ localparam PLIC_PEND_ARRAY = (((PLIC_IRQ_NUM-1)/32) + 1);
          icb_complete_irq[i] = 1'b0;
 
                                        // The read data (claimed ID) is equal to the interrupt source ID
-         icb_claim_irq   [i] = icb_claim_irq[i] | ((icb_rsp_rdata == i) & icb_cmd_sel_clam & icb_cmd_rd_hsked);
+         icb_claim_irq   [i] = ((icb_rsp_rdata == i) & icb_cmd_sel_clam & icb_cmd_rd_hsked);
                                        // The write data (complete ID) is equal to the interrupt source ID
-         icb_complete_irq[i] = icb_complete_irq[i] | ((icb_cmd_wdata[PLIC_IRQ_NUM_LOG2-1:0] == i) & icb_cmd_sel_clam & icb_cmd_wr_hsked);
+         icb_complete_irq[i] = ((icb_cmd_wdata[PLIC_IRQ_NUM_LOG2-1:0] == i) & icb_cmd_sel_clam & icb_cmd_wr_hsked);
 
      end//}
 
