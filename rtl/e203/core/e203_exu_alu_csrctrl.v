@@ -54,7 +54,7 @@ module e203_exu_alu_csrctrl(
   input          eai_xs_off,
   output         eai_csr_valid,
   input          eai_csr_ready,
-  output  [31:0] eai_csr_addr,
+  output  [11:0] eai_csr_addr,
   output         eai_csr_wr,
   output  [31:0] eai_csr_wdata,
   input   [31:0] eai_csr_rdata,
