@@ -1,27 +1,34 @@
-Hummingbird E200 Opensource Processor Core
+Hummingbird E203 Opensource Processor Core
 ================
 
 About
 -----------
 
-This repository hosts the project for open-source hummingbird E200 RISC processor Core.
-
-The Hummingbird E200 core is a two-stages pipeline based ultra-low power/area implementation, 
-which has both performance and areas benchmark better than ARM Cortex-M0+ core, makes the Hummingbird E200 as a perfect replacement for legacy 8051 core or ARM Cortex-M cores in the IoT or other ultra-low power applications. 
+This repository hosts the project for open-source hummingbird E203 RISC processor Core.
 
 To boost the RISC-V popularity and to speed up the IoT development in China,
-we are very proud to make it open-source. It is the first open-source processor core from
+we are very proud to make hummingbird E203 core open-source. It is the first open-source processor core from
 China mainland with state-of-art CPU design skills to support RISC-V instruction set.
 
-Welcome to visit http://bbs.nucleisys.com/ to see the discussion of the Hummingbird E203.
+The Hummingbird E203 core is a two-stages pipeline based ultra-low power/area implementation, makes the Hummingbird E203 as a perfect candidate for research and education of RISC-V implementation. 
+
+Welcome to visit http://bbs.riscv-mcu.com/ to see the discussion of the Hummingbird E203.
+
+Welcome to visit http://www.riscv-mcu.com/ for more comprehensive information of availiable RISC-V MCU chips and embedded development. 
 
 Usages and Applications
 -----------------------------
 
-The open-source Hummingbird E200 core can be a perferct candidate for the following fields:
-*   Replace legacy 8051 core for better performance.
-*   Replace Cortex-M core for lower cost.
-*   Also, the Hummingbird E200 core as a simple ultra-low power core and SoC, which is "蜂鸟虽小、五脏俱全", with detailed Docs and Software/FPGA Demos, hence, it will be a perfect example for lab practice in university or entry-level studying. 
+The open-source Hummingbird E203 core can be a perferct candidate for research and education of RISC-V implementation:
+*   The Hummingbird E203 core as a simple ultra-low power core and SoC, which is "蜂鸟虽小、五脏俱全", with detailed Docs and Software/FPGA Demos, hence, it will be a perfect example for lab practice in university or entry-level studying. 
+
+Many people asked if this core can be commercially used, the answer is as below:
+   * According to the Apache 2.0 license, this open-sourced core can be used in commercial way.
+   * But the feature is not full. 
+   * The main purpose of this open-sourced core is to be used by students/university/research/
+       and entry-level-beginners, hence, the commercial quality (bug-free) and
+       service of this core is not not not warranted!!! 
+   * Welcome to visit http://www.riscv-mcu.com/ for more comprehensive information of RISC-V core availiable for commercial usage. 
 
 Detailed Introduction
 -----------------------------
@@ -31,9 +38,9 @@ We have provided very detailed introduction and quick start-up documents to help
 The detailed introduction and the quick start documentation can be seen 
 from https://github.com/SI-RISCV/e200_opensource/tree/master/doc directory.
 
-By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
+By following the guidences from the doc, you can very easily start to use Hummingbird E203 processor core and demo SoC.
 
-Meanwhile, the Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E200处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
+Meanwhile, the Hummingbird E203 Core was deeply introduced in the published Book (蜂鸟E203处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
 
     《手把手教你设计CPU：RISC-V处理器篇》（已经上市，请在京东、淘宝、当当上搜索 RISC-V关键字）
 
