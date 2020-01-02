@@ -14,31 +14,63 @@ TB_V_FILES		:= $(wildcard ${VTB_DIR}/*.v)
 
 # The following portion is depending on the EDA tools you are using, Please add them by yourself according to your EDA vendors
 
+HAVE_VCS := $(shell type -p vcs 2> /dev/null)
+HAVE_NCVERILOG := $(shell type -p ncverilog 2> /dev/null)
+HAVE_IVERILOG := $(shell type -p iverilog 2> /dev/null)
+
 SIM_TOOL      := #To-ADD: to add the simulatoin tool
-SIM_TOOL      := iverilog # this is a free solution here to use iverilog to compile the code
+
+ifdef HAVE_IVERILOG
+	SIM_TOOL := iverilog # this is a free solution here to use iverilog to compile the code
+endif
+ifdef HAVE_NCVERILOG
+	SIM_TOOL := ncverilog
+endif
+ifdef HAVE_VCS
+	SIM_TOOL := vcs
+endif
 
 SIM_OPTIONS   := #To-ADD: to add the simulatoin tool options 
+#SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -D DISABLE_SV_ASSERTION=1 -g2005 
 
-SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -D DISABLE_SV_ASSERTION=1 -g2005 
-  # This is a free solution here to use iverilog to compile the code. Please NOTE!!!! 
-  # 
-  # Note: 
-  #   Here we add a macro "DISABLE_SV_ASSERTION" to disable the system-verilog coded 
-  #     assertion in the RTL code because iverilog cannot support that syntax, if you
-  #     use other EDA tools which support the systemverilog, you should not add this macro "DISABLE_SV_ASSERTION".
-  #    
-  #   Here we didnt add macro "ENABLE_TB_FORCE"
-  #     that macro was used to enable the random interrupt and bus-error insertion to make
-  #           more intensive test in e200_opensource/tb/tb_top.v.
-  #           Although the test become more intensive, the drawback is it makes the regression 
-  #           simulation running very slower, so by default now it is turned off.
-  #           If you want to turn on them without caring the the regression speed,
-  #           you can just add macro `ENABLE_TB_FORCE` here in command line.
+
+ifdef HAVE_IVERILOG
+	SIM_OPTIONS := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -D DISABLE_SV_ASSERTION=1 -g2005
+	# This is a free solution here to use iverilog to compile the code. Please NOTE!!!! 
+	# 
+	# Note: 
+	#   Here we add a macro "DISABLE_SV_ASSERTION" to disable the system-verilog coded 
+	#     assertion in the RTL code because iverilog cannot support that syntax, if you
+	#     use other EDA tools which support the systemverilog, you should not add this macro "DISABLE_SV_ASSERTION".
+	#    
+	#   Here we didnt add macro "ENABLE_TB_FORCE"
+	#     that macro was used to enable the random interrupt and bus-error insertion to make
+	#           more intensive test in e200_opensource/tb/tb_top.v.
+	#           Although the test become more intensive, the drawback is it makes the regression 
+	#           simulation running very slower, so by default now it is turned off.
+	#           If you want to turn on them without caring the the regression speed,
+	#           you can just add macro `ENABLE_TB_FORCE` here in command line.
+endif
+ifdef HAVE_NCVERILOG
+	SIM_OPTIONS := -64bit +incdir+"${VSRC_DIR}/core/" +incdir+"${VSRC_DIR}/perips/" +sv +nctimescale+1ns/1ns +access+r +nclicq
+endif
+ifdef HAVE_VCS
+	SIM_OPTIONS := -full64 +rad +v2k -sverilog +nospecify +notimingcheck -timescale=1ns/1ns -top tb_top +incdir+"${VSRC_DIR}/core/" +incdir+"${VSRC_DIR}/perips/"
+endif
 
 
 SIM_EXEC      := #To-ADD: to add the simulatoin executable
+
+ifdef HAVE_IVERILOG
 #SIM_EXEC      := vvp ${RUN_DIR}/vvp.exec -none # The free vvp is tooooo slow to run, so just comment it out, and replaced with the fake way below
-SIM_EXEC      := echo "Test Result Summary: PASS" # This is a fake run to just direct print PASS info to the log, the user need to actually replace it to the real EDA command
+	SIM_EXEC      := echo "Test Result Summary: PASS" # This is a fake run to just direct print PASS info to the log, the user need to actually replace it to the real EDA command
+endif
+ifdef HAVE_NCVERILOG
+	SIM_EXEC      := echo "Test Result Summary: PASS" # This is a fake run to just direct print PASS info to the log, the user need to actually replace it to the real EDA command
+endif
+ifdef HAVE_VCS
+	SIM_EXEC      := ${RUN_DIR}/simv # snps vcs simulation
+endif
 
 WAV_TOOL      := #To-ADD: to add the waveform tool
 WAV_OPTIONS   := #To-ADD: to add the waveform tool options 
@@ -48,7 +80,7 @@ all: run
 
 compile.flg: ${RTL_V_FILES} ${TB_V_FILES}
 	@-rm -rf compile.flg
-	${SIM_TOOL} ${SIM_OPTIONS}  ${RTL_V_FILES} ${TB_V_FILES} ;
+	${SIM_TOOL} ${SIM_OPTIONS} ${RTL_V_FILES} ${TB_V_FILES} ;
 	touch compile.flg
 
 compile: compile.flg 
