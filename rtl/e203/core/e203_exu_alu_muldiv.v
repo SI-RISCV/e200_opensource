@@ -589,11 +589,11 @@ module e203_exu_alu_muldiv(
       
      // The special case will need to be handled specially
   wire [32:0] golden_res_div  = div_special_cases ? div_special_res : 
-     (  $signed({div_rs1_sign,muldiv_i_rs1})   / ((div_by_0 | div_ovf) ? 1 :   $signed({div_rs2_sign,muldiv_i_rs2})));
+     $signed(  $signed({div_rs1_sign,muldiv_i_rs1})   / ((div_by_0 | div_ovf) ? 1 :   $signed({div_rs2_sign,muldiv_i_rs2})));
   wire [32:0] golden_res_divu  = div_special_cases ? div_special_res : 
      ($unsigned({div_rs1_sign,muldiv_i_rs1})   / ((div_by_0 | div_ovf) ? 1 : $unsigned({div_rs2_sign,muldiv_i_rs2})));
   wire [32:0] golden_res_rem  = div_special_cases ? div_special_res : 
-     (  $signed({div_rs1_sign,muldiv_i_rs1})   % ((div_by_0 | div_ovf) ? 1 :   $signed({div_rs2_sign,muldiv_i_rs2})));
+     $signed(  $signed({div_rs1_sign,muldiv_i_rs1})   % ((div_by_0 | div_ovf) ? 1 :   $signed({div_rs2_sign,muldiv_i_rs2})));
   wire [32:0] golden_res_remu  = div_special_cases ? div_special_res : 
      ($unsigned({div_rs1_sign,muldiv_i_rs1})   % ((div_by_0 | div_ovf) ? 1 : $unsigned({div_rs2_sign,muldiv_i_rs2})));
  
