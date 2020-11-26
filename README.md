@@ -1,3 +1,16 @@
+Note
+================
+
+This project will no longer be updated and maintained in this repository. 
+
+About the new version, please refer to the [RISCV-MCU/e203_hbirdv2](https://github.com/riscv-mcu/e203_hbirdv2).
+
+
+
+
+
+
+
 Hummingbird E203 Opensource Processor Core
 ================
 
@@ -12,9 +25,9 @@ China mainland with state-of-art CPU design skills to support RISC-V instruction
 
 The Hummingbird E203 core is a two-stages pipeline based ultra-low power/area implementation, makes the Hummingbird E203 as a perfect candidate for research and education of RISC-V implementation. 
 
-Welcome to visit http://bbs.riscv-mcu.com/ to see the discussion of the Hummingbird E203.
+Welcome to visit http://www.rvmcu.com/ to see the discussion of the Hummingbird E203.
 
-Welcome to visit http://www.riscv-mcu.com/ for more comprehensive information of availiable RISC-V MCU chips and embedded development. 
+Welcome to visit http://www.rvmcu.com/ for more comprehensive information of availiable RISC-V MCU chips and embedded development. 
 
 Usages and Applications
 -----------------------------
@@ -28,7 +41,7 @@ Many people asked if this core can be commercially used, the answer is as below:
    * The main purpose of this open-sourced core is to be used by students/university/research/
        and entry-level-beginners, hence, the commercial quality (bug-free) and
        service of this core is not not not warranted!!! 
-   * Welcome to visit http://www.riscv-mcu.com/ for more comprehensive information of RISC-V core availiable for commercial usage. 
+   * Welcome to visit http://www.rvmcu.com/ for more comprehensive information of RISC-V core availiable for commercial usage. 
 
 Detailed Introduction
 -----------------------------
