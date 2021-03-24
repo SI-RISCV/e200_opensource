@@ -1,13 +1,12 @@
-Note
+Important Notice
 ================
 
-This project will no longer be updated and maintained in this repository. 
+**This project will no longer be updated and maintained in this repository, a new generation of hbird e203 is provided with a lot of improvement, such as online documentation, nice extension, new peripherals.**
 
-About the new version, please refer to the [RISCV-MCU/e203_hbirdv2](https://github.com/riscv-mcu/e203_hbirdv2).
+About the new version, please refer to the the following links:
 
-
-
-
+* Hummingbirdv2 E203 Core and SoC: [RISCV-MCU/e203_hbirdv2](https://github.com/riscv-mcu/e203_hbirdv2).
+* HummingBird RISC-V Software Development Kit: [riscv-mcu/hbird-sdk](https://github.com/riscv-mcu/hbird-sdk/)
 
 
 
