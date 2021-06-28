@@ -39,7 +39,7 @@ module e203_clkgate (
 
 `ifndef FPGA_SOURCE//{
 
-reg enb;
+reg enb /*verilator clock_enable*/;
 
 always@(*)
   if (!clk_in)
