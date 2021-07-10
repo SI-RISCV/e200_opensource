@@ -27,6 +27,7 @@ install:
 	cp ${SIM_DIR}/../rtl/${core_name} ${SIM_DIR}/install/rtl -rf
 
 ${RUN_DIR}:
+	[[ -d install ]] || make install
 	mkdir -p ${RUN_DIR}
 	rm -f ${RUN_DIR}/Makefile
 	ln -s ${SIM_DIR}/bin/run.makefile ${RUN_DIR}/Makefile
