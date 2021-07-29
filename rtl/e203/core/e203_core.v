@@ -33,10 +33,10 @@ module e203_core(
   `ifdef E203_HAS_CSR_EAI//{
   output         eai_csr_valid,
   input          eai_csr_ready,
-  output  [31:0] eai_csr_addr,
+  output  [`E203_CSR_ADDR_W-1:0] eai_csr_addr,
   output         eai_csr_wr,
-  output  [31:0] eai_csr_wdata,
-  input   [31:0] eai_csr_rdata,
+  output  [`E203_XLEN-1:0] eai_csr_wdata,
+  input   [`E203_XLEN-1:0] eai_csr_rdata,
   `endif//}
   output core_wfi,
   output tm_stop,

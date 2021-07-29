@@ -33,7 +33,7 @@ module e203_exu_csr(
   input csr_ena,
   input csr_wr_en,
   input csr_rd_en,
-  input [12-1:0] csr_idx,
+  input [`E203_CSR_ADDR_W-1:0] csr_idx,
 
   output csr_access_ilgl,
   output tm_stop,

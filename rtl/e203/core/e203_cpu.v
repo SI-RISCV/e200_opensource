@@ -440,10 +440,10 @@ module e203_cpu #(
   `ifdef E203_HAS_CSR_EAI//{
   wire         eai_csr_valid;
   wire         eai_csr_ready;
-  wire  [31:0] eai_csr_addr;
+  wire  [`E203_CSR_ADDR_W-1:0] eai_csr_addr;
   wire         eai_csr_wr;
-  wire  [31:0] eai_csr_wdata;
-  wire  [31:0] eai_csr_rdata;
+  wire  [`E203_XLEN-1:0] eai_csr_wdata;
+  wire  [`E203_XLEN-1:0] eai_csr_rdata;
 
   // This is an empty module to just connect the EAI CSR interface, 
   //  user can hack it to become a real one
